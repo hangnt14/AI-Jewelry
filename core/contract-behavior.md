@@ -197,6 +197,22 @@ Packet rules:
 - After `paths.backbone_index`, `paths.stories_index`, or `paths.srs_index` exists, read the index first and open only targeted sections from the source artifact.
 - Treat index files as navigators only; they do not replace `paths.backbone`, `paths.stories`, or `paths.srs` as source-of-truth artifacts.
 
+### Internal Artifact Compactness
+
+Artifact profile controls format and length:
+
+- `user_facing`: deliverable or package output; write complete BA-readable content.
+- `agent_facing`: navigator, packet, memory shard, or state summary; write compact tables/lists with IDs, paths, freshness, ownership, and route hints only.
+- `machine_facing`: deterministic state or manifest; prefer JSON/YAML/NDJSON and avoid prose beyond stable labels.
+
+For generated internal artifacts:
+
+- keep `.md` only when fast human inspection is useful
+- never duplicate source-of-truth requirement text from intake, backbone, stories, or SRS
+- keep excerpts short and only when needed for routing
+- include stale/unknown status instead of guessing
+- if substantial prose is needed, move that prose into the source-of-truth artifact or revise the command flow
+
 ## Large Artifact Write Protocol
 
 When generating artifacts that exceed ~150 lines (e.g., `backbone`, `frd`, `stories`, `srs`), you MUST use **incremental writes**.
