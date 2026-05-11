@@ -83,6 +83,72 @@ for command, expected in required_outputs.items():
             f"Command '{command}' missing token optimization output(s): {', '.join(missing)}"
         )
 
+profiles = contract.get("artifact_profiles", {})
+allowed_profiles = {"user_facing", "agent_facing", "machine_facing"}
+required_profile_keys = {
+    "source_manifest",
+    "source_summary",
+    "source_chunk_index",
+    "project_home",
+    "collab_home",
+    "module_home",
+    "review_packet",
+    "intake",
+    "plan",
+    "options_index",
+    "option_item",
+    "options_comparison",
+    "backbone",
+    "backbone_index",
+    "frd",
+    "stories",
+    "stories_index",
+    "srs",
+    "srs_index",
+    "srs_group",
+    "wireframe_input",
+    "wireframe_map",
+    "wireframe_state",
+    "compiled_frd",
+    "compiled_srs",
+    "design_doc",
+    "project_memory",
+    "memory_index",
+    "memory_log",
+    "memory_hot_vocabulary",
+    "memory_hot_decisions",
+    "memory_hot_pushback",
+    "memory_module_warm",
+}
+missing_profiles = sorted(required_profile_keys - set(profiles))
+if missing_profiles:
+    raise SystemExit(f"Missing artifact profile(s): {', '.join(missing_profiles)}")
+invalid_profiles = {
+    key: value
+    for key, value in profiles.items()
+    if value not in allowed_profiles
+}
+if invalid_profiles:
+    details = ", ".join(f"{key}={value}" for key, value in sorted(invalid_profiles.items()))
+    raise SystemExit(f"Invalid artifact profile value(s): {details}")
+unknown_profile_keys = sorted(set(profiles) - set(paths))
+if unknown_profile_keys:
+    raise SystemExit(f"Artifact profiles reference unknown path key(s): {', '.join(unknown_profile_keys)}")
+
+expected_profiles = {
+    "source_manifest": "machine_facing",
+    "compiled_frd": "user_facing",
+    "compiled_srs": "user_facing",
+    "backbone_index": "agent_facing",
+    "stories_index": "agent_facing",
+    "srs_index": "agent_facing",
+    "wireframe_state": "machine_facing",
+}
+for key, expected in expected_profiles.items():
+    actual = profiles.get(key)
+    if actual != expected:
+        raise SystemExit(f"Artifact profile mismatch for {key}: expected {expected}, got {actual}")
+
 activation = contract.get("activation", {})
 signals = set(activation.get("signals", {}))
 thresholds = activation.get("thresholds", {})
