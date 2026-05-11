@@ -57,6 +57,14 @@ Sections:
 
 Output: `paths.srs_group` with `group=c`
 
+Navigation schema gate for UI-backed screens:
+
+- Before writing Group C, require an approved `paths.design_doc` with a Navigation Schema for every portal used by the module.
+- If `paths.design_doc` is missing or the navigation schema is unresolved, run Step 8.2 from `srs-wireframes.md` first and stop if the user does not approve the design direction.
+- Treat `paths.design_doc` Navigation Schema as the source of truth for `Nav Schema ID`, menu labels, and allowed active-menu paths. Backbone route families are context only; do not derive final active-menu labels from backbone alone.
+- Copy `Expected Active Menu Item` exactly from an allowed menu item/path in the matching Navigation Schema. For nested menus, use the declared active path such as `Catalog > Approvals`; for flat menus, use the declared item label such as `Product Approvals`.
+- If a needed active item is absent from the approved Navigation Schema, emit `MENU_SCHEMA_GAP: {screen_id} needs {active_item} in {portal_id}/{nav_schema_id}` and stop instead of inventing a new menu path.
+
 Consistency rules:
 
 - each primary screen links to its use cases and user stories
@@ -77,6 +85,7 @@ Consistency rules:
 - overlay screens inherit the parent portal unless an explicit cross-portal transition is documented
 - if a modal, drawer, or dialog hides global navigation, `Navigation Region Visible` must be `No` and the exception reason must be stated
 - modal, dialog, drawer, and overlay screens with their own interaction logic are primary screens
+- After writing Group C, run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {paths.srs_group group=c}` and fix any `NAV_SCHEMA_MISMATCH`, `MENU_SCHEMA_MISMATCH`, or `MENU_ACTIVE_MISSING` before continuing.
 
 ## Step 8.1 - Build wireframe constraint pack
 

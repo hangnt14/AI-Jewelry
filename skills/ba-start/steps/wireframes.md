@@ -55,6 +55,7 @@ Parse the input pack to build the handoff plan:
 - treat modal, dialog, and drawer overlays with flow impact as primary screens
 - derive required supporting frames from documented states, validation rules, list behavior, and feedback surfaces
 - verify each screen group has a portal snapshot, menu schema snapshot, and active-menu expectations before planning the artifact
+- run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {paths.srs_group group=c}` when Group C is available; stop on any navigation mismatch before producing the handoff map
 - carry forward the runtime design target `paths.design_doc`
 
 ## Step 9.2 - Ask for or refresh runtime DESIGN.md
@@ -115,15 +116,16 @@ For each approved screen group:
 2. Read `paths.design_doc`.
 3. Verify that the intended manual wireframe constraints match the same portal ownership, menu schema, active/highlight behavior, actions, flow steps, required states, and approved design decisions.
 4. Stop if the screen group lacks either a portal snapshot or an approved navigation schema in `DESIGN.md`; do not infer missing menu structure.
-5. Expand or refresh `paths.wireframe_input` so it contains the full constraint set the user needs to design manually or with an external tool, including menu matching checklist, active-state evidence requirements, and navigation exceptions.
-6. Persist `paths.wireframe_map` as a manual handoff checklist:
+5. Validate the source Screen Contract Plus against `DESIGN.md` with `scripts/validate-navigation-consistency.py`; do not continue when `Expected Active Menu Item` is not an approved menu item/path.
+6. Expand or refresh `paths.wireframe_input` so it contains the full constraint set the user needs to design manually or with an external tool, including menu matching checklist, active-state evidence requirements, and navigation exceptions.
+7. Persist `paths.wireframe_map` as a manual handoff checklist:
    - which primary screens must be drawn
    - which supporting states must exist
    - which portal and navigation schema each screen must follow
    - which screens must show active-menu evidence and which screens are allowed to hide global navigation with an explicit reason
    - where the user should attach or reference the result in the final document
    - any non-negotiable labels, actions, validation cues, and navigation regions that must remain visible in the mockup
-7. State explicitly in both artifacts that BA-kit does not generate the wireframe itself in this flow. The user is expected to design it manually and manually insert the final mockup reference into the final document.
+8. State explicitly in both artifacts that BA-kit does not generate the wireframe itself in this flow. The user is expected to design it manually and manually insert the final mockup reference into the final document.
 
 After the handoff pack is complete:
 

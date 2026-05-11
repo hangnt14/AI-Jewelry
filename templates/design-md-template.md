@@ -37,6 +37,7 @@
 ### 2.2 Navigation Schema
 
 Phần này là schema bắt buộc để kiểm tra menu consistency giữa các screen trong cùng portal.
+`Menu Item List` là danh sách active-menu path được phép dùng trong Screen Contract Plus. Với menu con, ghi theo dạng `Parent (Child A, Child B)` hoặc active path rõ ràng `Parent > Child`; SRS không được tự tạo path khác ngoài danh sách này.
 
 | Portal ID | Nav Schema ID | Navigation Pattern | Menu Item List | Default Landing | Active / Selected Rule | Breadcrumb / Back Rule | Hidden / Contextual Nav Exceptions |
 | --- | --- | --- | --- | --- | --- | --- | --- |

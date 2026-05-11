@@ -255,7 +255,10 @@ checks = {
     "skills/ba-start/steps/backbone.md": ["paths.backbone_index"],
     "skills/ba-start/steps/frd.md": ["paths.backbone_index"],
     "skills/ba-start/steps/stories.md": ["paths.backbone_index", "paths.stories_index"],
-    "skills/ba-start/steps/srs.md": ["paths.backbone_index", "paths.stories_index", "paths.srs_index"],
+    "skills/ba-start/steps/srs.md": ["paths.backbone_index", "paths.stories_index", "paths.srs_index", "paths.design_doc"],
+    "skills/ba-start/steps/srs-core.md": ["validate-navigation-consistency.py", "MENU_SCHEMA_GAP"],
+    "skills/ba-start/steps/srs-assembly.md": ["validate-navigation-consistency.py", "MENU_SCHEMA_MISMATCH"],
+    "skills/ba-start/steps/wireframes.md": ["validate-navigation-consistency.py"],
     "skills/ba-start/steps/package.md": ["paths.backbone_index", "paths.stories_index", "paths.srs_index"],
     "skills/ba-start/steps/impact.md": ["affected_node_ids", "owner_artifact", "stale_artifacts", "read_escalation"],
 }
@@ -298,6 +301,7 @@ python3 -m py_compile \
   "${ROOT_DIR}/scripts/source-extract.py" \
   "${ROOT_DIR}/scripts/context-budget.py" \
   "${ROOT_DIR}/scripts/design-snapshot.py" \
+  "${ROOT_DIR}/scripts/validate-navigation-consistency.py" \
   "${ROOT_DIR}/scripts/stitch-state.py" \
   "${ROOT_DIR}/scripts/runtime-parity-normalize.py"
 
@@ -320,9 +324,11 @@ bash -n "${ROOT_DIR}/scripts/test-activation-thresholds.sh"
 bash -n "${ROOT_DIR}/scripts/test-runtime-parity.sh"
 bash -n "${ROOT_DIR}/scripts/runtime-parity-adapter.sh"
 bash -n "${ROOT_DIR}/scripts/test-runtime-install-smoke.sh"
+bash -n "${ROOT_DIR}/scripts/test-navigation-consistency.sh"
 bash "${ROOT_DIR}/scripts/check-token-budget.sh" >/dev/null
 bash "${ROOT_DIR}/scripts/test-activation-thresholds.sh" >/dev/null
 bash "${ROOT_DIR}/scripts/test-options-flow-contract.sh" >/dev/null
+bash "${ROOT_DIR}/scripts/test-navigation-consistency.sh" >/dev/null
 bash "${ROOT_DIR}/scripts/test-runtime-parity.sh" --check-structure >/dev/null
 bash "${ROOT_DIR}/scripts/test-runtime-parity.sh" >/dev/null
 

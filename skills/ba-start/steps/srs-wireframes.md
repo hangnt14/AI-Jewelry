@@ -7,7 +7,7 @@ This step requires:
 
 ## Step 8.2 - Capture design decisions and persist runtime DESIGN.md
 
-Before BA-kit prepares a wireframe handoff pack, ask the user to make or approve the design decisions that define the project-specific runtime `DESIGN.md`.
+Before BA-kit writes Screen Contract Plus for UI-backed screens or prepares a wireframe handoff pack, ask the user to make or approve the design decisions that define the project-specific runtime `DESIGN.md`.
 
 Decision intake must cover:
 
@@ -22,6 +22,13 @@ Decision intake must cover:
 - breadcrumb / back behavior
 - hidden or contextual navigation exceptions
 - hard constraints and explicit anti-patterns
+
+Navigation schema approval rules:
+
+- The approved `DESIGN.md` must define every portal used by the UI-backed module before Group C is finalized.
+- The approved `DESIGN.md` must define the exact menu item labels and active-menu paths that Group C may reference.
+- Module SRS artifacts may snapshot the approved schema, but must not add, rename, flatten, or nest global menu items on their own.
+- If a module needs a menu item or nested path that is absent from `DESIGN.md`, route the change through `impact` or refresh Step 8.2 with user approval before rewriting Group C.
 
 If `paths.design_doc` already exists, ask whether to:
 
@@ -80,6 +87,7 @@ Group E rules:
 - enrich the final screen descriptions from the pre-wireframe screen spec; do not redefine portal ownership
 - do not change `Nav Schema ID`, `Expected Active Menu Item`, or active/highlight behavior in Group E
 - if IA or menu behavior must change, route the change back through `impact` instead of silently rewriting Group E
+- run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {paths.srs_group group=c}` before writing Group E when UI-backed screens exist; stop on any navigation mismatch
 
 Output: `paths.srs_group` with `group=e`
 

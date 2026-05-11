@@ -8,7 +8,7 @@ This step requires:
 ## Memory Read Scope
 
 - **Must read:** `core/contract.yaml`, `core/contract-behavior.md`, `paths.backbone_index`, `paths.stories_index`
-- **May read:** targeted `paths.backbone` and `paths.stories` sections, `paths.srs_index` when refreshing, `paths.project_memory` or (`paths.memory_hot_vocabulary` + `paths.memory_hot_decisions`) when shard mode active; module `warm/` shard; `paths.frd` when exists
+- **May read:** targeted `paths.backbone` and `paths.stories` sections, `paths.design_doc` for UI-backed Screen Contract Plus, `paths.srs_index` when refreshing, `paths.project_memory` or (`paths.memory_hot_vocabulary` + `paths.memory_hot_decisions`) when shard mode active; module `warm/` shard; `paths.frd` when exists
 - **Must NOT read:** `log.md`, `cold/`, other module shards
 
 ## Governance Gate
@@ -27,7 +27,7 @@ Run Steps 8-11 only. This path is intentionally split to avoid loading the full 
 
 1. Read this file for SRS preflight and orchestration.
 2. Read [srs-core.md](./srs-core.md) for Step 8 and Step 8.1.
-3. Read [srs-wireframes.md](./srs-wireframes.md) for Step 8.2, Step 9, and Step 10.
+3. Read [srs-wireframes.md](./srs-wireframes.md) before Group C whenever UI-backed screens require a runtime `DESIGN.md`, then again for Step 9 and Step 10.
 4. Read [srs-assembly.md](./srs-assembly.md) for Step 10.1 and Step 11.
 
 ## Prerequisites
@@ -58,7 +58,7 @@ Treat generated index/state/memory artifacts as `agent_facing` or `machine_facin
 
 ```text
 Step 8   -> srs-core.md
-Step 8.2 -> srs-wireframes.md
+Step 8.2 -> srs-wireframes.md before Group C when UI-backed screens exist
 Step 9   -> srs-wireframes.md
 Step 10  -> srs-wireframes.md
 Step 10.1 + 11 -> srs-assembly.md
