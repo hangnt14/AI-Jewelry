@@ -10,11 +10,12 @@ Use this skill when the BA lifecycle step is explicit. Treat `ba-do` as the free
 
 ## Required Read Order
 
-1. Read [../../core/contract.yaml](../../core/contract.yaml) for exact paths, prerequisites, defaults, states, and command metadata.
-2. Read [../../core/contract-behavior.md](../../core/contract-behavior.md) for shared LLM policy.
-3. Resolve the selected subcommand.
-4. Read only the matching file under `steps/`.
-5. Read templates and upstream artifacts only when the active step actually needs them.
+1. Read [../../core/contract.yaml](../../core/contract.yaml) for exact paths, prerequisites, defaults, states, command metadata, and `behavior_shards`.
+2. Read [../../core/contract-behavior.md](../../core/contract-behavior.md) for shared runtime-neutral policy.
+3. Parse arguments and resolve the selected subcommand.
+4. Read only the behavior shard(s) listed in `behavior_shards.<command>`.
+5. Read only the matching file under `steps/`.
+6. Read templates and upstream artifacts only when the active step actually needs them.
 
 ## Invocation
 
@@ -63,6 +64,7 @@ Use this skill when the BA lifecycle step is explicit. Treat `ba-do` as the free
 
 ## Stop Conditions
 
+- If `behavior_shards.<command>` references a missing path, stop and report the exact missing shard path.
 - Never silently choose a slug, date, or module by mtime.
 - Never use broad `*-{slug}*` matching when exact modular paths exist.
 - Never mutate artifacts from a bare change statement; route through `impact` first.

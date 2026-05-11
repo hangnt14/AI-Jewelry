@@ -3,14 +3,14 @@
 ## Canonical Sources
 
 - `core/contract.yaml`
-- `core/contract-behavior.md`
+- `core/contract-behavior.md` plus the command shard in `core/behavior/` listed by `core/contract.yaml.behavior_shards`
 - `skills/ba-start/SKILL.md`
+
+For lifecycle work, read `contract.yaml`, then shared behavior, then only the selected command behavior shard and step file.
 
 For non-trivial BA work, start from `skills/ba-start/SKILL.md` instead of improvising from the prompt alone.
 
 ## Automatic BA Routing
-
-If the message matches one of these intents, read the indicated skill and execute it:
 
 | User intent | Read this file | Then do |
 | --- | --- | --- |
@@ -20,24 +20,18 @@ If the message matches one of these intents, read the indicated skill and execut
 | Continuing/resuming a project | `skills/ba-next/SKILL.md` | inspect and recommend |
 | Asking what the next BA step should be | `skills/ba-next/SKILL.md` | inspect and recommend |
 | Adding, changing, removing, or correcting a requirement or rule | `skills/ba-start/SKILL.md` | run `impact` |
-| Naming a specific step such as `intake`, `backbone`, `frd`, `stories`, `srs`, `wireframes`, or `package` | `skills/ba-start/SKILL.md` | run that step |
-| Providing raw requirements or business context for a new engagement | `skills/ba-start/SKILL.md` | run the full lifecycle |
-| Other freeform BA requests | `skills/ba-do/SKILL.md` | route to the right command |
+| Naming a lifecycle step | `skills/ba-start/SKILL.md` | run that step |
+| Providing raw requirements for a new engagement | `skills/ba-start/SKILL.md` | run lifecycle from intake |
+| Other freeform BA requests | `skills/ba-do/SKILL.md` | route |
 
-If a message could match both `impact` and a direct edit, prefer `impact` unless the user explicitly asks to update, overwrite, regenerate, or rerun a named artifact.
+Prefer `impact` for ambiguous requirement corrections unless the user explicitly asks to update, overwrite, regenerate, or rerun a named artifact.
 
 ## Runtime Defaults
 
-- Write BA deliverables in Vietnamese by default unless the user explicitly requests English.
-- Use exact slug/date/module matching. Never choose by mtime.
+- Write BA deliverables in Vietnamese unless the user explicitly requests English.
 - Default to `hybrid` mode for solo IT BA work.
-- Treat the backbone as the source of truth after intake.
-- Treat `plans/{slug}-{date}/PROJECT-HOME.md` as the BA-facing dashboard, not source of truth.
-- Treat `plans/{slug}-{date}/02_backbone/project-memory.md` as persisted memory. In shard mode, read `project-memory/index.md` first.
-- Keep module-scoped artifacts inside `plans/{slug}-{date}/03_modules/{module_slug}/`.
-- When UI-backed scope needs wireframe support, prepare a manual wireframe constraint pack and let the user create and attach the actual mockup themselves.
-- Use **incremental section-by-section writes** for large artifacts to avoid output token truncation.
-- Preserve HITL guarantees: granular intervention, active push-back, fail-closed routing.
+- Persist memory in BA-kit artifacts, not runtime chat memory.
+- Preserve HITL guarantees from the shared behavior contract and selected command shard.
 
 ## Delivery Expectations
 
@@ -48,6 +42,6 @@ If a message could match both `impact` and a direct edit, prefer `impact` unless
 
 ## BA-Friendly Language
 
-Accept Vietnamese first, then show internal step: tạo dự án -> intake; tiếp tục -> next; thay đổi -> impact; handoff UI -> wireframes; bàn giao -> package; trạng thái -> status.
+Accept Vietnamese first, then show internal step: tao du an -> intake; tiep tuc -> next; thay doi -> impact; handoff UI -> wireframes; ban giao -> package; trang thai -> status.
 
 Collab NLP -> `ba-collab`; GitHub commit/push/PR/merge requires explicit approval.

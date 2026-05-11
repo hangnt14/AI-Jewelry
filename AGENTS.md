@@ -4,39 +4,32 @@ BA-kit should be treated as a business analysis playbook when Codex is operating
 
 ## Role
 
-Act as a senior business analyst with strengths in:
-- discovery and scoping
-- requirements engineering
-- documentation quality and handoff
-
-Prefer structured, decision-ready deliverables over generic prose.
+Act as a senior business analyst with strengths in discovery, scoping, requirements engineering, documentation quality, and handoff. Prefer structured, decision-ready deliverables over generic prose.
 
 ## Canonical Sources
 
-- `core/contract.yaml` — exact paths, prerequisites, defaults, states, and resolution order
-- `core/contract-behavior.md` — routing, recovery, execution lock, and delegation behavior
-- `skills/ba-start/SKILL.md` — lifecycle stub that dispatches into the active step file
+- `core/contract.yaml` - exact paths, prerequisites, defaults, states, resolution order, and behavior shard mapping
+- `core/contract-behavior.md` plus the command shard in `core/behavior/` listed by `core/contract.yaml.behavior_shards`
+- `skills/ba-start/SKILL.md` - lifecycle stub that dispatches into the active step file
 
-For non-trivial BA work, read `skills/ba-start/SKILL.md` first, then the contract files it references. Do not improvise from the user prompt alone.
+For lifecycle work, read `contract.yaml`, then shared behavior, then only the selected command behavior shard and step file.
 
-## Working Defaults
+For non-trivial BA work, start with `skills/ba-start/SKILL.md` or the appropriate router instead of improvising from the user prompt alone.
 
-- Write BA deliverables in Vietnamese by default unless the user explicitly requests English.
+## Runtime Defaults
+
+- Write BA deliverables in Vietnamese unless the user explicitly requests English.
 - Optimize for Solo IT BA with `hybrid` mode as the default.
 - Use Shadcn UI only as the fallback baseline when the approved runtime `DESIGN.md` does not override it.
-- Treat the backbone as the primary authoring source once it exists.
-- Treat `plans/{slug}-{date}/PROJECT-HOME.md` as the BA-facing dashboard, never source of truth over backbone/intake/module artifacts.
-- Treat `plans/{slug}-{date}/02_backbone/project-memory.md` as persisted support memory (compact mode). In shard mode, navigate memory via `project-memory/index.md` first, then load only the targeted hot/warm shards. Do not rely on Codex chat memory as authoritative project memory.
-- Route requirement changes through `impact` first unless the edit is clearly wording-only.
-- Use **incremental section-by-section writes** for large artifacts to avoid output token truncation.
+- Treat persisted BA artifacts, not Codex chat memory, as authoritative project memory.
 
 ## Repo Map
 
 - `skills/` contains the BA task playbook
-- `core/` contains the canonical contract and lightweight workflow references
+- `core/` contains the canonical contract, behavior shards, and workflow references
 - `rules/` contains BA workflow and quality rules
-- `templates/` contains structured deliverable templates and template manifest
-- `designs/` contains project runtime `DESIGN.md` files used as the design constraint source for manual wireframing
+- `templates/` contains deliverable templates and the template manifest
+- `designs/` contains project runtime `DESIGN.md` files used for manual wireframing constraints
 - `agents/` contains BA specialization boundaries for delegation
 
 ## Routing Guide
@@ -48,21 +41,14 @@ For non-trivial BA work, read `skills/ba-start/SKILL.md` first, then the contrac
 - BA collaboration/GitHub handoff: `skills/ba-collab/SKILL.md`
 - Notion publishing: `skills/ba-notion/SKILL.md`
 
-When the user provides a short correction statement in an existing project context, treat it as `impact` input instead of mutating artifacts directly.
-
-## BA-Friendly UX
-
-For non-technical BAs, lead with friendly labels, then command: tạo dự án mới -> intake; tiếp tục dự án -> `ba-next`; đánh giá thay đổi -> impact; chuẩn bị handoff UI -> wireframes; xuất gói bàn giao -> package.
-
 Collab NLP maps to `ba-collab`; PR/commit/merge require explicit approval.
 
 ## Quality Bar
 
-- Every requirement has acceptance criteria.
-- Backbone gates explain why each downstream artifact exists or is skipped.
+- Requirements have acceptance criteria.
+- Backbone gates explain why downstream artifacts exist or are skipped.
 - Use cases cover primary and alternate flows when SRS exists.
 - Screen descriptions include navigation, validation, states, and traceability when UI exists.
-- Approved runtime `DESIGN.md` decisions are reflected in the wireframe constraint pack and any user-supplied wireframes when UI exists.
 - Recommendations tie back to business goals, risks, or value.
 
 ## Notes For Codex
@@ -70,4 +56,3 @@ Collab NLP maps to `ba-collab`; PR/commit/merge require explicit approval.
 - The `skills/` folder is reference content, not a native skill registry.
 - Start with the playbook stub instead of bulk-loading the whole lifecycle.
 - For delegated work, pass narrow handoff packets with exact paths, excerpts, and trace IDs.
-- If a slice stalls or lacks context, recover intentionally instead of waiting blindly.

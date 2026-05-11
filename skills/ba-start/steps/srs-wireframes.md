@@ -4,43 +4,16 @@ This step requires:
 
 - `core/contract.yaml`
 - `core/contract-behavior.md`
+- `core/behavior/srs.md`
+- `core/behavior/wireframes.md`
 
-## Step 8.2 - Capture design decisions and persist runtime DESIGN.md
+## Step 8.2 - Capture Design Decisions And Persist Runtime DESIGN.md
 
-Before BA-kit writes Screen Contract Plus for UI-backed screens or prepares a wireframe handoff pack, ask the user to make or approve the design decisions that define the project-specific runtime `DESIGN.md`.
+Before BA-kit writes Screen Contract Plus for UI-backed screens or prepares a wireframe handoff pack, ask the user to approve the project runtime `DESIGN.md` direction.
 
-Decision intake must cover:
+Decision intake must cover reference direction, visual tone/density, color and contrast, typography, component feel, layout priority, portal navigation schema, active-menu rule, breadcrumb/back behavior, hidden navigation exceptions, hard constraints, and anti-patterns.
 
-- reference direction: existing brand guidance, a custom brief, or a named external inspiration
-- visual tone and density
-- color direction and contrast expectations
-- typography direction
-- component feel
-- layout and responsive priority
-- portal navigation schema per portal
-- active/selected menu rule
-- breadcrumb / back behavior
-- hidden or contextual navigation exceptions
-- hard constraints and explicit anti-patterns
-
-Navigation schema approval rules:
-
-- The approved `DESIGN.md` must define every portal used by the UI-backed module before Group C is finalized.
-- The approved `DESIGN.md` must define the exact menu item labels and active-menu paths that Group C may reference.
-- Module SRS artifacts may snapshot the approved schema, but must not add, rename, flatten, or nest global menu items on their own.
-- If a module needs a menu item or nested path that is absent from `DESIGN.md`, route the change through `impact` or refresh Step 8.2 with user approval before rewriting Group C.
-
-If `paths.design_doc` already exists, ask whether to:
-
-- reuse the approved file as-is
-- refresh it from new decisions
-- stop
-
-If no file exists, or the user asks to refresh it:
-
-- synthesize `paths.design_doc` from the approved decisions using [../../../templates/design-md-template.md](../../../templates/design-md-template.md)
-- keep `defaults.ui_baseline` as the fallback component baseline only when the approved design document does not specify a different direction
-- stop before Step 9 if design decisions remain unresolved
+If `paths.design_doc` already exists, ask whether to reuse it, refresh it, or stop. If no file exists or refresh is approved, synthesize it from approved decisions using [../../../templates/design-md-template.md](../../../templates/design-md-template.md). Stop if design decisions remain unresolved.
 
 ## Group D - Technical
 
@@ -54,46 +27,36 @@ Sections:
 
 Output: `paths.srs_group` with `group=d`
 
-Technical slice gate:
+Produce Group D only when integrations, NFR exposure, data modelling, API handoff, or vendor/governance needs justify it.
 
-- produce Group D only when integrations, NFR exposure, data modelling, API handoff, or vendor/governance needs justify it
+## Step 9 - Prepare Manual Wireframe Handoff
 
-## Step 9 - Prepare manual wireframe handoff
-
-Run the standalone wireframe workflow from [wireframes.md](./wireframes.md), but keep the same slug, date, and module.
+Run the standalone wireframe workflow from [wireframes.md](./wireframes.md), using the same slug, date, and module.
 
 Mode defaults inside the SRS pipeline:
 
-- `lite`: skip wireframe handoff unless the user explicitly asks for it
-- `hybrid`: prepare critical-screen wireframe constraints first
-- `formal`: prepare the full approved screen set for manual wireframe handoff
+- `lite`: skip wireframe handoff unless explicitly requested.
+- `hybrid`: prepare critical-screen wireframe constraints first.
+- `formal`: prepare the full approved screen set.
 
-## Step 10 - Produce final screen descriptions
+## Step 10 - Produce Final Screen Descriptions
 
-After Step 9 resolves, expand final screen descriptions from:
+After Step 9 resolves, expand final screen descriptions from Use Case Specifications, Screen Contract Plus, `paths.wireframe_input`, `paths.wireframe_map`, and supporting frame inventory.
 
-- Use Case Specifications
-- Screen Contract Plus
-- `paths.wireframe_input` when the manual wireframe constraint pack exists
-- `paths.wireframe_map` when the manual handoff checklist exists
-- supporting frame inventory
-
-If wireframes are `skipped` or `not-applicable`, expand screen descriptions from use cases and Screen Contract Plus only.
-
-Do not block final screen descriptions on the user having already drawn or attached a mockup. Manual wireframe insertion into the final document is an out-of-band user action.
+If wireframes are `skipped` or `not-applicable`, expand screen descriptions from use cases and Screen Contract Plus only. Manual mockup insertion into the final document is out of band.
 
 Group E rules:
 
-- enrich the final screen descriptions from the pre-wireframe screen spec; do not redefine portal ownership
-- do not change `Nav Schema ID`, `Expected Active Menu Item`, or active/highlight behavior in Group E
-- if IA or menu behavior must change, route the change back through `impact` instead of silently rewriting Group E
-- run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {paths.srs_group group=c}` before writing Group E when UI-backed screens exist; stop on any navigation mismatch
+- enrich the pre-wireframe screen spec; do not redefine portal ownership
+- do not change `Nav Schema ID`, `Expected Active Menu Item`, or active/highlight behavior
+- if IA or menu behavior must change, route through `impact`
+- run the navigation validator described in `core/behavior/srs.md` before writing Group E when UI-backed screens exist
 
 Output: `paths.srs_group` with `group=e`
 
 Screen field table format:
 
-| Tên trường (Field Name) | Loại trường (Field Type) | Mô tả (Description) |
+| Ten truong (Field Name) | Loai truong (Field Type) | Mo ta (Description) |
 | --- | --- | --- |
 | [Field] | [Type] | **Display Rules:** [visibility, defaults, read-only conditions, formatting] |
 | | | **Behaviour Rules:** [on-change actions, auto-fill, cascading, navigation triggers] |

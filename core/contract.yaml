@@ -59,7 +59,16 @@
     "memory_hot_decisions": "plans/{slug}-{date}/02_backbone/project-memory/hot/approved-decisions.md",
     "memory_hot_pushback": "plans/{slug}-{date}/02_backbone/project-memory/hot/pushback-triggers.md",
     "memory_module_warm": "plans/{slug}-{date}/02_backbone/project-memory/warm/modules/{module_slug}.md",
-    "packet_root": "plans/{slug}-{date}/delegation/packets"
+    "packet_root": "plans/{slug}-{date}/delegation/packets",
+    "behavior_base": "core/contract-behavior.md",
+    "behavior_root": "core/behavior",
+    "behavior_intake": "core/behavior/intake.md",
+    "behavior_backbone": "core/behavior/backbone.md",
+    "behavior_impact": "core/behavior/impact.md",
+    "behavior_module_authoring": "core/behavior/module-authoring.md",
+    "behavior_srs": "core/behavior/srs.md",
+    "behavior_wireframes": "core/behavior/wireframes.md",
+    "behavior_package_status_next": "core/behavior/package-status-next.md"
   },
   "artifact_profiles": {
     "source_manifest": "machine_facing",
@@ -178,6 +187,19 @@
       "requires": [],
       "outputs": []
     }
+  },
+  "behavior_shards": {
+    "intake": ["behavior_intake"],
+    "options": ["behavior_backbone"],
+    "backbone": ["behavior_backbone"],
+    "impact": ["behavior_impact"],
+    "frd": ["behavior_module_authoring"],
+    "stories": ["behavior_module_authoring"],
+    "srs": ["behavior_srs"],
+    "wireframes": ["behavior_wireframes"],
+    "package": ["behavior_package_status_next"],
+    "status": ["behavior_package_status_next"],
+    "next": ["behavior_package_status_next"]
   },
   "source_of_truth_order": ["backbone", "intake"],
   "next_step_order": ["intake", "options", "backbone", "frd", "stories", "srs", "wireframes", "package", "status"],

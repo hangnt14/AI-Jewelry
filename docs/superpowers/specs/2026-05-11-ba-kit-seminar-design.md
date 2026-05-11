@@ -23,13 +23,14 @@ Primary audience:
 Primary conversion goal:
 
 - build credibility first
-- soft-sell an IT BA course using AI as the logical next step
+- upsell `KHÓA HỌC BA AI WITH ANTIGRAVITY GOOGLE (BAAG)` as the logical next step
+- position the course around doubling BA productivity by using AI Agents to reduce repetitive BA work
 
 The audience should leave believing:
 
 - the speaker understands real BA work
 - AI can support BA work only when the process is structured
-- the course teaches the method behind the outputs, not just tool usage
+- BAAG teaches the method and hands-on AI Agent workflow behind the outputs, not just tool usage
 
 ## 3. Recommended Positioning
 
@@ -48,6 +49,12 @@ Position BA-kit as:
 - a BA workstation
 - a structured lifecycle from intake to handoff
 - a way to make BA work more consistent, traceable, and stakeholder-ready
+
+Brand frame:
+
+- The deck must use the AG Academy brand kit from `C:\Users\DPC\Downloads\AG_Academy_Brand_Kit\AG_Academy_Brand_Kit`.
+- Treat AG Academy as the course brand and BA-kit as the method/evidence inside the seminar.
+- Use the AG Academy slogan where useful: `Nâng tầm năng suất. Tận hưởng cuộc sống.`
 
 Do not position BA-kit as:
 
@@ -69,7 +76,7 @@ Recommended time split:
 4. How BA-kit operationalizes that workflow - 10 minutes
 5. Mini proof walkthrough using real outputs - 10 to 15 minutes
 6. What BA capability still matters in the AI era - 10 minutes
-7. Course close and CTA - 5 minutes
+7. BAAG course close and CTA - 5 to 7 minutes
 
 This structure teaches first, proves second, sells last.
 
@@ -110,7 +117,7 @@ Allowed English terms only where they are already standard or hard to replace cl
 - `backbone.md`
 - `SRS`
 
-Recommended 12-slide deck with detailed direction:
+Recommended 13-slide deck with detailed direction:
 
 ### Slide 1 - `BA trong thời đại AI: Từ yêu cầu thô đến tài liệu bàn giao có thể sử dụng`
 
@@ -130,6 +137,8 @@ Suggested visual:
 
 - clean hero visual showing a flow from `yêu cầu thô` to `tài liệu bàn giao`
 - either a simple horizontal process diagram or a polished document transformation visual
+- include AG Academy logo as a restrained title-slide brand mark:
+- use `logos/01_logo_full_color.png` on a light title slide, or `logos/02_logo_white_on_dark.png` on a dark title slide
 
 Speaker notes:
 
@@ -425,39 +434,107 @@ Speaker notes:
 - keep the tone educational, not threatening
 - emphasize augmentation and professional maturity
 
-### Slide 12 - `Lộ trình tiếp theo nếu anh/chị muốn học bài bản`
+### Slide 12 - `Khóa học BA AI with Antigravity Google: Gấp đôi năng suất BA`
 
 Main purpose:
 
-- close with a soft but direct invitation
+- introduce the course offer as the direct answer to the pain points from the seminar
+- make the productivity promise concrete without sounding like a generic AI hype pitch
 
 On-slide content:
 
-- 3 course promise lines:
-- `Hiểu cách tư duy như một IT BA thực thụ`
-- `Biết cách chuyển đầu vào mơ hồ thành bộ tài liệu rõ ràng`
-- `Biết cách dùng AI để tăng tốc mà vẫn giữ chất lượng`
+- course name:
+- `KHÓA HỌC BA AI WITH ANTIGRAVITY GOOGLE`
+
+- headline promise:
+- `Gấp đôi năng suất BA, giảm mạnh công việc lặp lại`
+
+- pain hook:
+- `Bạn vẫn đang mất 2–3 ngày để viết SRS, hàng giờ để vẽ ERD, viết test case thủ công?`
+
+- pivot line:
+- `Đã đến lúc làm BA theo cách của AI Agent.`
+
+- 3 proof-oriented outcomes:
+- `Viết SRS từ brief thô trong 45 phút thay vì 3 ngày`
+- `Generate ERD + API Spec chỉ với 1 prompt`
+- `Tạo 50+ test cases từ SRS trong 5 phút`
+
+Suggested visual:
+
+- strong course offer slide with one large promise, one pain statement, and three result chips
+- optional Antigravity Google / AI Agent visual cue
+- use AG Academy brand colors: AG Purple `#7c3aed`, AG Cyan `#06b6d4`, Dark Navy `#1a1a2e`
+- use `logos/02_logo_white_on_dark.png` if the slide uses a dark navy background
+- avoid cramming every artifact name here; reserve detailed artifact list for Slide 13
+
+Speaker notes:
+
+- acknowledge the audience's current manual workload directly
+- make the promise specific: faster SRS, faster ERD/API Spec, faster test cases
+- emphasize that speed comes from structured BA thinking plus AI Agent workflow
+- avoid promising that AI replaces BA judgment
+
+### Slide 13 - `Sau khóa học BAAG, anh/chị có thể tạo bộ tài liệu BA hoàn chỉnh`
+
+Main purpose:
+
+- close with a concrete outcome list and direct CTA
+- show that BAAG is a hands-on course where learners build a real product/tool, not a theory-only class
+
+On-slide content:
+
+- intro line:
+- `Khóa học BA ứng dụng AI (BAAG) giúp anh/chị làm được việc thật ngay tại lớp`
+
+- build promise:
+- `Build 1 sản phẩm/tool thực tế ngay tại lớp – không cần code`
+
+- outcome block:
+- `Phân tích ghi âm cuộc họp thành tài liệu hoàn chỉnh`
+- `Tự động tạo BRD, SRS, ERD, API Spec và Test Cases`
+
+- artifact checklist:
+- `BRD — Business Requirements`
+- `SRS — Software Requirements Specification`
+- `ERD — Entity Relationship Diagram`
+- `API Spec`
+- `Test Cases`
 
 - CTA:
-- `Nếu anh/chị muốn học phương pháp phía sau các đầu ra vừa xem, đó chính là nội dung của khóa học`
+- `Nếu anh/chị muốn học phương pháp phía sau các đầu ra vừa xem, BAAG là lộ trình thực hành để bắt đầu`
 
 - optional footer:
 - registration channel, QR code, or contact point
 
 Suggested visual:
 
-- clean closing slide
-- optional QR code
-- optional course structure preview card
+- outcome checklist arranged as a document pipeline from meeting recording to BA handoff pack
+- one QR/contact block on the right or bottom
+- use `logos/04_logo_horizontal.png` in the footer or CTA area if the layout is wide
+- use `logos/03_logo_icon_only.png` as a subtle watermark only if opacity stays low and text contrast remains high
+- use checkmarks sparingly; do not make the slide look like a sales flyer
 
 Speaker notes:
 
-- keep this short, calm, and credible
-- do not hard-sell
-- link the invitation back to the actual pain points from slide 2
-- close by offering the course as the structured path to learn the method, not just the tool
+- connect back to the three BA-kit evidence artifacts shown earlier
+- explain that the course teaches repeatable workflow: meeting/brief input -> analysis -> artifact generation -> review
+- close with a clear next action: scan QR, leave contact, or register
+- keep the pitch direct but grounded in the work products the audience already understands
 
 ## 7. Visual Design Guidance For The Deck
+
+Brand kit source:
+
+- `C:\Users\DPC\Downloads\AG_Academy_Brand_Kit\AG_Academy_Brand_Kit`
+- guideline file: `brand_guidelines.md`
+- logo files:
+- `logos/01_logo_full_color.png` for light slides
+- `logos/02_logo_white_on_dark.png` for dark slides
+- `logos/03_logo_icon_only.png` for favicon/avatar/watermark only
+- `logos/04_logo_horizontal.png` for header/footer/CTA strips
+- `logos/05_logo_monochrome.png` only for print-style or monochrome treatment
+- mockup reference: `mockups/mockup_overview.png`
 
 Overall style:
 
@@ -465,30 +542,47 @@ Overall style:
 - business-facing
 - clean and structured
 - closer to consulting presentation than startup product pitch
+- still visibly AG Academy, not a generic consulting deck
 
 Typography direction:
 
-- use a clear Vietnamese-friendly font
+- use Inter according to the AG Academy guideline
+- Heading: Inter 700-800
+- Body: Inter 400
+- Slogan or soft supporting line: Inter 300-400 italic when needed
 - avoid playful or overly decorative type
 - keep hierarchy obvious between title, key point, and evidence
 
 Color direction:
 
-- use restrained corporate tones such as dark blue, slate, muted teal, or neutral gray
-- use one accent color for emphasis only
-- avoid overly bright demo-style gradients
+- primary palette must follow AG Academy:
+- AG Purple `#7c3aed`
+- AG Cyan `#06b6d4`
+- Dark Navy `#1a1a2e`
+- Light Gray `#f5f5f8`
+- Muted `#8888a0`
+- White `#ffffff`
+- use the AG gradient only for controlled emphasis: `linear-gradient(135deg, #7c3aed, #06b6d4)`
+- avoid making every slide a purple/cyan gradient; use dark navy, light gray, and white to keep the seminar credible
 
 Image rules:
 
 - use screenshots of real BA-kit outputs when possible
 - crop tightly and annotate intentionally
 - every screenshot must support one message only
+- logo usage must follow AG Academy rules:
+- preserve aspect ratio
+- do not recolor, rotate, distort, add glow, shadow, or outline to the logo
+- keep clear space around the logo
+- do not place logo directly on a complex image; add a clean overlay or use a solid header/footer area
 
 Layout rules:
 
 - avoid text-heavy slides
 - one core idea per slide
 - when a screenshot appears, reduce text and let annotations carry the explanation
+- keep AG Academy logo at a consistent size and position across repeated slide types
+- title slide and final CTA slides can be more brand-forward; method/evidence slides should use lighter branding so the content stays credible
 
 ## 8. Speaker Guidance
 
@@ -520,15 +614,31 @@ The seminar proves:
 - how AI can accelerate it responsibly
 - why prompting alone is insufficient
 
-The course should then promise:
+The course to upsell is:
 
-- how to think like an IT BA
-- how to turn messy requirements into structured artifacts
-- how to use AI tools without losing rigor
+- `KHÓA HỌC BA AI WITH ANTIGRAVITY GOOGLE`
+- short name: `BAAG`
+- positioning line: `Gấp đôi năng suất BA, hỗ trợ công việc lặp lại`
+
+The course should then promise practical outcomes:
+
+- write SRS from a rough brief in about 45 minutes instead of 2-3 days
+- generate ERD and API Spec from a structured prompt/workflow
+- create 50+ test cases from an SRS in minutes
+- build one real product/tool in class without needing to code
+- analyze meeting recordings into a complete BA documentation pack
+- automatically produce BRD, SRS, ERD, API Spec, and Test Cases
 
 The CTA should be soft:
 
-- "If you want to learn the method behind these outputs, that is what the course covers."
+- "If you want to learn the method behind these outputs, BAAG is the hands-on path to practice it."
+
+Messaging guardrails:
+
+- do not pitch BAAG as "one prompt replaces BA work"
+- do not overpromise perfect documents without BA review
+- frame Antigravity Google as the AI Agent workspace that helps BA execute repeated work faster
+- keep the claim tied to structured inputs, BA review, and repeatable workflow
 
 ## 10. Constraints And Risks
 
@@ -548,7 +658,7 @@ Mitigation:
 
 - show only 3 concrete BA-kit outputs
 - keep the workflow visual simple
-- reserve the last 5 minutes for the course pitch
+- reserve the last 5 to 7 minutes for the BAAG course pitch
 
 ## 11. Success Criteria
 

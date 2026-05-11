@@ -1,5 +1,11 @@
 {
   "srs-template.md": {
+    "routing": {
+      "artifact": "srs",
+      "group_path_key": "srs_group",
+      "selector": "group",
+      "load_policy": "load requested group headings for grouped generation; load the full template only for final assembly"
+    },
     "groups": {
       "A": {
         "headings": [

@@ -4,131 +4,71 @@ This step requires:
 
 - `core/contract.yaml`
 - `core/contract-behavior.md`
-
-## Memory Read Scope
-
-- **Must read:** `core/contract.yaml`, `core/contract-behavior.md`, `paths.wireframe_input` (or fallback sources)
-- **May read:** `paths.project_memory` or `paths.memory_hot_decisions` when shard mode active, `paths.design_doc`, module `warm/` shard for navigation/decisions
-- **Must NOT read:** `log.md`, `cold/`, other module shards
-
-## Governance Gate
-
-Before mutating this artifact:
-1. **Skip this gate for first-pass creation** (when `paths.wireframe_map` does not yet exist).
-2. For reruns (artifact already exists): verify write authority and confirm an approved impact run (skip only for `wording-only` changes).
-3. If either check fails on a rerun: emit `GOVERNANCE_BLOCK: {reason}` and stop.
-4. After mutation completes: offer to file the change into canonical memory using `templates/project-memory-fileback-record-template.md`.
+- `core/behavior/wireframes.md`
 
 ## Scope
 
-Run Step 9 only. This path is read-only on upstream BA artifacts and may regenerate only the runtime `DESIGN.md`, the wireframe constraint pack, the wireframe handoff checklist, and the wireframe state marker.
+Run Step 9 only. This path is read-only on upstream BA artifacts and may regenerate only the runtime `DESIGN.md`, wireframe constraint pack, wireframe handoff checklist, and wireframe state marker.
 
 ## Prerequisites
 
 - Resolve slug, date, and module using the shared contract.
-- If `paths.wireframe_input` is missing and fallback source 2 or 3 is needed, require the exact `paths.backbone` so the portal snapshot can be rebuilt without guessing.
 - Resolve the wireframe source in this order:
   1. `paths.wireframe_input`
   2. exact pair of `paths.srs_group` with `group=b` and `group=c`
   3. `paths.srs` only when Use Case Specifications, Screen Contract Plus, and Screen Inventory are already assembled there
-- If source 2 or 3 is used, build or refresh `paths.wireframe_input` before preparing the manual wireframe handoff.
+- If source 2 or 3 is used, require exact `paths.backbone`, rebuild `paths.wireframe_input`, and save it before continuing.
 - If none of the sources exist, print all expected paths and stop.
 
 ## Outputs
 
 - `paths.design_doc`
+- `paths.wireframe_input`
 - `paths.wireframe_map`
 - `paths.wireframe_state`
 
-## Step 9.1 - Resolve wireframe input pack
+## Step 9.1 - Resolve Wireframe Input Pack
 
-Use `paths.wireframe_input` as the primary wireframe constraint source.
+Use `paths.wireframe_input` as the primary constraint source.
 
-If the pack is missing but fallback sources exist:
-
-- assemble the pack first from exact use case excerpts, Screen Contract Plus, Screen Inventory, and the exact portal snapshot from `paths.backbone`
-- save it before continuing
+If the pack is missing but fallback sources exist, assemble it from exact use case excerpts, Screen Contract Plus, Screen Inventory, and the exact portal snapshot from `paths.backbone`.
 
 Parse the input pack to build the handoff plan:
 
-- group related screens by flow, module, or journey so the user can design them coherently
+- group related screens by flow, module, or journey
 - treat modal, dialog, and drawer overlays with flow impact as primary screens
-- derive required supporting frames from documented states, validation rules, list behavior, and feedback surfaces
-- verify each screen group has a portal snapshot, menu schema snapshot, and active-menu expectations before planning the artifact
-- run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {paths.srs_group group=c}` when Group C is available; stop on any navigation mismatch before producing the handoff map
+- derive supporting frames from documented states, validation rules, list behavior, and feedback surfaces
+- verify each group has portal, navigation schema, and active-menu evidence before planning
+- run the navigation validator described in `core/behavior/srs.md` when Group C is available
 - carry forward the runtime design target `paths.design_doc`
 
-## Step 9.2 - Ask for or refresh runtime DESIGN.md
+## Step 9.2 - Ask For Or Refresh Runtime DESIGN.md
 
-Before the manual wireframe handoff is finalized:
+Apply the design document handling rules in `core/behavior/wireframes.md`.
 
-- check whether `paths.design_doc` already exists
-- if it exists, ask whether to reuse it or refresh it from new decisions
-- if it does not exist, ask the user to make the design decisions needed to create it
+Minimum decision set: reference direction, visual tone, color, typography, component feel, layout priority, portal navigation schema, active-menu rule, breadcrumb/back behavior, hidden navigation exceptions, hard constraints, and anti-patterns.
 
-Minimum decision set:
+Stop if the user declines to approve a design direction.
 
-- reference direction or inspiration source
-- visual tone
-- color direction
-- typography direction
-- component feel
-- layout/responsive priority
-- portal navigation schema
-- active/selected menu rule
-- breadcrumb / back behavior
-- hidden/contextual navigation exceptions
-- explicit anti-patterns
+## Step 9.3 - Wireframe Handoff Preference
 
-After the user answers:
+If Step 9 runs as part of the lifecycle or SRS pipeline and the user did not explicitly ask to skip or choose screens:
 
-- persist or refresh `paths.design_doc`
-- stop if the user declines to approve a design direction
+- `lite`: skip unless a screen is explicitly critical.
+- `hybrid`: prepare critical-screen constraints automatically.
+- `formal`: prepare the full approved screen set.
 
-## Step 9.3 - Wireframe handoff preference
+Persist `paths.wireframe_state` with `State: skipped`, `not-applicable`, `missing`, or `completed` according to `core/behavior/wireframes.md`.
 
-If Step 9 runs as part of the full lifecycle or SRS pipeline and the user did not explicitly ask to skip or manually choose screens, default to:
-
-- `lite`: skip unless a screen is explicitly marked critical
-- `hybrid`: prepare critical-screen wireframe constraints automatically
-- `formal`: prepare the full approved screen set automatically
-
-If the user skips:
-
-- persist `paths.wireframe_state` with `State: skipped`
-- stop without changing upstream artifacts
-
-If the scope has no UI-backed screens:
-
-- persist the marker with `State: not-applicable`
-- stop
-
-If wireframe handoff is expected but the pack cannot be completed:
-
-- persist the marker with `State: missing`
-- stop and report the failure
-
-## Step 9.4 - Build manual wireframe handoff pack and checklist
+## Step 9.4 - Build Manual Wireframe Handoff Pack And Checklist
 
 For each approved screen group:
 
-1. Read the linked use case excerpts, Screen Contract Plus entries, portal snapshots, and Screen Inventory rows from the wireframe input pack.
+1. Read linked use case excerpts, Screen Contract Plus entries, portal snapshots, and Screen Inventory rows from the input pack.
 2. Read `paths.design_doc`.
-3. Verify that the intended manual wireframe constraints match the same portal ownership, menu schema, active/highlight behavior, actions, flow steps, required states, and approved design decisions.
-4. Stop if the screen group lacks either a portal snapshot or an approved navigation schema in `DESIGN.md`; do not infer missing menu structure.
-5. Validate the source Screen Contract Plus against `DESIGN.md` with `scripts/validate-navigation-consistency.py`; do not continue when `Expected Active Menu Item` is not an approved menu item/path.
-6. Expand or refresh `paths.wireframe_input` so it contains the full constraint set the user needs to design manually or with an external tool, including menu matching checklist, active-state evidence requirements, and navigation exceptions.
-7. Persist `paths.wireframe_map` as a manual handoff checklist:
-   - which primary screens must be drawn
-   - which supporting states must exist
-   - which portal and navigation schema each screen must follow
-   - which screens must show active-menu evidence and which screens are allowed to hide global navigation with an explicit reason
-   - where the user should attach or reference the result in the final document
-   - any non-negotiable labels, actions, validation cues, and navigation regions that must remain visible in the mockup
-8. State explicitly in both artifacts that BA-kit does not generate the wireframe itself in this flow. The user is expected to design it manually and manually insert the final mockup reference into the final document.
+3. Verify constraints against portal ownership, menu schema, active/highlight behavior, actions, flow steps, states, and approved design decisions.
+4. Stop if the group lacks a portal snapshot or approved navigation schema.
+5. Expand or refresh `paths.wireframe_input` with the full manual-design constraint set.
+6. Persist `paths.wireframe_map` as a manual handoff checklist covering screens, supporting states, portal/schema, active-menu evidence, allowed hidden-nav cases, attachment location, labels, actions, validation cues, and navigation regions.
 
-After the handoff pack is complete:
-
-- persist `paths.wireframe_map`
-- persist `paths.wireframe_state` with `State: completed`
-- treat generated index/state/memory artifacts as `agent_facing` or `machine_facing`; keep them compact and do not duplicate source-of-truth requirement text
+State in both artifacts that BA-kit does not generate the wireframe itself in this flow; the user designs it manually and inserts the final mockup reference into the final document.
