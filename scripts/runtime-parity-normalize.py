@@ -114,6 +114,16 @@ Return only one JSON object. Do not wrap it in markdown. Do not include commenta
 All values must be strings. Include exactly these keys:
 {keys}
 
+Rules:
+- Use the exact BA-kit command surface string, including the `ba-start` prefix when applicable.
+- Use exact canonical enums from the golden contract:
+  - `NONE` for no write target or no fallback code
+  - `NOT_REQUIRED` for approval gates that do not block
+  - activation levels in uppercase such as `COMPACT`, `BASE`, `MODULAR`, `PROGRAM`
+- Compact-mode normalization:
+  - if the fixture shows only a flat `project-memory.md` and no shard tree, emit `activation_level=COMPACT`, `fallback_code=NONE`, and use that file as both `source_of_truth_artifact` and `read_scope`
+  - emit `COMPACT_FALLBACK` only for degraded compact fallback cases where no valid flat `project-memory.md` exists
+
 Derive the normalized behavior envelope from this fixture input. Do not use the fixture's Expected Outcome section.
 
 {runtime_input}
@@ -149,6 +159,14 @@ Use exactly this section/key shape:
 
 Rules:
 - All leaf values must be strings.
+- Use the exact BA-kit command surface string, including the `ba-start` prefix when applicable.
+- Use exact canonical enums from the golden contract:
+  - `NONE` for no write target or no fallback code
+  - `NOT_REQUIRED` for approval gates that do not block
+  - activation levels in uppercase such as `COMPACT`, `BASE`, `MODULAR`, `PROGRAM`
+- Compact-mode normalization:
+  - if the fixture shows only a flat `project-memory.md` and no shard tree, emit `activation_level=COMPACT`, `fallback_code=NONE`, and use that file as both `source_of_truth_artifact` and `read_scope`
+  - emit `COMPACT_FALLBACK` only for degraded compact fallback cases where no valid flat `project-memory.md` exists
 - For read lists, return comma-separated repo-relative paths in runtime order.
 - For `violations` or `warnings`, return compact strings such as `type@path` separated by `; `.
 

@@ -19,10 +19,8 @@ from reverse_guardrail_common import (
     check_pass,
     detect_live_probes,
     emit_result,
-    load_contract,
-    load_json,
     ok,
-    render_path,
+    with_block_code,
 )
 
 SECTION_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
@@ -35,6 +33,11 @@ def parse_index_file_list(index_text: str) -> list[str]:
         m = re.match(r"^[-*]\s+`?([^\s`]+\.[a-zA-Z0-9]+)`?\s*", line)
         if m:
             files.append(m.group(1))
+            continue
+        if line.startswith("|"):
+            cells = [c.strip().strip("`") for c in line.strip("|").split("|")]
+            if len(cells) >= 2 and "/" in cells[1] and "." in cells[1]:
+                files.append(cells[1])
     return files
 
 
@@ -92,7 +95,7 @@ def main() -> int:
     # Check 1: index exists
     if not index_path.exists():
         checks.append(check_fail("index_exists", str(index_path)))
-        result = block(checks, f"reverse index not found: {index_path}")
+        result = with_block_code(block(checks, f"reverse index not found: {index_path}"), "reverse_index_missing")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("index_exists", str(index_path)))
@@ -102,7 +105,7 @@ def main() -> int:
 
     if not indexed_files:
         checks.append(check_fail("index_has_files", "no files listed in index"))
-        result = block(checks, "reverse index contains no file entries")
+        result = with_block_code(block(checks, "reverse index contains no file entries"), "reverse_index_invalid")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("index_has_files", f"{len(indexed_files)} files in index"))
@@ -110,7 +113,7 @@ def main() -> int:
     # Check 2: focus areas provided
     if not focus_areas:
         checks.append(check_fail("focus_areas_provided", "empty"))
-        result = block(checks, "no focus areas specified")
+        result = with_block_code(block(checks, "no focus areas specified"), "focus_selection_required")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("focus_areas_provided", ", ".join(focus_areas)))
@@ -159,14 +162,14 @@ def main() -> int:
             "source_only_enforcement",
             f"{len(live_probe_violations)} file(s) contain live-probe patterns",
         ))
-        result = block(
+        result = with_block_code(block(
             checks,
             "READ_ESCALATION: reverse-build-excerpts detected live-probe patterns in source files. "
             "v1 reverse mode is source-only. Remove or isolate runtime calls before proceeding.",
             live_probe_violations=live_probe_violations,
             excerpts_built=len(excerpts_built),
             focus_areas=focus_areas,
-        )
+        ), "reverse_source_only_violation")
         emit_result(result, stderr_summary=result["message"])
         return 1
 

@@ -16,10 +16,11 @@ from reverse_guardrail_common import (
     git_commit_exists,
     git_file_hash_at_commit,
     load_json,
+    normalize_baseline_lock,
     ok,
     sha256_file,
     validate_baseline_lock,
-    warn,
+    with_block_code,
 )
 
 
@@ -36,30 +37,36 @@ def main() -> int:
     # Check 1: lock file exists
     if not lock_path.exists():
         checks.append(check_fail("baseline_lock_exists", str(lock_path)))
-        result = block(checks, f"baseline lock not found: {lock_path}", status="missing", documented_commit="")
+        result = with_block_code(
+            block(checks, f"baseline lock not found: {lock_path}", status="missing", documented_commit=""),
+            "baseline_lock_missing",
+        )
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("baseline_lock_exists", str(lock_path)))
 
     # Parse and validate lock
     try:
-        lock_data = load_json(lock_path)
+        lock_data = normalize_baseline_lock(load_json(lock_path))
     except Exception as exc:
         checks.append(check_fail("baseline_lock_parseable", str(exc)))
-        result = block(checks, f"baseline lock JSON parse error: {exc}", status="missing", documented_commit="")
+        result = with_block_code(
+            block(checks, f"baseline lock JSON parse error: {exc}", status="missing", documented_commit=""),
+            "baseline_lock_invalid",
+        )
         emit_result(result, stderr_summary=result["message"])
         return 1
 
     errors = validate_baseline_lock(lock_data)
     if errors:
         checks.append(check_fail("baseline_lock_valid", "; ".join(errors)))
-        result = block(
+        result = with_block_code(block(
             checks,
             f"baseline lock invalid: {'; '.join(errors)}",
             status="missing",
             documented_commit=lock_data.get("documented_commit", ""),
             validation_errors=errors,
-        )
+        ), "baseline_lock_invalid")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("baseline_lock_valid", "required fields present"))
@@ -69,13 +76,13 @@ def main() -> int:
     # Check 2: documented_commit exists in git history
     if not git_commit_exists(repo, documented_commit):
         checks.append(check_fail("commit_in_history", f"commit not found: {documented_commit}"))
-        result = block(
+        result = with_block_code(block(
             checks,
             f"documented_commit {documented_commit} no longer exists in git history. Baseline is stale.",
             status="stale",
             documented_commit=documented_commit,
             drifted_files=[],
-        )
+        ), "reverse_drift_detected")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("commit_in_history", documented_commit))
@@ -121,14 +128,14 @@ def main() -> int:
             "locked_files_drift",
             f"{len(drifted_files)} file(s) drifted since baseline commit",
         ))
-        result = block(
+        result = with_block_code(block(
             checks,
             f"baseline drift detected: {len(drifted_files)} file(s) changed since {documented_commit}. "
             "Re-run baseline scan to refresh.",
             status="stale",
             documented_commit=documented_commit,
             drifted_files=drifted_files,
-        )
+        ), "reverse_drift_detected")
         emit_result(result, stderr_summary=result["message"])
         return 1
 

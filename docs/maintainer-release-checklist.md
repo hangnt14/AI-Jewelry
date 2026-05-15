@@ -18,7 +18,7 @@ Use this checklist before marking adaptive runtime memory work as release-ready.
 | Guardrail hardening smoke | PASS | `bash scripts/test-guardrail-hardening.sh` |
 | Activation threshold validation | PASS | `bash scripts/test-activation-thresholds.sh` |
 | Runtime install smoke | PASS | `bash scripts/test-runtime-install-smoke.sh` |
-| Reverse script syntax/smoke | PASS | `bash scripts/test-reverse-commands.sh` |
+| Reverse script syntax/smoke | PASS | `bash scripts/test-reverse-guardrails.sh` |
 | Reverse index validation smoke | PASS | `bash scripts/test-index-quality.sh` with reverse fixtures |
 
 ## Parity Harness

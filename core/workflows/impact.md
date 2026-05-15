@@ -66,6 +66,8 @@ Reverse lane classification (apply when `reverse_baseline_lock` exists):
 - `as_built_drift` → next command: `ba-start reverse promote --slug <slug> --evidence-ids <ids>`
 - `future_state_request` → next command: forward lifecycle (backbone / stories / srs as appropriate)
 - `mixed_change` → must be split first: `ba-start reverse impact --slug <slug> --evidence-ids <ids>`
+- If a reverse guardrail is the blocker, print its exact code before any rerun command:
+  `FOCUS_SELECTION_REQUIRED`, `REVERSE_REFRESH_REQUIRED`, `REVERSE_TRACE_COVERAGE_REQUIRED`, or `REVERSE_READ_SCOPE_ESCALATION`.
 - Never recommend a single rerun path that merges as-built and future-state changes.
 - Do not mutate canonical artifacts (backbone, SRS, FRD) during classification.
 

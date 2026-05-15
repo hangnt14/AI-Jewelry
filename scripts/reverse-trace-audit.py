@@ -16,6 +16,7 @@ from reverse_guardrail_common import (
     ok,
     parse_evidence_ledger,
     REQUIRED_TRACE_FIELDS,
+    with_block_code,
 )
 
 
@@ -31,7 +32,7 @@ def main() -> int:
     # Check 1: ledger exists
     if not ledger_path.exists():
         checks.append(check_fail("ledger_exists", str(ledger_path)))
-        result = block(checks, f"evidence ledger not found: {ledger_path}")
+        result = with_block_code(block(checks, f"evidence ledger not found: {ledger_path}"), "reverse_trace_ledger_invalid")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("ledger_exists", str(ledger_path)))
@@ -43,7 +44,7 @@ def main() -> int:
     # Check 2: ledger has records
     if not records:
         checks.append(check_fail("ledger_has_records", "no trace records found"))
-        result = block(checks, "evidence ledger contains no trace records")
+        result = with_block_code(block(checks, "evidence ledger contains no trace records"), "reverse_trace_ledger_invalid")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("ledger_has_records", f"{len(records)} records"))
@@ -72,11 +73,11 @@ def main() -> int:
 
     if missing_artifacts:
         checks.append(check_fail("promoted_artifacts_exist", f"missing: {missing_artifacts}"))
-        result = block(
+        result = with_block_code(block(
             checks,
             f"{len(missing_artifacts)} promoted artifact(s) not found on disk",
             missing_artifacts=missing_artifacts,
-        )
+        ), "reverse_trace_ledger_invalid")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("promoted_artifacts_exist", f"{len(args.promoted_artifacts)} artifact(s) readable"))
@@ -92,7 +93,7 @@ def main() -> int:
             "trace_coverage",
             f"{len(missing_traces)} trace ID(s) in artifacts not found in ledger",
         ))
-        result = block(
+        result = with_block_code(block(
             checks,
             f"trace coverage incomplete: {coverage_pct}% ({covered}/{total}). "
             f"Missing traces must be added to evidence ledger before promotion.",
@@ -102,7 +103,22 @@ def main() -> int:
             total=total,
             missing_traces=missing_traces,
             incomplete_records=incomplete_records,
-        )
+        ), "reverse_trace_incomplete")
+        emit_result(result, stderr_summary=result["message"])
+        return 1
+
+    if incomplete_records:
+        result = with_block_code(block(
+            checks,
+            f"evidence ledger has {len(incomplete_records)} incomplete record(s). "
+            "Complete all required trace fields before promotion.",
+            status="incomplete",
+            coverage=f"{coverage_pct}%",
+            covered=covered,
+            total=total,
+            missing_traces=[],
+            incomplete_records=incomplete_records,
+        ), "reverse_trace_ledger_invalid")
         emit_result(result, stderr_summary=result["message"])
         return 1
 
@@ -119,8 +135,7 @@ def main() -> int:
         incomplete_records=incomplete_records,
     )
     emit_result(result, stderr_summary=result["message"])
-    # Exit 1 if any records were incomplete even though coverage passed
-    return 1 if incomplete_records else 0
+    return 0
 
 
 if __name__ == "__main__":

@@ -33,6 +33,7 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the gr
 - Require `paths.backbone`, `paths.stories`, `paths.backbone_index`, and `paths.stories_index`.
 - If a required artifact is missing, print the exact missing path, tell the user which subcommand to run first, and stop.
 - Run preflight from indexes first; read only targeted backbone/story sections, optional module FRD, and `paths.plan` when it exists.
+- In reverse mode, gate on a valid reverse baseline, current drift state, and traceable reverse evidence; do not require `paths.design_doc` or wireframe artifacts.
 
 ## Outputs
 
@@ -50,8 +51,8 @@ When `paths.srs_index` is written or refreshed, keep `stale_status: unknown`, le
 
 ```text
 Step 8   -> srs-core.md
-Step 8.2 -> srs-wireframes.md before Group C when UI-backed screens need DESIGN.md
-Step 9   -> srs-wireframes.md
+Step 8.2 -> srs-wireframes.md only for forward DESIGN.md gating
+Step 9   -> srs-wireframes.md in forward mode only
 Step 10  -> srs-wireframes.md
 Step 10.1 + 11 -> srs-assembly.md
 ```

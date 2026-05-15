@@ -57,6 +57,9 @@ Documented commit: {hash} ({scan_timestamp})
 
 Next recommended action:
 {derived from evidence state — see rules below}
+
+Guardrail code:
+{FOCUS_SELECTION_REQUIRED | REVERSE_REFRESH_REQUIRED | REVERSE_TRACE_COVERAGE_REQUIRED | REVERSE_READ_SCOPE_ESCALATION | none}
 ```
 
 ## Status Rules
@@ -67,4 +70,5 @@ Next recommended action:
 - If evidence ledger has `as_built_drift` entries not yet promoted: recommend `/ba-start reverse promote`.
 - If evidence ledger has `future_state_request` entries: recommend forward lifecycle commands.
 - If all entries are promoted and no unclassified remain: print "Reverse lane complete. Consider running `/ba-start backbone` to continue forward lifecycle."
+- If focus selection is missing, stale drift is detected, trace coverage is incomplete, or read scope escalated, print the matching reverse guardrail code explicitly.
 - Do not read artifact content beyond header fields and counts to produce this output.

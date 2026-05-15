@@ -16,7 +16,7 @@ from reverse_guardrail_common import (
     check_pass,
     emit_result,
     ok,
-    warn,
+    with_block_code,
 )
 
 # NDJSON record fields expected in the read manifest
@@ -79,7 +79,7 @@ def main() -> int:
     # Check 1: manifest exists
     if not manifest_path.exists():
         checks.append(check_fail("manifest_exists", str(manifest_path)))
-        result = block(checks, f"read manifest not found: {manifest_path}")
+        result = with_block_code(block(checks, f"read manifest not found: {manifest_path}"), "reverse_manifest_invalid")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("manifest_exists", str(manifest_path)))
@@ -89,7 +89,7 @@ def main() -> int:
         records = load_ndjson(manifest_path)
     except ValueError as exc:
         checks.append(check_fail("manifest_parseable", str(exc)))
-        result = block(checks, f"read manifest parse error: {exc}")
+        result = with_block_code(block(checks, f"read manifest parse error: {exc}"), "reverse_manifest_invalid")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("manifest_parseable", f"{len(records)} records"))
@@ -111,14 +111,14 @@ def main() -> int:
         allowlist_path = Path(args.allowlist).resolve()
         if not allowlist_path.exists():
             checks.append(check_fail("allowlist_exists", str(allowlist_path)))
-            result = block(checks, f"allowlist file not found: {allowlist_path}")
+            result = with_block_code(block(checks, f"allowlist file not found: {allowlist_path}"), "reverse_allowlist_invalid")
             emit_result(result, stderr_summary=result["message"])
             return 1
         try:
             allowlist = load_allowlist(allowlist_path)
         except Exception as exc:
             checks.append(check_fail("allowlist_parseable", str(exc)))
-            result = block(checks, f"allowlist parse error: {exc}")
+            result = with_block_code(block(checks, f"allowlist parse error: {exc}"), "reverse_allowlist_invalid")
             emit_result(result, stderr_summary=result["message"])
             return 1
         checks.append(check_pass("allowlist_loaded", f"{len(allowlist)} entries"))
@@ -162,6 +162,7 @@ def main() -> int:
         result = {
             "status": "escalation",
             "checks": checks,
+            "block_code": "REVERSE_READ_SCOPE_ESCALATION",
             "message": (
                 f"READ_ESCALATION: {len(out_of_scope)} read(s) outside allowlisted scope. "
                 "Review and add to allowlist or restrict read scope."

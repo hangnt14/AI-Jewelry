@@ -18,6 +18,25 @@ TRACE_ID_RE = re.compile(r"\bREV-[A-Za-z0-9]+-\d+\b")
 
 REQUIRED_TRACE_FIELDS = {"trace_id", "source_file", "claim_summary", "recorded_at"}
 
+REVERSE_BLOCK_CODES = {
+    "reverse_contract_invalid": "REVERSE_CONTRACT_INVALID",
+    "reverse_root_missing": "REVERSE_BASELINE_REQUIRED",
+    "baseline_lock_missing": "REVERSE_BASELINE_REQUIRED",
+    "baseline_lock_invalid": "REVERSE_BASELINE_INVALID",
+    "focus_selection_required": "FOCUS_SELECTION_REQUIRED",
+    "reverse_index_missing": "REVERSE_INDEX_MISSING",
+    "reverse_index_invalid": "REVERSE_INDEX_INVALID",
+    "reverse_index_stale": "REVERSE_REFRESH_REQUIRED",
+    "reverse_index_file_missing": "REVERSE_REFRESH_REQUIRED",
+    "reverse_trace_incomplete": "REVERSE_TRACE_COVERAGE_REQUIRED",
+    "reverse_trace_ledger_invalid": "REVERSE_TRACE_COVERAGE_REQUIRED",
+    "reverse_source_only_violation": "REVERSE_SOURCE_ONLY_V1",
+    "reverse_read_scope_escalation": "REVERSE_READ_SCOPE_ESCALATION",
+    "reverse_manifest_invalid": "REVERSE_READ_MANIFEST_INVALID",
+    "reverse_allowlist_invalid": "REVERSE_ALLOWLIST_INVALID",
+    "reverse_drift_detected": "REVERSE_REFRESH_REQUIRED",
+}
+
 # Patterns that indicate live-runtime probing — blocked in v1 source-only mode.
 LIVE_PROBE_PATTERNS = [
     re.compile(r"\blocalhost\b"),
@@ -61,6 +80,10 @@ def check_pass(name: str, detail: str = "") -> dict[str, str]:
 
 def check_fail(name: str, detail: str = "") -> dict[str, str]:
     return {"check": name, "result": "fail", "detail": detail}
+
+def with_block_code(payload: dict[str, Any], code_key: str) -> dict[str, Any]:
+    payload["block_code"] = REVERSE_BLOCK_CODES[code_key]
+    return payload
 
 
 # ---------------------------------------------------------------------------
@@ -132,19 +155,40 @@ def git_file_hash_at_commit(repo: Path, commit: str, rel_path: str) -> str | Non
 # Baseline lock helpers
 # ---------------------------------------------------------------------------
 
-REQUIRED_BASELINE_FIELDS = {"documented_commit", "locked_at", "focus_selection", "locked_files"}
+REQUIRED_BASELINE_FIELDS = {"documented_commit"}
 
 
 def load_baseline_lock(path: Path) -> dict[str, Any]:
     return load_json(path)
 
 
+def normalize_baseline_lock(data: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(data)
+    if "scan_timestamp" not in normalized and normalized.get("locked_at"):
+        normalized["scan_timestamp"] = normalized["locked_at"]
+    if "locked_at" not in normalized and normalized.get("scan_timestamp"):
+        normalized["locked_at"] = normalized["scan_timestamp"]
+    if "focus_selection" not in normalized and normalized.get("focus_areas"):
+        normalized["focus_selection"] = normalized["focus_areas"]
+    if "focus_areas" not in normalized and normalized.get("focus_selection"):
+        normalized["focus_areas"] = normalized["focus_selection"]
+    normalized.setdefault("locked_files", [])
+    return normalized
+
+
 def validate_baseline_lock(data: dict[str, Any]) -> list[str]:
     """Return list of missing/invalid field names."""
+    data = normalize_baseline_lock(data)
     errors: list[str] = []
     for field in REQUIRED_BASELINE_FIELDS:
         if field not in data or not data[field]:
             errors.append(f"missing_field:{field}")
+    if not data.get("scan_timestamp"):
+        errors.append("missing_field:scan_timestamp")
+    if not data.get("focus_selection"):
+        errors.append("missing_field:focus_selection")
+    if not data.get("locked_files"):
+        errors.append("missing_field:locked_files")
     if "focus_selection" in data and not data["focus_selection"]:
         errors.append("focus_selection_empty")
     if "documented_commit" in data:
@@ -166,9 +210,14 @@ def parse_evidence_ledger(path: Path) -> list[dict[str, str]]:
     """Parse a markdown evidence ledger into a list of trace records.
 
     Expected format: each record is a markdown section starting with
-    `### REV-...` followed by key: value lines.
+    `### REV-...` followed by key: value lines, or a markdown table that
+    includes either `trace_id` or `evidence_id`.
     """
     text = path.read_text(encoding="utf-8")
+    table_records = _parse_evidence_ledger_table(text)
+    if table_records:
+        return table_records
+
     records: list[dict[str, str]] = []
     current: dict[str, str] = {}
     for line in text.splitlines():
@@ -184,6 +233,41 @@ def parse_evidence_ledger(path: Path) -> list[dict[str, str]]:
             current[key] = kv_match.group(2).strip()
     if current:
         records.append(current)
+    return records
+
+
+def _parse_evidence_ledger_table(text: str) -> list[dict[str, str]]:
+    lines = [line.rstrip() for line in text.splitlines()]
+    headers: list[str] = []
+    header_index = None
+    for i, line in enumerate(lines):
+        if not line.startswith("|"):
+            continue
+        raw_headers = [cell.strip().lower().replace(" ", "_") for cell in line.strip("|").split("|")]
+        if "trace_id" in raw_headers or "evidence_id" in raw_headers:
+            headers = raw_headers
+            header_index = i
+            break
+    if header_index is None:
+        return []
+
+    records: list[dict[str, str]] = []
+    for line in lines[header_index + 2:]:
+        if not line.startswith("|"):
+            break
+        cells = [cell.strip().strip("`") for cell in line.strip("|").split("|")]
+        if len(cells) < len(headers):
+            continue
+        record = dict(zip(headers, cells))
+        if "trace_id" not in record and record.get("evidence_id"):
+            record["trace_id"] = record["evidence_id"]
+        if "source_file" not in record and record.get("file"):
+            record["source_file"] = record["file"]
+        if "claim_summary" not in record and record.get("claim"):
+            record["claim_summary"] = record["claim"]
+        if "recorded_at" not in record:
+            record["recorded_at"] = record.get("updated_at", record.get("created_at", ""))
+        records.append(record)
     return records
 
 

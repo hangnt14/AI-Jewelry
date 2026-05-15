@@ -14,11 +14,8 @@ from reverse_guardrail_common import (
     check_pass,
     emit_result,
     git_commit_exists,
-    load_contract,
-    load_json,
     ok,
-    render_path,
-    warn,
+    with_block_code,
 )
 
 # Minimal metadata fields expected in a reverse index frontmatter table.
@@ -43,11 +40,26 @@ def parse_reverse_index(text: str) -> dict:
                     metadata[cells[0].lower().replace(" ", "_")] = cells[1].strip("`").strip()
             break
 
+    if not metadata:
+        for line in lines:
+            if ":" not in line or line.lstrip().startswith("#"):
+                continue
+            key, value = line.split(":", 1)
+            key = key.strip().lower().replace(" ", "_")
+            value = value.strip().strip("`")
+            if key in REQUIRED_INDEX_METADATA or key in {"stale_status", "validated_at", "validated_by", "source_artifact"}:
+                metadata[key] = value
+
     # Collect indexed file paths (lines starting with - or * followed by a path)
     for line in lines:
         m = re.match(r"^[-*]\s+`?([^\s`]+\.[a-zA-Z0-9]+)`?\s*", line)
         if m:
             indexed_files.append(m.group(1))
+            continue
+        if line.startswith("|"):
+            cells = [c.strip().strip("`") for c in line.strip("|").split("|")]
+            if len(cells) >= 2 and "/" in cells[1] and "." in cells[1]:
+                indexed_files.append(cells[1])
 
     return {"metadata": metadata, "indexed_files": indexed_files}
 
@@ -65,7 +77,7 @@ def main() -> int:
     # Check 1: index file exists
     if not index_path.exists():
         checks.append(check_fail("index_exists", str(index_path)))
-        result = block(checks, f"reverse index not found: {index_path}")
+        result = with_block_code(block(checks, f"reverse index not found: {index_path}"), "reverse_index_missing")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("index_exists", str(index_path)))
@@ -80,12 +92,12 @@ def main() -> int:
     missing_meta = [f for f in REQUIRED_INDEX_METADATA if f not in metadata or not metadata[f]]
     if missing_meta:
         checks.append(check_fail("metadata_complete", f"missing: {', '.join(missing_meta)}"))
-        result = block(
+        result = with_block_code(block(
             checks,
             f"reverse index missing metadata fields: {', '.join(missing_meta)}",
             documented_commit="",
             checks_detail={"missing_metadata": missing_meta},
-        )
+        ), "reverse_index_invalid")
         emit_result(result, stderr_summary=result["message"])
         return 1
     documented_commit = metadata["documented_commit"]
@@ -96,12 +108,12 @@ def main() -> int:
         checks.append(check_pass("commit_in_history", documented_commit))
     else:
         checks.append(check_fail("commit_in_history", f"commit not found: {documented_commit}"))
-        result = block(
+        result = with_block_code(block(
             checks,
             f"documented_commit {documented_commit} not found in git history. Index is stale.",
             status="stale",
             documented_commit=documented_commit,
-        )
+        ), "reverse_index_stale")
         emit_result(result, stderr_summary=result["message"])
         return 1
 
@@ -114,13 +126,13 @@ def main() -> int:
 
     if missing_files:
         checks.append(check_fail("indexed_files_exist", f"{len(missing_files)} missing: {missing_files[:5]}"))
-        result = block(
+        result = with_block_code(block(
             checks,
             f"{len(missing_files)} indexed file(s) missing from disk. Index may be stale.",
             status="missing",
             documented_commit=documented_commit,
             missing_files=missing_files,
-        )
+        ), "reverse_index_file_missing")
         emit_result(result, stderr_summary=result["message"])
         return 1
     checks.append(check_pass("indexed_files_exist", f"{len(indexed_files)} files verified"))

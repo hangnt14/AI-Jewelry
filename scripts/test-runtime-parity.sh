@@ -52,6 +52,7 @@ f22:f22-reverse-focus-selection-blocks.md:g22-reverse-focus-selection-blocks.md:
 f23:f23-reverse-drift-stale-block.md:g23-reverse-drift-stale-block.md:reverse status surfaces stale index and recommends refresh
 f24:f24-reverse-mixed-change-blocks-promotion.md:g24-reverse-mixed-change-blocks-promotion.md:reverse promote blocks mixed_change evidence requiring split
 f25:f25-reverse-source-only-no-runtime-probes.md:g25-reverse-source-only-no-runtime-probes.md:reverse source-only regression blocks runtime probes in v1
+f26:f26-reverse-srs-skips-design-and-wireframes.md:g26-reverse-srs-skips-design-and-wireframes.md:reverse-backed srs bypasses forward design and wireframe gating
 "
 
 REGISTRY_FILE="${TMPDIR:-/tmp}/ba-kit-runtime-parity-fixtures.$$"

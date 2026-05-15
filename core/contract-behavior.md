@@ -274,7 +274,7 @@ Reverse mode is a first-class lane for reconstructing as-built documentation fro
 
 ### Reverse Artifact Classification
 
-- `paths.reverse_baseline_lock` — `machine_facing`: JSON record of `documented_commit`, scan timestamp, and focus areas. Not a source of truth.
+- `paths.reverse_baseline_lock` — `machine_facing`: JSON record of `documented_commit`, `scan_timestamp`, `focus_selection`, and `locked_files`. Not a source of truth.
 - `paths.reverse_index` — `agent_facing`: navigator index of scanned artifacts and their evidence status. Not a source of truth.
 - `paths.reverse_focus_excerpts` — `agent_facing`: focused excerpts per selected focus area. Not a source of truth.
 - `paths.reverse_evidence_ledger` — `agent_facing`: trace records linking file evidence to promoted claims. Not a source of truth.
@@ -297,4 +297,3 @@ Reverse mode is a first-class lane for reconstructing as-built documentation fro
 - `reverse refresh` — optional `--commit <hash>` to update `documented_commit`.
 - `reverse promote` — requires `--evidence-ids <id,...>` to identify the ledger entries to promote.
 - `reverse impact` — optional `--evidence-ids <id,...>` to classify a subset; defaults to all unclassified entries.
-

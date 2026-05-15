@@ -105,7 +105,8 @@ Write `paths.reverse_baseline_lock` as JSON:
   "scan_timestamp": "<ISO-8601>",
   "slug": "<slug>",
   "date": "<date>",
-  "focus_areas": ["<area>", ...],
+  "focus_selection": ["<area>", ...],
+  "locked_files": ["<repo-relative-path>", "..."],
   "scanned_by": "reverse",
   "v1_constraints": {
     "source_only": true,
@@ -117,6 +118,9 @@ Write `paths.reverse_baseline_lock` as JSON:
   "note": "00_reverse artifacts are supporting evidence only. Not in source_of_truth_order."
 }
 ```
+
+Compatibility note: older reverse artifacts may still use `locked_at` and `focus_areas`.
+New writes must use `scan_timestamp` and `focus_selection`.
 
 ### Step R7 — Output Summary
 

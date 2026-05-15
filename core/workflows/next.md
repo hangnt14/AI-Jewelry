@@ -80,25 +80,25 @@ Apply the first matching rule:
 10. final markdown exists but required packaged HTML is missing -> `ba-start package --slug <slug>`
 11. everything required already exists -> `ba-start status --slug <slug>`
 
-Reverse lane rules (apply only when reverse_baseline_lock exists):
+Reverse lane rules (apply before forward rules whenever reverse_baseline_lock exists):
 
+R0. reverse_baseline_lock exists and reverse_index is absent -> `ba-start reverse --slug <slug>`
+    Reason: reverse lane is incomplete before index creation; do not fall through to forward lifecycle.
 R1. reverse_baseline_lock exists but reverse_evidence_ledger is absent -> `ba-start reverse impact --slug <slug>`
     Reason: baseline scan complete but evidence not yet classified.
-R2. reverse_evidence_ledger exists and has unclassified entries (stat check only — do not open file to count) -> `ba-start reverse impact --slug <slug>`
-    Reason: unclassified evidence blocks promotion.
-    Block rule: do NOT guess next step from evidence content. If classification state is unknown from stat alone, emit `ba-start reverse status --slug <slug>` instead.
-R3. reverse_evidence_ledger exists and reverse_drift_state is absent -> `ba-start reverse status --slug <slug>`
-    Reason: drift state not yet computed; user should inspect before promoting.
-R4. reverse_drift_state exists and reverse_evidence_ledger has unpromoted as_built_drift entries -> `ba-start reverse promote --slug <slug> --evidence-ids <ids>`
-    Reason: classified drift ready for promotion.
-    Block rule: do NOT infer evidence IDs from file content. Emit the command template and tell the user to supply IDs from `ba-start reverse status`.
-R5. all reverse evidence promoted and no unclassified remain -> continue to forward lifecycle rules above (rules 1–11).
+R2. reverse_evidence_ledger exists and reverse_drift_state is absent -> `ba-start reverse status --slug <slug>`
+    Reason: drift state or classification summary is not yet safe to infer from stat-only reads.
+R3. reverse_evidence_ledger exists and reverse_drift_state exists -> `ba-start reverse status --slug <slug>`
+    Reason: do not infer unclassified counts, promoted state, or evidence IDs from content during `next`.
+R4. Only after `ba-start reverse status` confirms the reverse lane is complete may `next` continue to forward lifecycle rules 1–11.
 
 Reverse lane guard:
 - Never auto-pick a reverse lane step when focus_selection is missing from baseline lock.
 - If reverse_baseline_lock exists but focus_selection is empty or absent, emit:
   `ba-start reverse --slug <slug>` with reason "focus_selection missing — re-run baseline scan to select focus areas."
-- Reverse lane rules (R1–R5) take priority over forward rules (1–11) only when reverse_baseline_lock exists and the reverse lane is not yet complete.
+  block_code: `FOCUS_SELECTION_REQUIRED`
+- If reverse lane status is stale, drifted, or blocked, surface the reverse guardrail code from the active status path instead of guessing a forward step.
+- Reverse lane rules (R0–R4) take priority over forward rules (1–11) whenever reverse_baseline_lock exists and reverse completion is not explicitly confirmed.
 
 When FRD/SRS/wireframe-handoff gates are unclear, explain the uncertainty and recommend
 `ba-start status --slug <slug>` instead of guessing.

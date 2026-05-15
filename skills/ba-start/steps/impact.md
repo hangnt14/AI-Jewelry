@@ -79,7 +79,7 @@ Reverse lane routing (when reverse_baseline_lock exists):
 
 ## Output
 
-Print: project/date, detected step, change type, source of truth, affected_node_ids, owner_artifact, stale_artifacts, read_escalation, affected/unaffected artifacts, recommended path, exact commands, focused questions only.
+Print: project/date, change type, source of truth, affected nodes, stale artifacts, read escalation, recommended path, exact commands, and focused questions only.
 
 ```text
 Impact Delta
@@ -89,6 +89,7 @@ owner_artifact: [intake | backbone | stories | srs | wireframe artifacts | rever
 stale_artifacts: [indexes or artifacts that must be refreshed by the rerun]
 read_escalation: [none | READ_ESCALATION: impact read {path} due to {reason}]
 reverse_lane: [absent | as_built_drift | future_state_request | mixed_change | unverifiable_in_v1]
+guardrail_code: [none | reverse hard-guardrail code]
 ```
 
 Rules:
@@ -97,4 +98,5 @@ Rules:
 - Include index files in `stale_artifacts` when a CR can invalidate backbone_index, stories_index, srs_index, wireframe_input, or wireframe_map.
 - If CR cannot be mapped to a node, emit `read_escalation` and ask focused questions.
 - When `reverse_lane` is not `absent`, print the exact reverse lane command before forward lifecycle commands.
+- When a reverse hard guardrail is the blocker, set `guardrail_code` before any forward lifecycle command.
 - Never omit `reverse_lane` field when `reverse_baseline_lock` exists.

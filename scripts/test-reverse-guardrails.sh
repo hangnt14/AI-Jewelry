@@ -34,11 +34,20 @@ set +e
 python3 "${ROOT_DIR}/scripts/reverse-preflight.py" \
   --repo "${INVALID_REPO}" \
   --slug test-project \
-  --date 20260424 >/dev/null 2>"${TMP_DIR}/invalid.stderr"
+  --date 20260424 >"${TMP_DIR}/invalid.json" 2>"${TMP_DIR}/invalid.stderr"
 invalid_status=$?
 set -e
 if [ "${invalid_status}" -ne 1 ]; then
   fail "reverse-preflight invalid input exited ${invalid_status}, expected 1"
+fi
+invalid_block_code="$(python3 - "${TMP_DIR}/invalid.json" <<'PY'
+import json
+import sys
+print(json.loads(open(sys.argv[1], encoding="utf-8").read()).get("block_code", ""))
+PY
+)"
+if [ "${invalid_block_code}" != "REVERSE_CONTRACT_INVALID" ]; then
+  fail "reverse-preflight invalid input block_code=${invalid_block_code}, expected REVERSE_CONTRACT_INVALID"
 fi
 ok "reverse-preflight invalid input exits 1"
 
@@ -47,7 +56,7 @@ mkdir -p "${PROJECT_ROOT}/00_reverse"
 cat >"${PROJECT_ROOT}/00_reverse/reverse-baseline-lock.json" <<'EOF'
 {
   "documented_commit": "8aca3a5",
-  "locked_at": "2026-05-15T14:48:00Z",
+  "scan_timestamp": "2026-05-15T14:48:00Z",
   "focus_selection": ["api"],
   "locked_files": ["README.md"]
 }

@@ -13,3 +13,23 @@ Until a deterministic adapter exists, certify each fixture manually:
 5. Run `bash scripts/test-runtime-parity.sh --run-adapters --runtime antigravity fXX`.
 
 Manual certification JSON values must be strings.
+
+## Template Scaffolding
+
+Use the scaffolder to generate fill-in templates from existing goldens:
+
+```bash
+python3 scripts/scaffold-antigravity-certification.py f21 f22 f23 f24 f25 f26
+```
+
+That creates `fXX.template.json` files in this folder. Copy the matching template to
+`fXX.json`, fill it from an actual Antigravity run, then execute the parity harness.
+
+Recommended reverse-fixture certification order:
+
+1. `f21` baseline entry focus gate
+2. `f22` focus selection block
+3. `f23` stale reverse status
+4. `f24` mixed-change promotion block
+5. `f25` source-only reverse scan
+6. `f26` reverse-backed SRS without design/wireframes

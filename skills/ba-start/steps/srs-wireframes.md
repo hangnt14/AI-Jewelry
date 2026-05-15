@@ -9,6 +9,9 @@ This step requires:
 
 ## Step 8.2 - Capture Design Decisions And Persist Runtime DESIGN.md
 
+Skip this step when reverse mode is the active lane. Reverse-backed SRS work must use reverse evidence,
+not `DESIGN.md`, as the blocking prerequisite.
+
 Before BA-kit writes Screen Contract Plus for UI-backed screens or prepares a wireframe handoff pack, ask the user to approve the project runtime `DESIGN.md` direction.
 
 Decision intake must cover reference direction, visual tone/density, color and contrast, typography, component feel, layout priority, portal navigation schema, active-menu rule, breadcrumb/back behavior, hidden navigation exceptions, hard constraints, and anti-patterns.
@@ -31,6 +34,8 @@ Produce Group D only when integrations, NFR exposure, data modelling, API handof
 
 ## Step 9 - Prepare Manual Wireframe Handoff
 
+Skip this step when reverse mode is the active lane. Reverse mode treats wireframes as `not-applicable`.
+
 Run the standalone wireframe workflow from [wireframes.md](./wireframes.md), using the same slug, date, and module.
 
 Mode defaults inside the SRS pipeline:
@@ -44,6 +49,7 @@ Mode defaults inside the SRS pipeline:
 After Step 9 resolves, expand final screen descriptions from Use Case Specifications, Screen Contract Plus, `paths.wireframe_input`, `paths.wireframe_map`, and supporting frame inventory.
 
 If wireframes are `skipped` or `not-applicable`, expand screen descriptions from use cases and Screen Contract Plus only. Manual mockup insertion into the final document is out of band.
+If reverse mode is active, expand screen descriptions from reverse evidence, promoted claims, and Screen Contract Plus only.
 
 Group E rules:
 

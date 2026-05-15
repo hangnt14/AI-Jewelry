@@ -389,7 +389,7 @@ case "${RUNTIME}" in
         --permission-mode dontAsk \
         --tools Read,Grep,Glob \
         --output-format text \
-        "$(cat "${PROMPT_PATH}")" >"${OUTPUT_PATH}"
+        "$(cat "${PROMPT_PATH}")" >"${OUTPUT_PATH}" </dev/null
     )
     ;;
   codex)
@@ -400,10 +400,9 @@ case "${RUNTIME}" in
     codex exec \
       -C "${REPO_ROOT}" \
       --sandbox read-only \
-      --ask-for-approval never \
       --ephemeral \
       --output-last-message "${OUTPUT_PATH}" \
-      "$(cat "${PROMPT_PATH}")" >"${RAW_PATH}"
+      "$(cat "${PROMPT_PATH}")" >"${RAW_PATH}" </dev/null
     ;;
   antigravity)
     CERT_DIR="${BA_KIT_ANTIGRAVITY_CERT_DIR:-${REPO_ROOT}/tests/runtime-parity/certifications/antigravity}"

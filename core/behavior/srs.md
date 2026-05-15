@@ -23,6 +23,10 @@ When SRS writes or refreshes `paths.srs_index`, generate it with `stale_status: 
 
 ## Navigation And Screen Contract Rules
 
+- Reverse-mode carveout: when `paths.reverse_baseline_lock` exists and reverse-backed SRS work is active,
+  do not require `paths.design_doc` or wireframe artifacts as a prerequisite for Group C or Group E.
+  Instead require current reverse evidence, treat wireframes as `not-applicable`, and route any
+  future-state UI request back through `impact`.
 - Before Group C for UI-backed screens, require approved `paths.design_doc` with a Navigation Schema for every portal used by the module.
 - Treat `paths.design_doc` Navigation Schema as source of truth for `Nav Schema ID`, menu labels, and allowed active-menu paths.
 - Copy `Expected Active Menu Item` exactly from an allowed menu item/path in the matching schema.
@@ -36,6 +40,9 @@ Run `python3 scripts/validate-navigation-consistency.py --design {paths.design_d
 
 ## Wireframe Handoff Gates
 
+- Reverse-mode carveout: if reverse evidence is the active gate, skip Step 8.2 and Step 9. Do not
+  block on `paths.design_doc`, `paths.wireframe_input`, `paths.wireframe_map`, or `paths.wireframe_state`.
+- In reverse mode, canonical SRS writes must cite reverse evidence and trace IDs before promotion.
 - If `paths.design_doc` is missing or unresolved, run Step 8.2 from `srs-wireframes.md` and stop if the user does not approve the design direction.
 - Build `paths.wireframe_input` after Groups B and C from exact use case, screen contract, portal, navigation, and trace excerpts.
 - Manual wireframe insertion is out-of-band; do not block final screen descriptions on an attached mockup.
