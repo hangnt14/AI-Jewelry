@@ -416,7 +416,14 @@ python3 -m py_compile \
   "${ROOT_DIR}/scripts/design-snapshot.py" \
   "${ROOT_DIR}/scripts/validate-navigation-consistency.py" \
   "${ROOT_DIR}/scripts/stitch-state.py" \
-  "${ROOT_DIR}/scripts/runtime-parity-normalize.py"
+  "${ROOT_DIR}/scripts/runtime-parity-normalize.py" \
+  "${ROOT_DIR}/scripts/reverse_guardrail_common.py" \
+  "${ROOT_DIR}/scripts/reverse-preflight.py" \
+  "${ROOT_DIR}/scripts/reverse-validate-index.py" \
+  "${ROOT_DIR}/scripts/reverse-build-excerpts.py" \
+  "${ROOT_DIR}/scripts/reverse-trace-audit.py" \
+  "${ROOT_DIR}/scripts/reverse-drift-check.py" \
+  "${ROOT_DIR}/scripts/reverse-read-audit.py"
 
 CONTEXT_BUDGET_OUTPUT="$(
   python3 "${ROOT_DIR}/scripts/context-budget.py" --repo "${ROOT_DIR}" --command status
