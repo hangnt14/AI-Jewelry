@@ -75,6 +75,7 @@ check_file "${TMP_HOME}/.codex/templates/collab-home-template.md"
 check_file "${TMP_HOME}/.codex/templates/project-memory-index-template.md"
 check_file "${TMP_HOME}/.codex/ba-kit/contract.yaml"
 check_file "${TMP_HOME}/.codex/config.toml"
+check_file "${TMP_HOME}/.codex/ba-kit/scripts/validate-index-quality.py"
 
 check_dir "${TMP_HOME}/.gemini/antigravity/knowledge/ba-kit-workflow"
 check_file "${TMP_HOME}/.gemini/antigravity/knowledge/ba-kit-workflow/metadata.json"
@@ -86,7 +87,7 @@ if ! HOME="${TMP_HOME}" BA_KIT_SKIP_UPDATE_CHECK=1 "${TMP_HOME}/.local/bin/ba-ki
   fail "installed ba-kit doctor failed"
 fi
 
-if rg -q '^\- \[fail\]' "${LOG_DIR}/doctor.log"; then
+if grep -q '^\- \[fail\]' "${LOG_DIR}/doctor.log"; then
   sed -n '1,260p' "${LOG_DIR}/doctor.log" >&2
   fail "installed ba-kit doctor reported failures"
 fi

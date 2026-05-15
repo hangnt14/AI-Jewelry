@@ -6,6 +6,16 @@ This step requires:
 - `core/contract-behavior.md`
 - `core/behavior/srs.md`
 
+## Governance Gate
+
+Before mutating any SRS artifact:
+1. **Skip this gate for first-pass creation** (when the target `paths.srs_group` or `paths.srs` does not yet exist).
+2. For reruns (artifact already exists): verify write authority and locate the active impact receipt at `paths.impact_receipt`. If no active receipt exists and `change_class` is not `wording-only`, emit `GOVERNANCE_BLOCK: impact_receipt missing or invalidated` and stop.
+3. If either check fails on a rerun: emit `GOVERNANCE_BLOCK: {reason}` and stop.
+4. After mutation completes: offer to file the change into canonical memory using `templates/project-memory-fileback-record-template.md`.
+
+Receipt reference: `templates/impact-receipt-template.md`
+
 ## Scope
 
 Run Steps 8-11 only. This path stays split so SRS execution can load only the group instructions needed for the current pass.
@@ -30,9 +40,11 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the gr
 - `paths.srs`
 - `paths.srs_index`
 - `paths.wireframe_input`
+- `paths.design_doc` when Step 8.2/Step 9 confirms or refreshes the UI design direction
 - wireframe artifacts and state produced during Step 9
 
 Treat generated index/state/memory artifacts as `agent_facing` or `machine_facing`; keep them compact.
+When `paths.srs_index` is written or refreshed, keep `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run `python3 scripts/validate-index-quality.py --repo . --index-key srs_index --slug <slug> --date <date> --module <module> --writeback` before downstream work treats the index as `current`.
 
 ## Execution Order
 

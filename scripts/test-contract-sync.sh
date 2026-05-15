@@ -8,12 +8,21 @@ trap 'rm -rf "${TMP_DIR}"' EXIT
 
 legacy_hits="$(
   cd "${ROOT_DIR}" &&
-    rg -n "artifact-contract\\.md|plans/reports/final|plans/reports/drafts|plans/\\{date\\}-\\{slug\\}" \
-      AGENTS.md GEMINI.md CLAUDE.md skills core scripts codex templates \
-      --glob '!core/contract.yaml' \
-      --glob '!rules/ba-workflow.md' \
-      --glob '!scripts/test-contract-sync.sh' \
-      || true
+    if command -v rg >/dev/null 2>&1; then
+      rg -n "artifact-contract\\.md|plans/reports/final|plans/reports/drafts|plans/\\{date\\}-\\{slug\\}" \
+        AGENTS.md GEMINI.md CLAUDE.md skills core scripts codex templates \
+        --glob '!core/contract.yaml' \
+        --glob '!rules/ba-workflow.md' \
+        --glob '!scripts/test-contract-sync.sh' \
+        || true
+    else
+      grep -rn -E "artifact-contract\.md|plans/reports/final|plans/reports/drafts|plans/\{date\}-\{slug\}" \
+        AGENTS.md GEMINI.md CLAUDE.md skills core scripts codex templates \
+        --exclude='core/contract.yaml' \
+        --exclude='rules/ba-workflow.md' \
+        --exclude='scripts/test-contract-sync.sh' \
+        || true
+    fi
 )"
 
 if [[ -n "${legacy_hits}" ]]; then
@@ -227,9 +236,9 @@ max_bytes = {
 }
 required_tokens = {
     "source-chunk-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status"],
-    "backbone-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status"],
-    "user-stories-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status"],
-    "srs-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status"],
+    "backbone-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status", "validated_at", "validated_by"],
+    "user-stories-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status", "validated_at", "validated_by"],
+    "srs-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status", "validated_at", "validated_by"],
 }
 for name, limit in max_bytes.items():
     path = templates_dir / name
@@ -298,6 +307,11 @@ if [[ ! -f "${SOURCE_CACHE_DIR}/chunk-index.md" ]]; then
 fi
 
 python3 -m py_compile \
+  "${ROOT_DIR}/scripts/guardrail_common.py" \
+  "${ROOT_DIR}/scripts/guardrail-preflight.py" \
+  "${ROOT_DIR}/scripts/guardrail-build-excerpts.py" \
+  "${ROOT_DIR}/scripts/guardrail-audit.py" \
+  "${ROOT_DIR}/scripts/validate-index-quality.py" \
   "${ROOT_DIR}/scripts/source-extract.py" \
   "${ROOT_DIR}/scripts/context-budget.py" \
   "${ROOT_DIR}/scripts/design-snapshot.py" \
@@ -322,6 +336,7 @@ bash -n "${ROOT_DIR}/scripts/install-plantuml.sh"
 bash -n "${ROOT_DIR}/scripts/generate-codex-assets.sh"
 bash -n "${ROOT_DIR}/scripts/test-activation-thresholds.sh"
 bash -n "${ROOT_DIR}/scripts/test-runtime-parity.sh"
+bash -n "${ROOT_DIR}/scripts/test-index-quality.sh"
 bash -n "${ROOT_DIR}/scripts/runtime-parity-adapter.sh"
 bash -n "${ROOT_DIR}/scripts/test-runtime-install-smoke.sh"
 bash -n "${ROOT_DIR}/scripts/test-navigation-consistency.sh"
@@ -329,6 +344,7 @@ bash "${ROOT_DIR}/scripts/check-token-budget.sh" >/dev/null
 bash "${ROOT_DIR}/scripts/test-activation-thresholds.sh" >/dev/null
 bash "${ROOT_DIR}/scripts/test-options-flow-contract.sh" >/dev/null
 bash "${ROOT_DIR}/scripts/test-navigation-consistency.sh" >/dev/null
+bash "${ROOT_DIR}/scripts/test-index-quality.sh" >/dev/null
 bash "${ROOT_DIR}/scripts/test-runtime-parity.sh" --check-structure >/dev/null
 bash "${ROOT_DIR}/scripts/test-runtime-parity.sh" >/dev/null
 

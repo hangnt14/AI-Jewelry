@@ -14,9 +14,18 @@ TARGET_SKILLS="${TARGET_HOME}/skills"
 TARGET_AGENTS="${TARGET_HOME}/agents"
 TARGET_TEMPLATES="${TARGET_HOME}/templates"
 CORE_TARGET="${TARGET_HOME}/ba-kit"
+GUARDRAIL_SCRIPT_TARGET="${CORE_TARGET}/scripts"
+GUARDRAIL_DOC_TARGET="${CORE_TARGET}/docs"
 TARGET_CONFIG="${TARGET_HOME}/config.toml"
 LOCAL_BIN_TARGET="${HOME}/.local/bin"
 STATE_TARGET="${HOME}/.local/share/ba-kit/installations"
+GUARDRAIL_SCRIPTS=(
+  "guardrail-preflight.py"
+  "guardrail-build-excerpts.py"
+  "guardrail-audit.py"
+  "guardrail_common.py"
+  "validate-index-quality.py"
+)
 
 if [[ ! -d "${SOURCE_SKILLS}" ]] && [[ ! -d "${SOURCE_AGENTS}" ]]; then
   echo "BA-kit Codex conversion not found."
@@ -57,7 +66,28 @@ BA_KIT_RUNTIME=codex
 BA_KIT_SOURCE_REPO=${ROOT_DIR}
 BA_KIT_INSTALLED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 BA_KIT_INSTALLER=scripts/install-codex-ba-kit.sh
+BA_KIT_GUARDRAIL_ROOT=${CORE_TARGET}
+BA_KIT_GUARDRAIL_PREFLIGHT=${GUARDRAIL_SCRIPT_TARGET}/guardrail-preflight.py
+BA_KIT_GUARDRAIL_EXCERPTS=${GUARDRAIL_SCRIPT_TARGET}/guardrail-build-excerpts.py
+BA_KIT_GUARDRAIL_AUDIT=${GUARDRAIL_SCRIPT_TARGET}/guardrail-audit.py
+BA_KIT_INDEX_VALIDATOR=${GUARDRAIL_SCRIPT_TARGET}/validate-index-quality.py
+BA_KIT_GUARDRAIL_DOC=${GUARDRAIL_DOC_TARGET}/runtime-hard-guardrails.md
 EOF
+}
+
+install_guardrail_runtime_assets() {
+  local script_name
+
+  mkdir -p "${GUARDRAIL_SCRIPT_TARGET}" "${GUARDRAIL_DOC_TARGET}"
+  for script_name in "${GUARDRAIL_SCRIPTS[@]}"; do
+    if [[ ! -f "${ROOT_DIR}/scripts/${script_name}" ]]; then
+      echo "Guardrail runtime script missing: ${ROOT_DIR}/scripts/${script_name}" >&2
+      exit 1
+    fi
+    cp "${ROOT_DIR}/scripts/${script_name}" "${GUARDRAIL_SCRIPT_TARGET}/${script_name}"
+  done
+
+  cp "${ROOT_DIR}/docs/runtime-hard-guardrails.md" "${GUARDRAIL_DOC_TARGET}/runtime-hard-guardrails.md"
 }
 
 generate_codex_assets
@@ -192,5 +222,7 @@ if [[ -d "${CORE_SOURCE}" ]]; then
   copy_tree "${CORE_SOURCE}" "${CORE_TARGET}"
   echo "Installed BA core to ${CORE_TARGET}"
 fi
+install_guardrail_runtime_assets
+echo "Installed guardrail runtime assets to ${CORE_TARGET}"
 write_manifest
 echo "Installed update CLI to ${LOCAL_BIN_TARGET}/ba-kit"

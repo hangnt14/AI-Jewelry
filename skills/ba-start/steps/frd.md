@@ -15,9 +15,11 @@ This step requires:
 
 Before mutating this artifact:
 1. **Skip this gate for first-pass creation** (when `paths.frd` does not yet exist).
-2. For reruns (artifact already exists): verify write authority and confirm an approved impact run (skip only for `wording-only` changes).
+2. For reruns (artifact already exists): verify write authority and locate the active impact receipt at `paths.impact_receipt`. If no active receipt exists and `change_class` is not `wording-only`, emit `GOVERNANCE_BLOCK: impact_receipt missing or invalidated` and stop.
 3. If either check fails on a rerun: emit `GOVERNANCE_BLOCK: {reason}` and stop.
 4. After mutation completes: offer to file the change into canonical memory using `templates/project-memory-fileback-record-template.md`.
+
+Receipt reference: `templates/impact-receipt-template.md`
 
 ## Scope
 

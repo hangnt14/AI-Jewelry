@@ -13,6 +13,9 @@ Use this checklist before marking adaptive runtime memory work as release-ready.
 | Antigravity installer syntax | PASS | `bash -n scripts/install-antigravity-ba-kit.sh` |
 | Shared CLI syntax | PASS | `bash -n scripts/ba-kit` |
 | Codex generated asset check | PASS | covered by `scripts/test-contract-sync.sh` |
+| Guardrail core script syntax | PASS | `python3 -m py_compile scripts/guardrail-preflight.py scripts/guardrail-build-excerpts.py scripts/guardrail-audit.py scripts/guardrail_common.py scripts/validate-index-quality.py` |
+| Index-quality validator smoke | PASS | `bash scripts/test-index-quality.sh` |
+| Guardrail hardening smoke | PASS | `bash scripts/test-guardrail-hardening.sh` |
 | Activation threshold validation | PASS | `bash scripts/test-activation-thresholds.sh` |
 | Runtime install smoke | PASS | `bash scripts/test-runtime-install-smoke.sh` |
 
@@ -22,6 +25,7 @@ Use this checklist before marking adaptive runtime memory work as release-ready.
 | --- | --- | --- |
 | Fixture/golden structure | PASS | `bash scripts/test-runtime-parity.sh --check-structure` |
 | Normalized behavior envelopes | PASS | `tests/runtime-parity/goldens/*.md` f01-f12 |
+| Guardrail fixture/golden coverage | PASS | `tests/runtime-parity/goldens/*.md` f16-f20 |
 | Runtime adapter execution | EXEMPT | v1 maintainer decision; adapters remain available for future release evidence |
 | Claude Code headless adapter | EXEMPT | `bash scripts/test-runtime-parity.sh --run-adapters --runtime claude fXX` remains available |
 | Codex headless adapter | EXEMPT | `bash scripts/test-runtime-parity.sh --run-adapters --runtime codex fXX` remains available |
@@ -36,6 +40,12 @@ Use this checklist before marking adaptive runtime memory work as release-ready.
 | Missing index compact fallback fixture | COVERED | F05 |
 | Activation freeze fixture | COVERED | F09 |
 | Explicit-step fallback fixture | COVERED | F10 |
+| Guardrail index-first FRD fixture | COVERED | F16 |
+| Guardrail index-first stories fixture | COVERED | F17 |
+| Guardrail package escalation fixture | COVERED | F18 |
+| Guardrail PROJECT-HOME conflict fixtures | COVERED | F19-F20 |
+| Producer-side validator downgrade fixture | COVERED | `scripts/test-index-quality.sh` incomplete-coverage case |
+| Producer-side validator promotion fixture | COVERED | `scripts/test-index-quality.sh` writeback case |
 | Packet-disable fallback | OPERATIONAL CONTROL | disable runtime-specific packet enforcement until adapter parity exists |
 | Installer-freeze fallback | OPERATIONAL CONTROL | do not publish installer rollout if this checklist has blocking FAIL items |
 | Installed-runtime upgrade path | PASS | `bash scripts/test-runtime-install-smoke.sh` installs all 3 runtimes into a temporary `HOME` and runs installed `ba-kit doctor` |

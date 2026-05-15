@@ -6,6 +6,8 @@
 - May read: targeted `paths.backbone` and `paths.stories` sections, `paths.srs_index` when refreshing, `paths.project_memory` or hot shards, module warm shard, and `paths.frd` when it exists.
 - Must not read: `log.md`, `cold/`, other module shards, full `paths.backbone`, or full `paths.stories` when indexes are current.
 
+Re-entry after long sessions, reruns, or host auto-compact still starts with `paths.backbone_index`, then `paths.stories_index`, before reopening targeted source sections.
+
 ## Grouped Execution
 
 - Run SRS in groups to avoid loading or writing the full artifact at once.
@@ -16,6 +18,8 @@
 - Group E: final screen descriptions after wireframe handoff is resolved.
 - Group F: validation, glossary, and traceability.
 - Assemble inline after all required groups are verified.
+
+When SRS writes or refreshes `paths.srs_index`, generate it with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, and run producer-side validation before any downstream routing treats the index as current.
 
 ## Navigation And Screen Contract Rules
 

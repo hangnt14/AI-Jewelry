@@ -36,7 +36,8 @@ Assembly procedure:
    - alternate flows are reflected in screen error states
    - user story acceptance criteria are covered by UC postconditions and screen validation rules
    - final screen descriptions do not redefine `Portal ID`, `Nav Schema ID`, or active/highlight behavior captured in Group C or the wireframe pack
-   - run the navigation validator described in `core/behavior/srs.md` when UI-backed screens and `paths.design_doc` exist
+   - run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {paths.srs_group group=c}` when UI-backed screens and `paths.design_doc` exist
+   - treat `MENU_SCHEMA_MISMATCH`, `NAV_SCHEMA_MISMATCH`, and `MENU_ACTIVE_MISSING` as blocking before final assembly is accepted
 4. Resolve placeholder references and ID conflicts inline.
 5. Verify every SCR and UC traces back to user stories.
 6. Delete group fragments only after the merged SRS is verified.

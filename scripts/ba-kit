@@ -168,7 +168,11 @@ scan_file_for_token() {
   local path="$1"
   local pattern="$2"
   [[ -f "${path}" ]] || return 1
-  rg -qi -- "${pattern}" "${path}"
+  if command -v rg >/dev/null 2>&1; then
+    rg -qi -- "${pattern}" "${path}"
+  else
+    grep -qi -E -- "${pattern}" "${path}"
+  fi
 }
 
 sanitize_cache_key() {
@@ -928,7 +932,7 @@ doctor_command() {
 
   doctor_command_check "bash" "bash" "required" || failures=$((failures + 1))
   doctor_command_check "python3" "python3" "required" || failures=$((failures + 1))
-  doctor_command_check "rg" "rg" "required" || failures=$((failures + 1))
+  doctor_command_check "rg" "rg" "optional"
   if doctor_command_check "node" "node" "optional"; then :; else failures=$((failures + 1)); fi
   printf '\n'
 

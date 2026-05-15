@@ -57,6 +57,8 @@ Output: `paths.srs_group` with `group=c`
 
 Before Group C for UI-backed screens, apply the navigation schema gate in `core/behavior/srs.md`. If `paths.design_doc` is missing or unresolved, run Step 8.2 from `srs-wireframes.md` first.
 
+If the required active-menu item or schema route is absent, stop with `MENU_SCHEMA_GAP` instead of guessing a replacement path.
+
 After Group C, run:
 
 ```text

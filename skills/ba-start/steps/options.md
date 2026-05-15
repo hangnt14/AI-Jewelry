@@ -24,4 +24,6 @@
 
 - `--select option-02` records `selected option` in `paths.plan` and updates `options status: completed`
 - `--skip` updates `paths.plan` to `options status: skipped`
-- After selection or skip, refresh `paths.project_home`
+- After selection or skip: write an options receipt to `paths.options_receipt` using `templates/options-receipt-template.md`, then refresh `paths.project_home`
+- The receipt must record `selected_option`, `options_status`, `approved_by`, and `approved_at`
+- If a prior receipt exists at `paths.options_receipt`, set `invalidated_at` and `invalidated_reason` on it before writing the new one

@@ -26,6 +26,18 @@ Use this file as the shared runtime-neutral behavior layer for BA-kit.
 - Treat `paths.project_home` as the BA-facing dashboard. It is not a source of truth and must not override backbone, intake, or module artifacts.
 - Runtime-local chat memory is not authoritative. Persist reusable project memory on disk.
 
+## Canonical Lifecycle Status Mapping
+
+Use one lifecycle status vocabulary across shared behavior, command shards, templates, dashboards, and runtime adapters:
+
+- `recommended`
+- `in-progress`
+- `completed`
+- `skipped`
+- `not-needed`
+
+Do not introduce parallel labels such as `todo`, `doing`, or `done` in lifecycle state fields.
+
 ## Argument Parsing
 
 Parse arguments before doing any work.
@@ -40,6 +52,8 @@ Parse arguments before doing any work.
 8. For `options`, allow `--select <option-id>` and `--skip` as mutually exclusive controls.
 9. For `frd`, `stories`, `srs`, and `wireframes`, enforce `commands.<name>.module_required`.
 10. Reject unknown subcommands and unexpected free arguments instead of guessing.
+
+For `options`, allow `--select <option-id>` and `--skip` as mutually exclusive control arguments.
 
 ## Natural-Language Routing
 
@@ -86,6 +100,32 @@ Use the resolution order from `resolution.*`.
 - For `package`, block only when wireframe state is `missing`.
 - If no wireframe-state marker exists, treat it as `not-applicable` only when the SRS set has no UI-backed screens or Screen Contract Plus section. Otherwise treat it as `missing`.
 
+## Options Decision-Ledger Gate
+
+Treat `paths.plan` as the execution decision ledger whenever intake seeds an `options status`, whether or not `paths.options_root` has been created yet.
+
+- Intake may seed only `recommended` or `not-needed`.
+- Recommendation strength may say `recommend` or `strongly recommend` in prose, but the execution ledger still stays on the canonical lifecycle statuses above.
+- `options` must move the lifecycle to `in-progress`.
+- `options` becomes `completed` once `selected option` is recorded.
+- When the user explicitly bypasses optioning, `options` becomes `skipped`.
+- `backbone` must not proceed while optioning remains `recommended` or `in-progress`.
+- `backbone` may proceed only when the ledger records `not-needed`, `selected option` (`completed`), or `skipped`.
+- `paths.options_root` is evidence that option artifacts exist; it must not be used as the condition that turns backbone gating on or off.
+- `paths.plan` remains authoritative for the gate.
+
+Stop when:
+
+- the requested option file does not exist
+- multiple options exist but no explicit selection/skip has been approved
+- a selection request names an unknown option id
+
+Shared read-scope reminder for the gate:
+
+| command | must read | may read | must not read |
+| --- | --- | --- | --- |
+| backbone | contract.yaml, contract-behavior.md, paths.intake, paths.plan (when exists) | selected option file only when optioning is `completed`; paths.project_memory, paths.memory_index (nav only), paths.memory_hot_vocabulary, paths.memory_hot_decisions | log.md, cold/, warm/ |
+
 ## Overwrite Behavior
 
 Before mutating `backbone`, `frd`, `stories`, `srs`, `wireframes`, or `package`:
@@ -101,6 +141,15 @@ If exploration consumes context or the host truncates conversation history:
 1. Reconstruct the active target from command, slug, date, optional module, and on-disk artifacts.
 2. Continue from the next unresolved step when those values are still unambiguous.
 3. Do not ask the user to restate the request merely because exploration consumed context.
+
+## Routeable Backbone Re-entry
+
+For any downstream action whose scope can be routed from the backbone, re-enter through `paths.backbone_index` first whenever that file exists.
+
+- This applies on first execution, reruns, recovery after long sessions, and after host-side auto-compact or other context compression.
+- Reconstruct module, feature, and trace scope from `paths.backbone_index` before opening targeted `paths.backbone` sections.
+- Do not silently bypass `paths.backbone_index` by reopening the full backbone when an index-first route is available.
+- If `paths.backbone_index` is missing or not trusted enough to route, stop and send the run back to backbone refresh/validation instead of guessing.
 
 ## Accepted-Scope Execution Lock
 
@@ -129,6 +178,13 @@ Artifact profile controls format and length:
 - `machine_facing`: deterministic state or manifest; prefer JSON/YAML/NDJSON and avoid prose beyond stable labels.
 
 Generated internal artifacts must not duplicate requirement prose from intake, backbone, stories, or SRS. Keep excerpts short, include stale/unknown status instead of guessing, and move substantial prose into the source-of-truth artifact.
+
+When a command writes or refreshes an index artifact, the producer-side contract is:
+
+- emit `stale_status: unknown` on generation
+- leave `validated_at` and `validated_by` blank until validator success
+- allow only the validator to upgrade `stale_status` to `current`
+- downgrade to `stale` or keep `unknown` when validation fails
 
 ## Large Artifact Write Protocol
 
@@ -163,6 +219,8 @@ Fail-closed rules:
 - If a required fact is missing, mark it as an assumption or open question instead of presenting it as settled.
 - If a downstream artifact would require guessing an upstream decision, stop and route back to the owning step.
 - If a correction invalidates a persisted assumption, record the rejected assumption in project memory on the next approved mutating rerun.
+
+Exception: skip the impact requirement for first-pass `backbone` creation when `paths.backbone` does not yet exist, and for explicitly approved `wording-only` reruns.
 
 ## Read Scope Contract
 

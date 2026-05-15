@@ -1,13 +1,14 @@
 # Runtime Antigravity Capability Spike
 
-**Status:** CLI CAPABILITY SCOUT COMPLETE / LIVE RUNTIME EXECUTION EXEMPT FOR V1
+**Status:** CLI CAPABILITY SCOUT COMPLETE / CONSERVATIVE ADAPTER LOCKED FOR V1 / LIVE RUNTIME EXECUTION EXEMPT
 **Date:** 2026-04-24
 **Phase:** 04 — Parity Harness Skeleton
 
 **Gate Impact:** Phase 3 packet/governance implementation may be considered
-complete; live Antigravity runtime execution is exempt for v1 by maintainer release
-decision. The adapter path remains manual certification until a deterministic headless
-mode exists.
+complete; Phase 4 now locks a conservative Antigravity adapter that reuses the
+portable guardrail scripts outside the runtime. Live Antigravity runtime execution
+remains exempt for v1 by maintainer release decision. The adapter path stays on
+manual certification until a deterministic headless mode exists.
 
 ---
 
@@ -122,6 +123,89 @@ minimal portable schema only.
 
 ---
 
+## Selected V1 Adapter
+
+Phase 04 selects a conservative blend of **Option A** and **Option B**.
+
+Antigravity does not attempt native path interception in v1. Instead, BA-kit must run
+the guardrail scripts outside the runtime, then inject only the portable-core verdict
+plus compact excerpt content that the runtime may safely use.
+
+### Mandatory Flow
+
+1. Run `scripts/guardrail-preflight.py` before opening or continuing an Antigravity task
+   for `frd`, `stories`, `package`, `status`, or `next`.
+2. If preflight returns `status=block`, do not start a broader runtime read. Surface the
+   returned `message` and `refresh_command` to the operator/user verbatim.
+3. If preflight returns `status=ok` and `excerpt_plan` is populated, build narrow context
+   with `scripts/guardrail-build-excerpts.py`.
+4. Inject only:
+   - the compact `message`
+   - the portable-core verdict fields
+   - excerpt content or excerpt manifest summaries
+5. After the runtime response, maintain a manual or wrapper-produced reads manifest and
+   validate it with `scripts/guardrail-audit.py`.
+
+This preserves the same guardrail outcome as Codex and Claude Code even when Antigravity
+cannot expose equivalent hooks.
+
+### Packet Mapping For Antigravity
+
+The injected Antigravity packet must preserve portable-core contract fields from
+`docs/runtime-hard-guardrails.md` and the concrete outputs emitted by the current scripts.
+
+**Portable-core fields (mandatory in v1)**
+
+- `status`
+- `command`
+- `resolved_slug`
+- `resolved_module` when applicable
+- `guardrail_mode`
+- `indexes.<name>.state`
+- `reason` when `status` is `block` or `warn`
+- `refresh_command` when `status` is `block`
+- `message`
+
+**Adapter-local helpers from current script output**
+
+- `resolved_date`
+- `project_home_override`
+
+**Runtime-hint fields (optional, never required for parity)**
+
+- `allow_reads`
+- `deny_reads`
+- `excerpt_plan`
+- excerpt manifest paths or inline excerpt summaries
+
+Antigravity may receive runtime-hint fields as plain packet prose, but parity must not
+depend on the runtime enforcing them natively.
+
+### Block, Warning, And Escalation Surfacing
+
+Because mid-execution native pausing is unconfirmed, Antigravity must treat the injected
+guardrail verdict itself as the decision point.
+
+- `GUARDRAIL_BLOCK` means stop and ask the operator to run the returned refresh command.
+- `GUARDRAIL_WARN` means continue only in documented escalation mode.
+- `READ_ESCALATION` must be explicit, path-specific, and carried in the operator packet or
+  wrapper manifest; it must not be invented implicitly by the runtime.
+
+If the operator cannot provide a valid `READ_ESCALATION`, the adapter must fail closed
+instead of allowing a convenience broad read.
+
+### Unsupported Assumptions In V1
+
+The Antigravity adapter must not claim or imply any of the following:
+
+- native path allowlists/denylists are enforced inside the runtime
+- full-source files may be discovery-read just because a path is mentioned in the packet
+- warnings are handled silently in logs
+- approval/HITL pauses are available mid-run
+- post-run audit can be skipped when the operator supplied broader context manually
+
+---
+
 ## Spike Methodology
 
 When executing this spike, follow these steps:
@@ -141,8 +225,9 @@ When executing this spike, follow these steps:
 ## Expected Output Format (Post-Execution)
 
 After spike execution, this document should include a filled Capability Assessment table,
-confirmed constraint list, selected mitigation option (with rationale), and a one-paragraph
-summary suitable for Phase 3 schema lock decision.
+confirmed constraint list, the selected conservative adapter mapping above (revised only
+if live runtime evidence contradicts it), and a one-paragraph summary suitable for Phase 3
+schema lock decision.
 
 ---
 
@@ -151,5 +236,8 @@ summary suitable for Phase 3 schema lock decision.
 - `tests/runtime-parity/fixtures/` — input scenarios for parity testing
 - `tests/runtime-parity/goldens/` — normalized behavior envelopes (the contract)
 - `scripts/test-runtime-parity.sh` — harness entry point
+- `scripts/guardrail-preflight.py` — computes compact guardrail verdicts
+- `scripts/guardrail-build-excerpts.py` — produces excerpt-only context payloads
+- `scripts/guardrail-audit.py` — validates actual read scope against preflight
 - `antigravity-setup.md` — Antigravity installation guide
 - `docs/skill-catalog.md` — runtime skill inventory

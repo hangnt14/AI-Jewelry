@@ -68,7 +68,11 @@
     "behavior_module_authoring": "core/behavior/module-authoring.md",
     "behavior_srs": "core/behavior/srs.md",
     "behavior_wireframes": "core/behavior/wireframes.md",
-    "behavior_package_status_next": "core/behavior/package-status-next.md"
+    "behavior_package_status_next": "core/behavior/package-status-next.md",
+    "impact_receipt": "plans/{slug}-{date}/02_backbone/impact-receipt.md",
+    "options_receipt": "plans/{slug}-{date}/01_intake/options/options-receipt.md",
+    "index_validation_receipt": "plans/{slug}-{date}/02_backbone/index-validation-receipt.md",
+    "package_snapshot": "plans/{slug}-{date}/02_backbone/package-snapshot.md"
   },
   "artifact_profiles": {
     "source_manifest": "machine_facing",
@@ -103,7 +107,11 @@
     "memory_hot_vocabulary": "agent_facing",
     "memory_hot_decisions": "agent_facing",
     "memory_hot_pushback": "agent_facing",
-    "memory_module_warm": "agent_facing"
+    "memory_module_warm": "agent_facing",
+    "impact_receipt": "machine_facing",
+    "options_receipt": "machine_facing",
+    "index_validation_receipt": "machine_facing",
+    "package_snapshot": "machine_facing"
   },
   "patterns": {
     "date_token": "^\\d{6}-\\d{4}$",
@@ -210,6 +218,20 @@
       "story_detail_change": "stories",
       "srs_behavior_change": "srs",
       "ui_impact_follow_up": "wireframes"
+    }
+  },
+  "output_modes": {
+    "probe": {
+      "fields": ["output_mode", "status", "command", "resolved_slug", "message"],
+      "use_when": "no-op, clarification, or block verdict"
+    },
+    "delta": {
+      "fields": ["output_mode", "status", "command", "resolved_slug", "message", "indexes", "action_guardrail", "allow_reads", "excerpt_path"],
+      "use_when": "index-first action with changed state"
+    },
+    "full": {
+      "fields": ["output_mode", "status", "command", "resolved_slug", "message", "indexes", "action_guardrail", "allow_reads", "excerpt_path", "deny_reads", "canonical_state_summary", "canonical_next_command", "refresh_command"],
+      "use_when": "escalation, broad read, or first-run with no index"
     }
   },
   "templates": {

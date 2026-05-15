@@ -453,8 +453,8 @@ require_tokens(
     backbone_step,
     [
         "Always verify write authority for the target artifact and its owning memory shard",
-        "For first-pass creation (when `paths.backbone` does not yet exist), skip only the impact-run requirement",
-        "For reruns (artifact already exists): confirm an approved impact run",
+        "For first-pass creation (when `paths.backbone` does not yet exist), skip only the impact-receipt requirement",
+        "For reruns (artifact already exists): locate the active impact receipt at `paths.impact_receipt`",
         "**Must read when it exists:** `paths.plan`",
         "read `paths.plan` when it exists",
         "when `paths.plan` records `options status: recommended` or `options status: in-progress`, stop because optioning is unresolved",

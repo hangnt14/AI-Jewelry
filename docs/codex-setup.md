@@ -34,6 +34,14 @@ It copies those files into:
 
 It also appends any missing Codex agent registrations into `~/.codex/config.toml` in an idempotent way, so rerunning the script is safe.
 It also refreshes the shared `ba-kit` update command in `~/.local/bin/ba-kit` and records the source repo for future one-command updates.
+The same install now stages the low-token guardrail runtime bundle under `~/.codex/ba-kit/`:
+
+- `core/`
+- `scripts/guardrail-preflight.py`
+- `scripts/guardrail-build-excerpts.py`
+- `scripts/guardrail-audit.py`
+- `scripts/validate-index-quality.py`
+- `docs/runtime-hard-guardrails.md`
 
 Prerequisite:
 - `node` must be available because the installer uses a small Node.js registration step.
@@ -47,6 +55,60 @@ ba-kit status --slug warehouse-rfp
 ```
 
 `ba-kit doctor` and `ba-kit status` also surface update availability when the registered upstream branch is ahead of the local install.
+
+## Low-Token Guardrail Preflight
+
+For `frd`, `stories`, `package`, `status`, and `next`, the preferred first pass is to run the repo guardrail scripts before starting `codex exec`, then inject only the compact verdict plus exact path hints.
+
+Preflight example:
+
+```bash
+python3 ~/.codex/ba-kit/scripts/guardrail-preflight.py \
+  --repo /path/to/ba-kit-project \
+  --command stories \
+  --slug warehouse-rfp \
+  --date 260331-1015 \
+  --module auth-flow \
+  --output /tmp/ba-kit-preflight.json
+```
+
+Behavior:
+
+- `status=block`: do not start Codex; surface `message` and run `refresh_command`. Emit a `probe` packet only: `output_mode=probe`, `status`, `command`, `resolved_slug`, `message`.
+- `status=ok` or `status=warn` with current index: emit a `delta` packet — portable-core fields (`status`, `command`, `resolved_slug`, `resolved_module`, `guardrail_mode`, `reason`, `message`, `indexes`) plus `action_guardrail` (if present), `allow_reads`, and any generated excerpt path.
+- broad read required or no current index: emit a `full` packet — delta fields plus `deny_reads`, `canonical_state_summary`, `canonical_next_command`, and `refresh_command` (if block). Emit `READ_ESCALATION: {command} read {path} due to {reason}.` before the read.
+
+See `CLAUDE.md` Runtime Guardrails → Output Modes for the canonical field definitions.
+
+Optional targeted excerpt build:
+
+```bash
+python3 ~/.codex/ba-kit/scripts/guardrail-build-excerpts.py \
+  --repo /path/to/ba-kit-project \
+  --index-key backbone_index \
+  --slug warehouse-rfp \
+  --date 260331-1015 \
+  --module auth-flow \
+  --output-dir /tmp/ba-kit-guardrail
+```
+
+Optional post-run audit when a runtime trace or read manifest exists:
+
+```bash
+python3 ~/.codex/ba-kit/scripts/guardrail-audit.py \
+  --preflight /tmp/ba-kit-preflight.json \
+  --reads-manifest /tmp/ba-kit-reads.json \
+  --output /tmp/ba-kit-audit.json
+```
+
+The Codex install manifest at `~/.local/share/ba-kit/installations/codex.env` records the staged guardrail paths as `BA_KIT_GUARDRAIL_*` variables.
+It also records `BA_KIT_INDEX_VALIDATOR` so wrappers can run the producer-side validator without rediscovering paths.
+
+Producer-side reminder:
+
+- after generating `backbone_index`, `stories_index`, or `srs_index`, run `validate-index-quality.py --writeback`
+- do not treat a newly written index as trusted until the validator stamps `validated_at`, `validated_by`, and promotes `stale_status` to `current`
+- for each downstream `frd`, `stories`, `package`, `status`, or `next` action that can route from backbone, re-send only the compact `ACTION_GUARDRAIL` packet instead of reopening full backbone context
 
 Or ask Codex to run:
 

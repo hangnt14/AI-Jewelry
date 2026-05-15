@@ -17,6 +17,35 @@ For non-trivial BA work, start from `skills/ba-start/SKILL.md` instead of improv
 - Persist project memory on disk; do not rely on Claude chat memory as the system of record.
 - Apply runtime-neutral HITL behavior from `core/contract-behavior.md` and the selected shard.
 
+## Runtime Guardrails
+
+If a wrapper or operator supplies a guardrail preflight packet for `frd`, `stories`, `package`, `status`, or `next`, treat that packet as the authoritative runtime constraint.
+
+- Honor `status`, `message`, `guardrail_mode`, `allow_reads`, `deny_reads`, `indexes`, and `refresh_command` exactly as supplied.
+- If `status=block`, stop before lifecycle work and surface `refresh_command` instead of proceeding.
+- Treat an index as truly current only when the packet already reflects producer-side validation; do not assume a freshly generated index is trusted before `validated_at` and `validated_by` exist.
+- When the packet says an index is current, use only the allowlisted files for discovery and prefer any generated excerpt files over reopening the full source artifact.
+- Do not discovery-read a full artifact that appears in `deny_reads` unless you first emit `READ_ESCALATION: {command} read {path} due to {reason}.`
+- If an `action_guardrail` or `ACTION_GUARDRAIL` reminder is present, obey it on that action even if earlier turns already mentioned the same backbone route.
+- For `status` and `next`, `PROJECT-HOME.md` may help explain state to the user but must not override canonical artifact resolution.
+- Keep the runtime payload compact; do not ask for the full guardrail policy again when the packet already supplies the verdict and exact path hints.
+
+### Output Modes
+
+Adapters and wrappers emit one of three output modes. Use the smallest mode that satisfies the action:
+
+| Mode | When to use | Required fields |
+| --- | --- | --- |
+| `probe` | no-op, clarification, or block verdict | `output_mode`, `status`, `command`, `resolved_slug`, `message` |
+| `delta` | index-first action with changed state | probe fields + `indexes.<name>.state`, `action_guardrail` (if present), `allow_reads`, `excerpt_path` (if built) |
+| `full` | escalation, broad read, or first-run with no index | delta fields + `deny_reads`, `canonical_state_summary`, `canonical_next_command`, `refresh_command` (if block) |
+
+Rules:
+- `probe` is the default for `status=block` and no-op responses; do not add delta or full fields.
+- `delta` is the default for `status=ok` or `status=warn` when an index is current.
+- `full` is required only when `READ_ESCALATION` is emitted or no current index exists.
+- Receipt contracts (`impact_receipt`, `options_receipt`, `index_validation_receipt`) are separate artifacts; do not embed their content in the runtime packet.
+
 ## Artifact Model
 
 - Project root: `plans/{slug}-{date}/`

@@ -39,7 +39,7 @@ Parse the input pack to build the handoff plan:
 - treat modal, dialog, and drawer overlays with flow impact as primary screens
 - derive supporting frames from documented states, validation rules, list behavior, and feedback surfaces
 - verify each group has portal, navigation schema, and active-menu evidence before planning
-- run the navigation validator described in `core/behavior/srs.md` when Group C is available
+- run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {paths.srs_group group=c}` when Group C is available and a design direction already exists
 - carry forward the runtime design target `paths.design_doc`
 
 ## Step 9.2 - Ask For Or Refresh Runtime DESIGN.md

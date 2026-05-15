@@ -42,6 +42,11 @@ f12:f12-packet-needs-repartition.md:g12-packet-needs-repartition.md:Underspecifi
 f13:f13-options-step.md:g13-options-step.md:Explicit ba-start options generation command
 f14:f14-next-recommends-options.md:g14-next-recommends-options.md:ba-next recommends options after intake recommendation
 f15:f15-backbone-blocked-unresolved-options.md:g15-backbone-blocked-unresolved-options.md:backbone blocked while options decision is unresolved
+f16:f16-frd-guardrail-index-first.md:g16-frd-guardrail-index-first.md:frd guardrail enforces backbone index-first discovery
+f17:f17-stories-guardrail-index-first.md:g17-stories-guardrail-index-first.md:stories guardrail enforces backbone index-first discovery
+f18:f18-package-guardrail-escalated-exact-content.md:g18-package-guardrail-escalated-exact-content.md:package guardrail tracks escalated exact-content reads
+f19:f19-status-project-home-conflict.md:g19-status-project-home-conflict.md:status trusts canonical artifacts over PROJECT-HOME conflict
+f20:f20-next-project-home-conflict.md:g20-next-project-home-conflict.md:next recommends canonical step despite PROJECT-HOME conflict
 "
 
 REGISTRY_FILE="${TMPDIR:-/tmp}/ba-kit-runtime-parity-fixtures.$$"
@@ -123,6 +128,13 @@ check_fixture_contract() {
         f13|f14|f15)
             require_table_field "$path" "read_scope" "fixture $id expected outcome" || fixture_failed=1
             ;;
+        f16|f17|f18|f19|f20)
+            require_table_field "$path" "read_scope" "fixture $id expected outcome" || fixture_failed=1
+            require_exact_line "$path" "## Guardrail Evidence" "fixture $id" || fixture_failed=1
+            for field in evidence_source preflight_status audit_status; do
+                require_table_field "$path" "$field" "fixture $id guardrail evidence" || fixture_failed=1
+            done
+            ;;
     esac
 
     if [ "$fixture_failed" -eq 0 ]; then
@@ -159,6 +171,46 @@ check_golden_contract() {
                 require_table_field "$path" "$field" "golden $id behavior envelope" || golden_failed=1
             done
             require_exact_line "$path" "| required_decision | selected option or skipped |" "golden $id behavior envelope" || golden_failed=1
+            ;;
+        f16|f17|f18|f19|f20)
+            require_exact_line "$path" "## Guardrail Preflight" "golden $id" || golden_failed=1
+            require_exact_line "$path" "## Guardrail Audit" "golden $id" || golden_failed=1
+            for field in status command guardrail_mode allow_reads_includes message; do
+                require_table_field "$path" "$field" "golden $id guardrail preflight" || golden_failed=1
+            done
+            for field in status actual_reads_includes violations.count warnings.count message; do
+                require_table_field "$path" "$field" "golden $id guardrail audit" || golden_failed=1
+            done
+            ;;
+    esac
+
+    case "$id" in
+        f16|f17)
+            for field in "indexes.backbone_index.state" deny_reads_includes excerpt_plan; do
+                require_table_field "$path" "$field" "golden $id guardrail section" || golden_failed=1
+            done
+            require_table_field "$path" "actual_reads_excludes" "golden $id guardrail audit" || golden_failed=1
+            ;;
+        f18)
+            for field in "indexes.backbone_index.state" "indexes.stories_index.state" "indexes.srs_index.state" deny_reads_includes; do
+                require_table_field "$path" "$field" "golden $id guardrail section" || golden_failed=1
+            done
+            require_table_field "$path" "warnings.types_includes" "golden $id guardrail audit" || golden_failed=1
+            require_table_field "$path" "warnings.paths_includes" "golden $id guardrail audit" || golden_failed=1
+            ;;
+        f19)
+            for field in visible_warning canonical_state_summary; do
+                require_table_field "$path" "$field" "golden $id behavior envelope" || golden_failed=1
+            done
+            require_table_field "$path" "project_home_override" "golden $id guardrail preflight" || golden_failed=1
+            require_table_field "$path" "actual_reads_excludes" "golden $id guardrail audit" || golden_failed=1
+            ;;
+        f20)
+            for field in visible_warning recommendation_summary; do
+                require_table_field "$path" "$field" "golden $id behavior envelope" || golden_failed=1
+            done
+            require_table_field "$path" "project_home_override" "golden $id guardrail preflight" || golden_failed=1
+            require_table_field "$path" "actual_reads_excludes" "golden $id guardrail audit" || golden_failed=1
             ;;
     esac
 
