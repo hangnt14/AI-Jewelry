@@ -31,6 +31,10 @@ Match intent using the first rule that fits:
 | asking to prepare UI handoff, mockup checklist, or wireframe constraints | `ba-start wireframes` | friendly alias for manual wireframe handoff |
 | asking to export, publish a review package, or create stakeholder handoff HTML | `ba-start package` | friendly alias for packaging |
 | asking to brainstorm solution options, create multiple solution directions, compare solution approaches, choose an option, or skip optioning | `ba-start options` | pre-backbone decision support |
+| reconstructing docs from existing source code, reverse-engineering requirements from a codebase, or "tao tai lieu tu code co san" | `ba-start reverse` | reverse mode entry — source-first reconstruction |
+| checking reverse lane progress, baseline lock state, or evidence classification status | `ba-start reverse status` | reverse lane inspection |
+| classifying reverse evidence, separating as-built drift from future-state requests | `ba-start reverse impact` | reverse evidence triage |
+| promoting validated reverse evidence to backbone or SRS | `ba-start reverse promote` | reverse promotion path |
 | directly generating or rerunning intake/options/backbone/frd/stories/srs/wireframes/package | `ba-start` with the matching subcommand | direct BA lifecycle step |
 | a new BA engagement from raw input | `ba-start` | full lifecycle |
 
@@ -56,8 +60,14 @@ Rules:
 - `ba-impact` for requirement changes or correction statements
 - `ba-next` for "what should I do next"
 - `ba-start` for explicit lifecycle steps
+- `ba-start reverse` for source-first reconstruction, reverse lane entry, refresh, promote, status, and impact
 - `ba-collab` for module collaboration and approval-gated GitHub handoff
 - `ba-notion` for publishing
+
+Reverse routing rules:
+- Route to `ba-start reverse` only when the user explicitly signals source-code-first reconstruction, missing docs from existing code, or reverse lane commands.
+- Do NOT route to `ba-start reverse` for normal forward-lifecycle BA work, even if the project has a reverse lane open.
+- If the project has both a reverse lane and a forward lifecycle in progress, prefer the command the user explicitly named. If ambiguous, ask one focused question.
 
 The dispatcher must not directly edit BA artifacts.
 </step>
@@ -68,6 +78,7 @@ The dispatcher must not directly edit BA artifacts.
 - [ ] Input validated
 - [ ] Exactly one BA command chosen
 - [ ] `ba-impact` preferred for ambiguous change statements
+- [ ] Reverse intent routed to `ba-start reverse` only when explicitly signaled
 - [ ] Routing reason shown before handoff
 - [ ] Dispatcher does not mutate artifacts itself
 </success_criteria>

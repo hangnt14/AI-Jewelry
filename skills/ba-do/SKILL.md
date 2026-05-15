@@ -20,6 +20,9 @@ Use this command when you know what you want to do in a BA workflow but do not k
 /ba-do toi nhan module auth-flow
 /ba-do gui module payment cho Lead BA review
 /ba-do publish SRS len Notion
+/ba-do tao tai lieu tu code co san
+/ba-do reverse engineer requirements from codebase
+/ba-do xem trang thai reverse lane
 ```
 
 <execution_context>

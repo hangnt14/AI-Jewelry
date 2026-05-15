@@ -10,18 +10,15 @@ This step requires:
 Status must emit a compact, deterministic checklist without broad artifact reads.
 
 Resolution order:
-1. If a current package snapshot exists at `plans/{slug}-{date}/02_backbone/package-snapshot.md`,
-   read it and derive artifact presence directly from its `artifacts` list.
-2. Otherwise, resolve artifact existence from filesystem stat checks only (no content reads).
-3. Read `paths.project_memory` header fields and `paths.memory_index` for activation state
-   and shard freshness only — do not read shard content.
+1. Package snapshot at `plans/{slug}-{date}/02_backbone/package-snapshot.md` when current — derive artifact presence from its `artifacts` list.
+2. Otherwise filesystem stat only (no content reads).
+3. `paths.project_memory` header and `paths.memory_index` for activation state only.
 
 ## Memory Read Scope
 
 - **Must read:** `core/contract.yaml`, `core/contract-behavior.md`
-- **Snapshot path (preferred):** `plans/{slug}-{date}/02_backbone/package-snapshot.md` when present
-- **May read:** `paths.project_memory` header fields, `paths.memory_index` (activation state + shard freshness)
-- **Must NOT read:** `log.md` (unless `--audit` flag), `warm/` shards, `cold/`, full backbone, full stories, full SRS
+- **May read:** package snapshot, `paths.project_memory` header, `paths.memory_index`
+- **Must NOT read:** `log.md`, `warm/` shards, `cold/`, full backbone, stories, SRS
 
 ## Scope
 
@@ -43,32 +40,42 @@ Date set: {date}
 Snapshot: current | degraded | absent
 
 [Core]
-- [x] PROJECT-HOME.md (BA-facing dashboard) — 2026-03-26
+- [x] PROJECT-HOME.md — 2026-03-26
 - [x] 01_intake/intake.md — 2026-03-26
 - [x] 02_backbone/backbone.md — 2026-03-26
 
 [Module: auth-flow]
 - [x] 03_modules/auth-flow/user-stories.md — 2026-03-26
 - [ ] 03_modules/auth-flow/srs.md — missing
-- [ ] 03_modules/auth-flow/wireframe-input.md — missing
 
 [Compiled]
 - [x] 04_compiled/compiled-frd.html — 2026-03-26
-- [x] 04_compiled/compiled-srs.html — 2026-03-26
 
 [Designs]
 - [ ] designs/{slug}/DESIGN.md — missing
 - [!] wireframe handoff — skipped — 2026-03-26
 
+[Reverse Lane]  ← omit section when reverse_baseline_lock absent
+- [x|!| ] reverse-baseline-lock.json — {scan_timestamp} | absent
+- [x|!| ] reverse-index.md — stale_status: {unknown|current|stale} | absent
+- [x| ] reverse-focus-excerpts.md — {entry_count} excerpts | absent
+- [x| ] reverse-evidence-ledger.md — {total} entries | absent
+- [x| ] reverse-drift-state.json — present | absent
+
 ```
 
 Status rules:
 
-- When snapshot is current, derive artifact presence and mtime from snapshot `artifacts` list.
-- When snapshot is absent or degraded, derive artifact presence from filesystem stat only.
-- For regular artifacts, print `exists` or `missing` with the last-modified date when present.
-- For wireframe handoff, print the explicit wireframe state plus the marker date.
-- When wireframe handoff is `completed`, also list the detected runtime design file, wireframe input pack, and wireframe map.
-- Print compact memory, shard index, activation, owner, freshness, file-back, and packet registry metadata from `paths.project_memory` and `paths.memory_index` only.
-- For delegated slices under `paths.delegation_root`, print the tracker state directly and mark `likely stalled` when the last heartbeat exceeds `states.stall_after_minutes`.
+- Derive artifact presence from snapshot `artifacts` list when current; otherwise filesystem stat only.
+- Print `exists` or `missing` with last-modified date. For wireframe handoff, print state + marker date.
+- When wireframe handoff `completed`, list runtime design file, wireframe input pack, and wireframe map.
+- Print compact memory/shard/activation metadata from `paths.project_memory` and `paths.memory_index` only.
+- For delegated slices, print tracker state; mark `likely stalled` when heartbeat exceeds `stall_after_minutes`.
 - Do not read artifact content to produce this output.
+
+Reverse lane status rules:
+- Omit `[Reverse Lane]` when `reverse_baseline_lock` absent (stat only).
+- When present: stat checks only — do not open reverse lane files to count entries.
+- Mark reverse-index `[!]` when stale_status `unknown` or `stale`; suggest `ba-start reverse --slug <slug>`.
+- When evidence counts unknown from stat: print `unclassified: unknown — run ba-start reverse status`.
+- When all promoted and none unclassified: `Reverse lane complete. Consider /ba-start backbone --slug <slug>.`

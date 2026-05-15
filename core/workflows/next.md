@@ -53,11 +53,16 @@ Using the snapshot manifest or stat-only checks, determine which of these exist:
 - wireframe-map
 - wireframe-state
 - packaged FRD/SRS HTML
+- reverse_baseline_lock (stat only: `plans/{slug}-{date}/00_reverse/reverse-baseline-lock.json`)
+- reverse_index (stat only: `plans/{slug}-{date}/00_reverse/reverse-index.md`)
+- reverse_evidence_ledger (stat only: `plans/{slug}-{date}/00_reverse/reverse-evidence-ledger.md`)
+- reverse_drift_state (stat only: `plans/{slug}-{date}/00_reverse/reverse-drift-state.json`)
 
 When the snapshot is current, use its `artifacts` list directly.
 When the snapshot is absent or degraded, use filesystem stat only — do not open files.
 Read the backbone gate section only when the snapshot is absent and gate ambiguity cannot be
 resolved from artifact presence alone.
+Do not open reverse lane files to determine next step — stat checks only.
 </step>
 
 <step name="determine_next_step">
@@ -75,6 +80,26 @@ Apply the first matching rule:
 10. final markdown exists but required packaged HTML is missing -> `ba-start package --slug <slug>`
 11. everything required already exists -> `ba-start status --slug <slug>`
 
+Reverse lane rules (apply only when reverse_baseline_lock exists):
+
+R1. reverse_baseline_lock exists but reverse_evidence_ledger is absent -> `ba-start reverse impact --slug <slug>`
+    Reason: baseline scan complete but evidence not yet classified.
+R2. reverse_evidence_ledger exists and has unclassified entries (stat check only — do not open file to count) -> `ba-start reverse impact --slug <slug>`
+    Reason: unclassified evidence blocks promotion.
+    Block rule: do NOT guess next step from evidence content. If classification state is unknown from stat alone, emit `ba-start reverse status --slug <slug>` instead.
+R3. reverse_evidence_ledger exists and reverse_drift_state is absent -> `ba-start reverse status --slug <slug>`
+    Reason: drift state not yet computed; user should inspect before promoting.
+R4. reverse_drift_state exists and reverse_evidence_ledger has unpromoted as_built_drift entries -> `ba-start reverse promote --slug <slug> --evidence-ids <ids>`
+    Reason: classified drift ready for promotion.
+    Block rule: do NOT infer evidence IDs from file content. Emit the command template and tell the user to supply IDs from `ba-start reverse status`.
+R5. all reverse evidence promoted and no unclassified remain -> continue to forward lifecycle rules above (rules 1–11).
+
+Reverse lane guard:
+- Never auto-pick a reverse lane step when focus_selection is missing from baseline lock.
+- If reverse_baseline_lock exists but focus_selection is empty or absent, emit:
+  `ba-start reverse --slug <slug>` with reason "focus_selection missing — re-run baseline scan to select focus areas."
+- Reverse lane rules (R1–R5) take priority over forward rules (1–11) only when reverse_baseline_lock exists and the reverse lane is not yet complete.
+
 When FRD/SRS/wireframe-handoff gates are unclear, explain the uncertainty and recommend
 `ba-start status --slug <slug>` instead of guessing.
 </step>
@@ -89,6 +114,7 @@ Project: {slug}
 Date set: {date}
 Snapshot: current | degraded | absent
 Project Home: {PROJECT-HOME.md exists/missing}
+Reverse lane: active | complete | absent
 Next command: /ba-start ...
 BA-facing next step: ...
 Reason: ...

@@ -8,6 +8,15 @@ This command is the safe landing zone for:
 - bare correction statements such as "Khong co nhom admin user"
 
 It must not mutate artifacts. It analyzes impact first, then returns the next commands.
+
+Reverse lane note: when the project has an active reverse lane (`reverse_baseline_lock` exists),
+impact classification must distinguish between:
+- `as_built_drift` — behavior exists in code but is absent from or contradicts the documented baseline
+- `future_state_request` — desired behavior not yet implemented in code
+- `mixed_change` — contains both as-built and future-state elements
+
+Route `as_built_drift` to `ba-start reverse promote`. Route `future_state_request` to the forward
+lifecycle. Never merge the two lanes in a single rerun recommendation.
 </purpose>
 
 <required_reading>
@@ -51,6 +60,15 @@ Follow the `impact` logic from `ba-start` exactly:
 - recommend the narrowest safe rerun path
 - print exact commands
 
+Reverse lane classification (apply when `reverse_baseline_lock` exists):
+- Inspect whether the change describes behavior already present in committed source code (`as_built_drift`),
+  desired behavior not yet in code (`future_state_request`), or both (`mixed_change`).
+- `as_built_drift` → next command: `ba-start reverse promote --slug <slug> --evidence-ids <ids>`
+- `future_state_request` → next command: forward lifecycle (backbone / stories / srs as appropriate)
+- `mixed_change` → must be split first: `ba-start reverse impact --slug <slug> --evidence-ids <ids>`
+- Never recommend a single rerun path that merges as-built and future-state changes.
+- Do not mutate canonical artifacts (backbone, SRS, FRD) during classification.
+
 Do not apply edits during this command.
 </step>
 
@@ -65,6 +83,8 @@ Do not ask a generic "what do you want me to do next?" question unless the triag
 - [ ] Project set resolved exactly or ambiguity surfaced explicitly
 - [ ] Change classified without mutating artifacts
 - [ ] Current source of truth identified
+- [ ] Reverse lane classification applied when reverse_baseline_lock exists
+- [ ] as_built_drift and future_state_request never merged into a single rerun path
 - [ ] Affected and unaffected artifacts listed
 - [ ] Exact next commands printed
 </success_criteria>
