@@ -60,7 +60,7 @@ Preferred natural-language entry:
 /ba-do <description>
 ```
 
-Use `/ba-start` when you already know the lifecycle step or want the full BA pipeline.
+Use `/ba-start` when you already know the lifecycle step, want the full BA pipeline, or need the reverse as-built lane.
 
 Full workflow:
 
@@ -74,6 +74,7 @@ BA-friendly workflow:
 /ba-do Tôi có tài liệu yêu cầu mới, hãy tạo dự án BA
 /ba-do Tiếp tục dự án warehouse-rfp, bước tiếp theo là gì?
 /ba-do Đánh giá thay đổi: Export CSV phải có audit log
+/ba-do Phân tích ngược hệ thống hiện tại để tạo as-built SRS
 /ba-do Chuẩn bị handoff UI cho module auth-flow
 /ba-do Tôi nhận module auth-flow
 /ba-do Gửi module auth-flow cho Lead BA review
@@ -95,6 +96,8 @@ Step-level reruns:
 /ba-start wireframes --slug warehouse-rfp --module auth-flow
 /ba-start package --slug warehouse-rfp
 /ba-start status --slug warehouse-rfp
+/ba-start reverse --slug warehouse-rfp
+/ba-start reverse impact --slug warehouse-rfp
 /ba-notion srs --slug warehouse-rfp --page https://www.notion.so/... --mode overwrite
 ```
 
@@ -108,6 +111,8 @@ Router and deterministic helpers:
 ```
 
 Use `options` when intake needs multiple solution directions before the backbone is written. The pre-backbone option pack and comparison live under `plans/{slug}-{date}/01_intake/options/`.
+
+Use `reverse` when the goal is to document the system as implemented today. Reverse mode produces evidence-backed as-built outputs, not future-state proposals. If the user is asking for a change, new capability, or desired target behavior, route that request through `impact` or the normal forward lifecycle instead. In reverse mode, wireframes are skipped / not-applicable because no new UI is being proposed.
 
 Default `/ba-start` handles the full BA lifecycle once routing is already clear:
 1. Parse raw input into an intake form

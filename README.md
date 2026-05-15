@@ -22,6 +22,7 @@ BA có thể dùng ngôn ngữ tự nhiên thay vì nhớ command:
 Tôi có tài liệu yêu cầu mới, hãy tạo dự án BA
 Tiếp tục dự án warehouse-rfp, bước tiếp theo là gì?
 Đánh giá thay đổi: Export CSV phải có audit log
+Phân tích ngược hệ thống hiện tại để tạo as-built SRS
 Tôi nhận module auth-flow
 Gửi module auth-flow cho Lead BA review
 Đồng bộ module reporting với main trước khi làm tiếp
@@ -31,6 +32,7 @@ Xuất gói bàn giao cho stakeholder
 Agent sẽ map intent sang workflow an toàn:
 
 - Lifecycle BA: intake, options khi cần, backbone, stories, FRD, SRS, wireframe handoff, package.
+- Reverse BA: quét code/evidence để dựng as-built SRS, khóa baseline commit, theo dõi drift, và chỉ promote nội dung có evidence rõ.
 - Collaboration BA: claim module, check conflict, create review packet, optional GitHub PR handoff.
 - Git/GitHub là implementation detail; commit, push, PR, merge chỉ chạy khi user approve rõ.
 
@@ -167,6 +169,7 @@ BA non-tech nên bắt đầu bằng natural language qua router:
 ```text
 /ba-do Tôi có tài liệu yêu cầu mới, hãy tạo dự án BA
 /ba-do Tiếp tục dự án warehouse-rfp
+/ba-do Phân tích ngược hệ thống hiện tại để tạo as-built SRS
 /ba-do Tôi nhận module auth-flow
 /ba-do Gửi module auth-flow cho Lead BA review
 ```
@@ -183,11 +186,15 @@ Command-level fallback:
 /ba-start wireframes --slug warehouse-rfp --module auth-flow
 /ba-start package --slug warehouse-rfp
 /ba-start status --slug warehouse-rfp
+/ba-start reverse --slug warehouse-rfp
+/ba-start reverse impact --slug warehouse-rfp
 /ba-collab Tôi nhận module auth-flow
 /ba-collab Gửi module auth-flow cho Lead BA review
 ```
 
 Dùng `options` khi intake cho thấy cần 1-3 hướng solution trước khi viết `backbone.md`. Step này tạo option pack + comparison dưới `01_intake/options/*`, rồi chốt `--select` hoặc `--skip` rõ ràng trước khi sang backbone.
+
+Dùng `reverse` khi mục tiêu là dựng tài liệu as-built từ hệ thống đang chạy hoặc code đã commit. Reverse lane chỉ promote nội dung có evidence rõ, không suy diễn business intent, không dùng cho future-state request, và bỏ qua wireframes vì không đề xuất UI mới. Nếu user đang yêu cầu thay đổi mong muốn trong tương lai, chuyển sang `impact` hoặc lifecycle forward bình thường.
 
 CLI helper:
 

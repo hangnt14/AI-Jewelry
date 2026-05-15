@@ -18,6 +18,8 @@ Use this checklist before marking adaptive runtime memory work as release-ready.
 | Guardrail hardening smoke | PASS | `bash scripts/test-guardrail-hardening.sh` |
 | Activation threshold validation | PASS | `bash scripts/test-activation-thresholds.sh` |
 | Runtime install smoke | PASS | `bash scripts/test-runtime-install-smoke.sh` |
+| Reverse script syntax/smoke | PASS | `bash scripts/test-reverse-commands.sh` |
+| Reverse index validation smoke | PASS | `bash scripts/test-index-quality.sh` with reverse fixtures |
 
 ## Parity Harness
 
@@ -26,6 +28,7 @@ Use this checklist before marking adaptive runtime memory work as release-ready.
 | Fixture/golden structure | PASS | `bash scripts/test-runtime-parity.sh --check-structure` |
 | Normalized behavior envelopes | PASS | `tests/runtime-parity/goldens/*.md` f01-f12 |
 | Guardrail fixture/golden coverage | PASS | `tests/runtime-parity/goldens/*.md` f16-f20 |
+| Reverse parity fixture coverage | PASS | reverse fixtures/goldens cover baseline lock, reverse status, reverse impact, and reverse promote flows |
 | Runtime adapter execution | EXEMPT | v1 maintainer decision; adapters remain available for future release evidence |
 | Claude Code headless adapter | EXEMPT | `bash scripts/test-runtime-parity.sh --run-adapters --runtime claude fXX` remains available |
 | Codex headless adapter | EXEMPT | `bash scripts/test-runtime-parity.sh --run-adapters --runtime codex fXX` remains available |
