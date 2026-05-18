@@ -35,6 +35,7 @@ Match intent using the first rule that fits:
 | checking reverse lane progress, baseline lock state, or evidence classification status | `ba-start reverse status` | reverse lane inspection |
 | classifying reverse evidence, separating as-built drift from future-state requests | `ba-start reverse impact` | reverse evidence triage |
 | promoting validated reverse evidence to backbone or SRS | `ba-start reverse promote` | reverse promotion path |
+| exploring a vague idea, brainstorming a feature concept, or describing an idea without structured requirements ("ý tưởng", "brainstorm", "thử nghĩ", "explore idea", "idea cho feature", "tôi có ý tưởng") — no file path provided, no structured stakeholders/goals/scope | `/brainstorm` | pre-intake idea clarification |
 | directly generating or rerunning intake/options/backbone/frd/stories/srs/wireframes/package | `ba-start` with the matching subcommand | direct BA lifecycle step |
 | a new BA engagement from raw input | `ba-start` | full lifecycle |
 

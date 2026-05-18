@@ -69,6 +69,7 @@ Do not open reverse lane files to determine next step — stat checks only.
 Apply the first matching rule:
 
 1. no intake -> next step `ba-start intake`
+   Hint (display only, does not change the recommended command): "Chưa có tài liệu yêu cầu? Thử `/brainstorm <ý tưởng>` trước để clarify idea thành structured input cho intake."
 2. intake exists and `paths.plan` says options are `recommended` or `in-progress` -> `ba-start options --slug <slug>`
 3. intake exists and `paths.plan` is missing, invalid, or says `completed` without `selected option` -> `ba-start status --slug <slug>`
 4. intake exists, `paths.plan` says options are `not-needed`, and no backbone -> `ba-start backbone --slug <slug>`
@@ -117,6 +118,7 @@ Project Home: {PROJECT-HOME.md exists/missing}
 Reverse lane: active | complete | absent
 Next command: /ba-start ...
 BA-facing next step: ...
+Hint: {only when rule 1 matched — "Chưa có requirements? Thử /brainstorm <ý tưởng> trước."}
 Reason: ...
 ```
 
