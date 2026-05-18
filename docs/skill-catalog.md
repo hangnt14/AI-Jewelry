@@ -9,11 +9,25 @@ This catalog explains the BA-kit workflow skill plus the maintenance skills that
 | Skill | When to Use | Related Templates | Related Agents | Typical Output |
 | --- | --- | --- | --- | --- |
 | `ba-start` | Full BA engagement, reverse as-built analysis, or resumable step-level reruns from raw input to packaged deliverables | `project-home-template.md`, `intake-form-template.md`, `requirements-backbone-template.md`, `frd-template.md`, `user-story-template.md`, `srs-template.md`, `design-md-template.md`, `wireframe-input-template.md`, `wireframe-map-template.md` | `requirements-engineer`, `ui-ux-designer`, `ba-documentation-manager`, `ba-researcher` | Project Home dashboard, intake form, option pack + comparison when needed, requirements backbone, gated FRD/stories/SRS artifacts, reverse evidence lane, project runtime `DESIGN.md`, wireframe constraint pack, manual wireframe handoff map, FRD/SRS HTML, quality review, artifact status |
+| `brainstorm` | Pre-intake idea clarification — capture and expand a raw idea through a 7-section deep interview before entering the BA lifecycle | `brainstorm-template.md` | None | Structured brainstorm doc with flows, ASCII diagrams, scenario matrix, state transitions, interrupted-tx handling, exact wording, open questions |
 | `ba-collab` | Module ownership, review packets, conflict checks, and approval-gated GitHub handoff | `collab-home-template.md`, `module-home-template.md`, `review-packet-template.md` | Lead BA / Module BA roles | Collab Home, Module Home, review packet, optional approved PR handoff |
 | `ba-kit-update` | Update the installed BA-kit runtime assets from the registered source repo | None | None | One-command fast-forward update and reinstall |
 | `ba-notion` | Publish an exact BA markdown artifact into Notion via MCP | None | None | Notion page created or updated from BA source content |
 
 ## Workflow
+
+`/brainstorm` is the pre-intake idea exploration tool:
+
+1. Auto-derive feature slug and idea slug from idea content
+2. Detect complexity signals (external redirect, multi-role, state machine, throttle rules)
+3. Run 7-section deep interview (one section at a time, not batched)
+4. Synthesize answers into 13-section structured document
+5. Quality checklist gate before write
+6. Resolve open questions with cascade scan
+
+Output: `docs/{feature}/brainstorms/{idea-slug}.md`
+
+After brainstorm, feed the output into `/ba-start intake` as source material.
 
 `/ba-start` with no subcommand handles the forward BA lifecycle:
 
@@ -36,6 +50,12 @@ This catalog explains the BA-kit workflow skill plus the maintenance skills that
 ## Invocation
 
 ```text
+/brainstorm
+/brainstorm <idea text>
+/brainstorm @<file-path>
+/brainstorm <idea text> --shallow
+/brainstorm <idea text> --lang en
+
 /ba-start
 /ba-start intake <file>
 /ba-start options --slug <slug>
