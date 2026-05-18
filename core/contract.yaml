@@ -4,7 +4,8 @@
     "language": "vi",
     "date_token_format": "YYMMDD-HHmm",
     "mode": "hybrid",
-    "ui_baseline": "Shadcn UI"
+    "ui_baseline": "Shadcn UI",
+    "platform": "mobile"
   },
   "states": {
     "wireframe": ["completed", "skipped", "not-applicable", "missing"],
@@ -80,7 +81,11 @@
     "reverse_evidence_ledger": "plans/{slug}-{date}/00_reverse/reverse-evidence-ledger.md",
     "reverse_drift_state": "plans/{slug}-{date}/00_reverse/reverse-drift-state.json",
     "reverse_read_manifest": "plans/{slug}-{date}/00_reverse/reverse-read-manifest.ndjson",
-    "behavior_reverse": "core/behavior/reverse.md"
+    "behavior_reverse": "core/behavior/reverse.md",
+    "qc_output_root": "docs/QC-{PLATFORM}/review-doc/{UC-folder-name}",
+    "qc_report": "docs/QC-{PLATFORM}/review-doc/{UC-folder-name}/{filename}_audited_{slug}_v{N}.md",
+    "qc_backlog": "docs/QC-{PLATFORM}/review-doc/{UC-folder-name}/{filename}_question-backlog.md",
+    "behavior_qc_review": "core/behavior/qc-review.md"
   },
   "artifact_profiles": {
     "source_manifest": "machine_facing",
@@ -243,6 +248,39 @@
       "requires": ["reverse_baseline_lock", "reverse_evidence_ledger"],
       "outputs": [],
       "notes": "Classifies each pending change as as_built_drift, future_state_request, or mixed_change. Does not mutate artifacts."
+    },
+    "qc-review": {
+      "module_required": true,
+      "mutable": false,
+      "requires": ["srs"],
+      "outputs": ["qc_report", "qc_backlog"],
+      "notes": "Audit UC/SRS for test-readiness. Non-mutable: reads artifacts, produces QC reports. Auto-triggered by quality gates."
+    }
+  },
+  "quality_gates": {
+    "pre_srs": {
+      "invoke": "qc-review",
+      "min_version": "1.0.0",
+      "profile": "completeness-clarity-only",
+      "platform": "${defaults.platform}",
+      "block_on": "verdict == NOT_READY",
+      "trigger_after": "stories"
+    },
+    "pre_wireframe": {
+      "invoke": "qc-review",
+      "min_version": "1.0.0",
+      "profile": "full-10ka",
+      "platform": "${defaults.platform}",
+      "block_on": "score < 70",
+      "trigger_after": "srs"
+    },
+    "pre_package": {
+      "invoke": "qc-review",
+      "min_version": "1.0.0",
+      "profile": "cross-artifact-consistency",
+      "platform": "${defaults.platform}",
+      "block_on": "blockers.length > 0",
+      "trigger_after": "wireframes"
     }
   },
   "behavior_shards": {
@@ -261,7 +299,8 @@
     "reverse_status": ["behavior_reverse"],
     "reverse_refresh": ["behavior_reverse"],
     "reverse_promote": ["behavior_reverse"],
-    "reverse_impact": ["behavior_reverse"]
+    "reverse_impact": ["behavior_reverse"],
+    "qc-review": ["behavior_qc_review"]
   },
   "source_of_truth_order": ["backbone", "intake"],
   "next_step_order": ["intake", "options", "backbone", "frd", "stories", "srs", "wireframes", "package", "status"],

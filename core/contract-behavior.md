@@ -240,6 +240,36 @@ A command may escalate its read scope only when the index routes to an additiona
 
 Emit: `READ_ESCALATION: {command} read {path} due to {reason}.`
 
+## Quality Gate Enforcement
+
+After each mutable command completes, check `quality_gates` in `contract.yaml` for a gate with `trigger_after` matching the completed command.
+
+If a matching gate exists:
+1. Resolve platform from `--platform` flag or `defaults.platform`.
+2. Load profile from `skills/qc-uc-review/profiles/{platform}.md`.
+3. Invoke `qc-review` skill with the gate's `profile` and resolved `platform`.
+4. Read verdict signal `{ verdict, score, platform, blockers, report_path }`.
+5. Evaluate `block_on` condition from the gate config.
+6. If `block_on` is true: enter remediation loop (defined in `core/behavior/qc-review.md`).
+7. If `block_on` is false: log gate pass and proceed to next lifecycle step.
+
+Gate enforcement is automatic — no user invocation needed. Gates fire AFTER the triggering command completes; they do not block the command itself.
+
+### QC Review Argument Parsing
+
+When `qc-review` is invoked directly or via gate:
+- `--platform <mobile|web|api>` — override `defaults.platform` for this run
+- `--profile <full-10ka|completeness-clarity-only|cross-artifact-consistency>` — override gate profile
+- `--skip-gate` — bypass QC gate enforcement; requires explicit user confirmation before proceeding
+
+### Gate Profiles
+
+| Profile | Scope |
+|---|---|
+| `completeness-clarity-only` | KA #1–#4 only (identity, scope, actors, preconditions) |
+| `full-10ka` | All 10 KAs, full scoring rubric |
+| `cross-artifact-consistency` | Cross-artefact conflict check + blocker scan only |
+
 ## Reverse Mode Behavior
 
 Reverse mode is a first-class lane for reconstructing as-built documentation from existing code and artifacts. It operates under stricter read and truth constraints than the forward lifecycle.
