@@ -45,5 +45,8 @@ Run `python3 scripts/validate-navigation-consistency.py --design {paths.design_d
 - In reverse mode, canonical SRS writes must cite reverse evidence and trace IDs before promotion.
 - If `paths.design_doc` is missing or unresolved, run Step 8.2 from `srs-wireframes.md` and stop if the user does not approve the design direction.
 - Build `paths.wireframe_input` after Groups B and C from exact use case, screen contract, portal, navigation, and trace excerpts.
+- Build `paths.screen_field_contract` after Step 8.1 when UI-backed screens exist. This artifact is the normalized machine-facing truth derived from Screen Contract Plus plus supporting wireframe context.
+- `paths.screen_field_contract` must preserve exact `Portal ID`, `Nav Schema ID`, `Expected Active Menu Item`, field allowlists, required states, Display / Behaviour / Validation rules, rule codes, message codes, and short raw excerpts when prose cannot be normalized safely.
+- `paths.screen_field_contract` is owned by `srs`, not by downstream wireframe tool lanes. Tool lanes may consume or validate it, but they must not rewrite source-of-truth screen semantics.
 - Manual wireframe insertion is out-of-band; do not block final screen descriptions on an attached mockup.
 - If IA or menu behavior must change after Group C, route through `impact` instead of silently rewriting Group E.

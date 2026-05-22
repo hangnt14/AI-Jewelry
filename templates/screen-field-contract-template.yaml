@@ -1,0 +1,65 @@
+artifact_set:
+  slug: "[initiative-slug]"
+  date: "[YYMMDD-HHmm]"
+  module: "[module-slug]"
+  lane_ready_for:
+    - manual
+    - figma-make
+  source_group_b: "plans/{slug}-{date}/03_modules/{module_slug}/srs-group-b.md"
+  source_group_c: "plans/{slug}-{date}/03_modules/{module_slug}/srs-group-c.md"
+  source_wireframe_input: "plans/{slug}-{date}/03_modules/{module_slug}/wireframe-input.md"
+  source_design_doc: "designs/{slug}/DESIGN.md"
+
+shared_constraints:
+  no_extra_fields: true
+  no_nav_changes: true
+  omit_when_rule_missing: true
+  preserve_source_labels: true
+
+screens:
+  - screen_id: SCR-01
+    screen_name: "[Screen Name]"
+    classification: primary
+    portal:
+      portal_id: "[PORTAL-ID]"
+      nav_schema_id: "[NAV-SCHEMA-ID]"
+      expected_active_menu_item: "[Active Menu]"
+      navigation_region_visible: true
+    fields:
+      - field_id: SCR-01-F01
+        name: "[Field Name]"
+        type: "[Field Type]"
+        display:
+          visible: true
+          read_only: false
+          placeholder: null
+          default: null
+          format: "[Format]"
+        behaviour:
+          triggers: []
+          dependencies: []
+          navigation: none
+        validation:
+          required: false
+          error_surface: none
+          message_codes: []
+        rule_codes: []
+        raw_rule_text:
+          display: ""
+          behaviour: ""
+          validation: ""
+    states:
+      required:
+        - loading
+        - success
+        - error
+    constraints:
+      no_extra_fields: true
+      no_nav_changes: true
+      allowed_hidden_nav_exceptions: []
+    trace:
+      use_cases:
+        - UC-01
+      screen_inventory_ids:
+        - SCR-01
+      source_excerpt: "[short excerpt]"

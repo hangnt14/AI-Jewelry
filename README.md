@@ -46,6 +46,7 @@ Raw input
 -> Requirements Backbone
 -> Module artifacts: FRD / Stories / SRS / Screen Contract Plus
 -> DESIGN.md + wireframe-input.md + wireframe-map.md
+-> optional tool lane: screen-field-contract + Make control pack + conformance review
 -> User tự tạo mockup / wireframe
 -> Final SRS + HTML package
 ```
@@ -78,7 +79,12 @@ Lead BA chia module
 | `03_modules/{module}/frd.md` | Functional Requirements Document theo module |
 | `03_modules/{module}/user-stories.md` | User stories và acceptance criteria |
 | `03_modules/{module}/srs.md` | SRS/use case/screen spec theo module |
+| `03_modules/{module}/screen-field-contract.yaml` | Contract máy đọc được cho field/rule/state/navigation sau Step 8.1 |
 | `wireframe-input.md` / `wireframe-map.md` | Gói constraint và map để user tự tạo mockup |
+| `03_modules/{module}/tool-lane-state.md` | Lane đã chọn cho Step 9: `manual` mặc định hoặc tool lane opt-in |
+| `05_tool-lanes/figma-make/*` | Shared rules và shared prompt skeleton cho Figma Make |
+| `03_modules/{module}/make-*.md` | Gói guideline và prompt theo module cho Figma Make |
+| `03_modules/{module}/prototype-conformance-*.md` | Checklist và report reject gate cho output từ tool lane |
 | `delegation/review-packets/{module}.md` | Gói gửi Lead BA review |
 | `04_compiled/*.html` | Bản HTML stakeholder review/edit trong browser |
 | `designs/{slug}/DESIGN.md` | Design direction runtime cho UI handoff |
@@ -195,6 +201,21 @@ Command-level fallback:
 Dùng `options` khi intake cho thấy cần 1-3 hướng solution trước khi viết `backbone.md`. Step này tạo option pack + comparison dưới `01_intake/options/*`, rồi chốt `--select` hoặc `--skip` rõ ràng trước khi sang backbone.
 
 Dùng `reverse` khi mục tiêu là dựng tài liệu as-built từ hệ thống đang chạy hoặc code đã commit. Reverse lane chỉ promote nội dung có evidence rõ, không suy diễn business intent, không dùng cho future-state request, và bỏ qua wireframes vì không đề xuất UI mới. Nếu user đang yêu cầu thay đổi mong muốn trong tương lai, chuyển sang `impact` hoặc lifecycle forward bình thường.
+
+## Tool Lane Cho Step 9
+
+- `manual` vẫn là mặc định. Flow cũ không bị phá.
+- Nếu user opt-in `figma-make`, BA-kit không dùng raw `srs.md` làm prompt chính.
+- `srs` phải compile `screen-field-contract.yaml` sau Group C / Step 8.1.
+- `wireframes` đọc contract này để sinh:
+  - shared rules ở `05_tool-lanes/figma-make/`
+  - `make-guidelines.md`
+  - `make-prompt-pack.md`
+  - `prototype-conformance-checklist.md`
+  - `prototype-conformance-report.md`
+- Requirement drift phát hiện từ prototype phải route qua `impact`, không back-write vào SRS.
+
+Chi tiết: [docs/figma-make-lane.md](./docs/figma-make-lane.md)
 
 CLI helper:
 

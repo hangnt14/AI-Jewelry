@@ -11,3 +11,10 @@ Command-specific behavior lives in this folder. Runtime adapters must load:
 5. templates and upstream artifacts only when the active step needs them
 
 Shard files are policy overlays. They must not redefine literal paths or thresholds from `core/contract.yaml`.
+
+## Wireframe Tool Lanes
+
+- `manual` remains the default Step 9 lane.
+- AI lanes are opt-in and consume `paths.screen_field_contract` as the hard-control artifact.
+- `wireframes` may emit lane-specific artifacts, but it must not rewrite upstream SRS truth.
+- For v1, `figma-make` is the first supported AI lane and uses a shared-rule layer under `05_tool-lanes/figma-make/`.

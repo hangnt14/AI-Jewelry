@@ -46,13 +46,20 @@ for template_name, info in manifest.items():
     template_path = templates_dir / template_name
     if not template_path.exists():
         raise SystemExit(f"Missing template from manifest: {template_path}")
+    raw_lines = template_path.read_text(encoding="utf-8").splitlines()
     headings = {
         line.strip()
-        for line in template_path.read_text(encoding="utf-8").splitlines()
+        for line in raw_lines
         if heading_re.match(line.strip())
     }
     for group_name, group_info in info.get("groups", {}).items():
         for heading in group_info.get("headings", []):
+            if template_path.suffix in {".yaml", ".yml"}:
+                if heading not in {line.strip() for line in raw_lines}:
+                    raise SystemExit(
+                        f"Manifest heading not found: template={template_name} group={group_name} heading={heading}"
+                    )
+                continue
             if heading not in headings:
                 raise SystemExit(
                     f"Manifest heading not found: template={template_name} group={group_name} heading={heading}"
@@ -73,6 +80,15 @@ required_paths = {
     "backbone_index",
     "stories_index",
     "srs_index",
+    "screen_field_contract",
+    "tool_lane_state",
+    "make_guidelines",
+    "make_prompt_pack",
+    "prototype_conformance_checklist",
+    "prototype_conformance_report",
+    "figma_make_shared_rules",
+    "figma_make_shared_prompt_skeleton",
+    "figma_make_shared_component_contracts",
 }
 missing_paths = sorted(required_paths - set(paths))
 if missing_paths:
@@ -82,7 +98,17 @@ required_outputs = {
     "intake": {"source_summary", "source_chunks_dir", "source_chunk_index"},
     "backbone": {"backbone", "backbone_index"},
     "stories": {"stories", "stories_index"},
-    "srs": {"srs", "srs_group", "wireframe_input", "srs_index"},
+    "srs": {"srs", "srs_group", "wireframe_input", "srs_index", "screen_field_contract"},
+    "wireframes": {
+        "tool_lane_state",
+        "make_guidelines",
+        "make_prompt_pack",
+        "prototype_conformance_checklist",
+        "prototype_conformance_report",
+        "figma_make_shared_rules",
+        "figma_make_shared_prompt_skeleton",
+        "figma_make_shared_component_contracts",
+    },
 }
 for command, expected in required_outputs.items():
     outputs = set(commands.get(command, {}).get("outputs", []))
@@ -118,6 +144,15 @@ required_profile_keys = {
     "wireframe_input",
     "wireframe_map",
     "wireframe_state",
+    "screen_field_contract",
+    "tool_lane_state",
+    "make_guidelines",
+    "make_prompt_pack",
+    "prototype_conformance_checklist",
+    "prototype_conformance_report",
+    "figma_make_shared_rules",
+    "figma_make_shared_prompt_skeleton",
+    "figma_make_shared_component_contracts",
     "compiled_frd",
     "compiled_srs",
     "design_doc",
@@ -152,6 +187,15 @@ expected_profiles = {
     "stories_index": "agent_facing",
     "srs_index": "agent_facing",
     "wireframe_state": "machine_facing",
+    "screen_field_contract": "machine_facing",
+    "tool_lane_state": "machine_facing",
+    "make_guidelines": "agent_facing",
+    "make_prompt_pack": "agent_facing",
+    "prototype_conformance_checklist": "agent_facing",
+    "prototype_conformance_report": "user_facing",
+    "figma_make_shared_rules": "agent_facing",
+    "figma_make_shared_prompt_skeleton": "agent_facing",
+    "figma_make_shared_component_contracts": "agent_facing",
 }
 for key, expected in expected_profiles.items():
     actual = profiles.get(key)
@@ -208,6 +252,15 @@ required_templates = {
     "backbone-index-template.md",
     "user-stories-index-template.md",
     "srs-index-template.md",
+    "screen-field-contract-template.yaml",
+    "tool-lane-state-template.md",
+    "figma-make-shared-rules-template.md",
+    "figma-make-shared-prompt-skeleton-template.md",
+    "figma-make-shared-component-contracts-template.md",
+    "make-guidelines-template.md",
+    "make-prompt-pack-template.md",
+    "prototype-conformance-checklist-template.md",
+    "prototype-conformance-report-template.md",
 }
 missing = sorted(required_templates - set(manifest))
 if missing:
@@ -364,11 +417,11 @@ checks = {
     "skills/ba-start/steps/frd.md": ["paths.backbone_index"],
     "skills/ba-start/steps/stories.md": ["paths.backbone_index", "paths.stories_index"],
     "skills/ba-start/steps/srs.md": ["paths.backbone_index", "paths.stories_index", "paths.srs_index", "paths.design_doc"],
-    "skills/ba-start/steps/srs-core.md": ["validate-navigation-consistency.py", "MENU_SCHEMA_GAP"],
+    "skills/ba-start/steps/srs-core.md": ["validate-navigation-consistency.py", "MENU_SCHEMA_GAP", "paths.screen_field_contract"],
     "skills/ba-start/steps/srs-assembly.md": ["validate-navigation-consistency.py", "MENU_SCHEMA_MISMATCH"],
-    "skills/ba-start/steps/wireframes.md": ["validate-navigation-consistency.py"],
+    "skills/ba-start/steps/wireframes.md": ["validate-navigation-consistency.py", "paths.screen_field_contract", "paths.tool_lane_state", "figma-make"],
     "skills/ba-start/steps/package.md": ["paths.backbone_index", "paths.stories_index", "paths.srs_index"],
-    "skills/ba-start/steps/impact.md": ["affected_node_ids", "owner_artifact", "stale_artifacts", "read_escalation"],
+    "skills/ba-start/steps/impact.md": ["affected_node_ids", "owner_artifact", "stale_artifacts", "read_escalation", "screen_field_contract", "tool_lane_state"],
     "skills/ba-start/steps/reverse.md": ["blocking HITL gate", "unverifiable_in_v1", "source files"],
     "skills/ba-start/steps/reverse-status.md": ["reverse_baseline_lock", "stale_status"],
     "skills/ba-start/steps/reverse-impact.md": ["as_built_drift", "future_state_request", "mixed_change"],
@@ -417,6 +470,8 @@ python3 -m py_compile \
   "${ROOT_DIR}/scripts/source-extract.py" \
   "${ROOT_DIR}/scripts/context-budget.py" \
   "${ROOT_DIR}/scripts/design-snapshot.py" \
+  "${ROOT_DIR}/scripts/validate-tool-control-pack.py" \
+  "${ROOT_DIR}/scripts/generate-prototype-conformance-report.py" \
   "${ROOT_DIR}/scripts/validate-navigation-consistency.py" \
   "${ROOT_DIR}/scripts/stitch-state.py" \
   "${ROOT_DIR}/scripts/runtime-parity-normalize.py" \
