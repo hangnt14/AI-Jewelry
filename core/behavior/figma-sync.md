@@ -8,7 +8,7 @@
 
 - Must read `core/contract.yaml` and `core/contract-behavior.md`.
 - Must read `paths.srs_index` before individual screen files.
-- May read `paths.screen_root`, `paths.design_doc`, `paths.shared_shell_contract`, and `paths.shared_shell_index`.
+- May read `paths.screen_root`, `paths.design_doc`, `paths.shared_shell_contract`, `paths.shared_shell_index`, and `paths.shared_rule_message_index`.
 - May read `paths.srs_compile_receipt` to confirm compiled SRS freshness.
 - Must not read or use legacy `paths.wireframe_input` as the visual source when canon screen files exist.
 
@@ -27,5 +27,5 @@
 
 ## Output
 
-- `figma-sync-report.md`: what was attempted, skipped, created, updated, and verified.
-- `figma-mismatch-report.md`: canon/Figma differences that require BA or designer decision.
+- `figma-sync/figma-sync-report.md`: what was attempted, skipped, created, updated, and verified.
+- `figma-sync/figma-mismatch-report.md`: canon/Figma differences that require BA or designer decision.

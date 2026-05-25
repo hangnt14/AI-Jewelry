@@ -86,7 +86,7 @@ Apply the first matching rule:
 9. SRS exists but `srs-index.md` is missing -> `ba-start srs --slug <slug> --module <module_slug>`
 10. SRS exists but canon sources (`screens/`, `usecases/`, optional `data/`, optional `flows/`) are absent for a UI-backed module -> `ba-start srs --slug <slug> --module <module_slug>`
 11. canon sources exist but `srs-compile-receipt.json` is missing or older than canon source files -> `ba-start srs --slug <slug> --module <module_slug>`
-12. legacy `wireframe-input.md` exists and wireframe-state is missing while no canon-first screen/use case sources exist -> recommend migration through `ba-start srs --slug <slug> --module <module_slug>`, not `wireframes`
+12. legacy `wireframes/wireframe-input.md` exists and `wireframes/wireframe-state.md` is missing while no canon-first screen/use case sources exist -> recommend migration through `ba-start srs --slug <slug> --module <module_slug>`, not `wireframes`
     Legacy compatibility note: `ba-start wireframes --slug <slug> --module <module_slug>` remains available only when the operator explicitly chooses the old manual handoff lane.
 13. final markdown exists but required packaged HTML is missing -> `ba-start package --slug <slug>`
 14. everything required already exists -> `ba-start status --slug <slug>`

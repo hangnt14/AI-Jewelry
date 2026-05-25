@@ -4,7 +4,7 @@
 
 - Source of truth: `screen-field-contract.yaml`
 - Design baseline: `DESIGN.md`
-- Review gate: `prototype-conformance-checklist.md`
+- Review gate: module `tool-lanes/figma-make/prototype-conformance-checklist.md`
 
 ## Mandatory negatives
 

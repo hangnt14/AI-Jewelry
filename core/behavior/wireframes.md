@@ -33,7 +33,7 @@
 - Default lane is `manual` when the user does not explicitly opt into a supported AI lane.
 - AI tool lanes must fail closed when `paths.screen_field_contract` is missing or incomplete for the targeted UI-backed screens.
 - If the selected tool lane changes, treat prior tool-specific artifacts for that module as stale and regenerate them from current `paths.screen_field_contract`.
-- If `impact` changes screen inventory, field rules, navigation, required states, or validation behavior, treat `paths.screen_field_contract`, `paths.make_guidelines`, `paths.make_prompt_pack`, `paths.prototype_conformance_checklist`, and `paths.prototype_conformance_report` as stale until the owning steps rerun.
+- If `impact` changes screen inventory, field rules, navigation, required states, validation behavior, common rules, or messages, treat `paths.screen_field_contract`, `paths.shared_rule_message_index`, `paths.make_guidelines`, `paths.make_prompt_pack`, `paths.prototype_conformance_checklist`, and `paths.prototype_conformance_report` as stale until the owning steps rerun.
 
 ## Allowed Outputs
 

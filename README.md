@@ -77,6 +77,9 @@ Lead BA chia module
 | `01_intake/plan.md` | Kế hoạch artifact sẽ sinh theo mode/gate |
 | `01_intake/options/*` | Bộ phương án solution và bảng so sánh trước backbone |
 | `02_backbone/backbone.md` | Source of truth sau scope lock |
+| `02_backbone/common-rules.md` | Registry duy nhất cho rule code dùng chung `CR-*` |
+| `02_backbone/message-list.md` | Registry duy nhất cho message code dùng chung `MSG-*` |
+| `02_backbone/shared-rule-message-index.md` | Index gọn để runtime đọc trước khi mở registry đầy đủ |
 | `02_backbone/project-memory.md` | Bộ nhớ dự án: thuật ngữ, quyết định, assumptions, corrections |
 | `COLLAB-HOME.md` | Dashboard cộng tác: ai làm module nào, review status, blocker |
 | `03_modules/{module}/MODULE-HOME.md` | Dashboard riêng cho Module BA: scope được sửa, checklist review |
@@ -84,12 +87,12 @@ Lead BA chia module
 | `03_modules/{module}/user-stories.md` | User stories và acceptance criteria |
 | `03_modules/{module}/srs.md` | SRS/use case/screen spec theo module |
 | `screens/*.md` / `usecases/*.md` / `srs-index.md` | Canon authoring sources và routing layer cho SRS module |
-| `wireframe-input.md` / `wireframe-map.md` | Legacy transitional handoff artifacts cho flow manual cũ |
+| `03_modules/{module}/wireframes/wireframe-*.md` | Legacy transitional handoff artifacts cho flow manual cũ |
 | `03_modules/{module}/screen-field-contract.yaml` | Contract máy đọc được cho field/rule/state/navigation sau Step 8.1 |
-| `03_modules/{module}/tool-lane-state.md` | Lane đã chọn cho Step 9: `manual` mặc định hoặc tool lane opt-in |
-| `05_tool-lanes/figma-make/*` | Shared rules và shared prompt skeleton cho Figma Make |
-| `03_modules/{module}/make-*.md` | Gói guideline và prompt theo module cho Figma Make |
-| `03_modules/{module}/prototype-conformance-*.md` | Checklist và report reject gate cho output từ tool lane |
+| `03_modules/{module}/tool-lanes/tool-lane-state.md` | Lane đã chọn cho Step 9: `manual` mặc định hoặc tool lane opt-in |
+| `05_tool-lanes/figma-make/*` | Shared prompt skeleton và shared component contracts cho Figma Make |
+| `03_modules/{module}/tool-lanes/figma-make/make-*.md` | Legacy/optional prompt pack theo module cho Figma Make |
+| `03_modules/{module}/tool-lanes/figma-make/prototype-conformance-*.md` | Legacy/optional checklist và report reject gate cho output từ tool lane |
 | `delegation/review-packets/{module}.md` | Gói gửi Lead BA review |
 | `04_compiled/*.html` | Bản HTML stakeholder review/edit trong browser |
 | `designs/{slug}/DESIGN.md` | Design direction runtime cho UI handoff |
@@ -128,6 +131,9 @@ plans/
     02_backbone/
       backbone.md
       backbone-index.md
+      common-rules.md
+      message-list.md
+      shared-rule-message-index.md
       shared-shell-contract.md
       shared-shell-index.md
       impact-receipt.md
@@ -158,24 +164,29 @@ plans/
         flows/
         srs.md
         srs-index.md
-        srs-group-a.md
-        srs-group-b.md
-        srs-group-c.md
-        srs-group-d.md
-        srs-group-e.md
-        srs-group-f.md
+        srs-groups/
+          srs-group-a.md
+          srs-group-b.md
+          srs-group-c.md
+          srs-group-d.md
+          srs-group-e.md
+          srs-group-f.md
         srs-compile-receipt.json
         screen-field-contract.yaml
-        wireframe-input.md
-        wireframe-map.md
-        wireframe-state.md
-        tool-lane-state.md
-        make-guidelines.md
-        make-prompt-pack.md
-        prototype-conformance-checklist.md
-        prototype-conformance-report.md
-        figma-sync-report.md
-        figma-mismatch-report.md
+        wireframes/
+          wireframe-input.md
+          wireframe-map.md
+          wireframe-state.md
+        tool-lanes/
+          tool-lane-state.md
+          figma-make/
+            make-guidelines.md
+            make-prompt-pack.md
+            prototype-conformance-checklist.md
+            prototype-conformance-report.md
+        figma-sync/
+          figma-sync-report.md
+          figma-mismatch-report.md
     04_compiled/
       compiled-frd.html
       compiled-srs.html
@@ -268,11 +279,11 @@ Dùng `reverse` khi mục tiêu là dựng tài liệu as-built từ hệ thốn
 - Nếu user opt-in `figma-make`, BA-kit không dùng raw `srs.md` làm prompt chính.
 - `srs` phải compile `screen-field-contract.yaml` sau Group C / Step 8.1.
 - `wireframes` đọc contract này để sinh:
-  - shared rules ở `05_tool-lanes/figma-make/`
-  - `make-guidelines.md`
-  - `make-prompt-pack.md`
-  - `prototype-conformance-checklist.md`
-  - `prototype-conformance-report.md`
+  - shared prompt assets ở `05_tool-lanes/figma-make/`
+  - `03_modules/{module}/tool-lanes/figma-make/make-guidelines.md`
+  - `03_modules/{module}/tool-lanes/figma-make/make-prompt-pack.md`
+  - `03_modules/{module}/tool-lanes/figma-make/prototype-conformance-checklist.md`
+  - `03_modules/{module}/tool-lanes/figma-make/prototype-conformance-report.md`
 - Requirement drift phát hiện từ prototype phải route qua `impact`, không back-write vào SRS.
 
 Chi tiết: [docs/figma-make-lane.md](./docs/figma-make-lane.md)
@@ -334,9 +345,9 @@ ba-kit check-write-scope --command figma-sync plans/{slug}-{date}/03_modules/{mo
 
 - `designs/{slug}/DESIGN.md`
 - `02_backbone/shared-shell-contract.md` (hướng mới cho ownership machine-readable)
-- `03_modules/{module}/wireframe-input.md`
-- `03_modules/{module}/wireframe-map.md`
-- `03_modules/{module}/wireframe-state.md`
+- `03_modules/{module}/wireframes/wireframe-input.md`
+- `03_modules/{module}/wireframes/wireframe-map.md`
+- `03_modules/{module}/wireframes/wireframe-state.md`
 
 User hoặc designer tự tạo mockup/wireframe rồi attach vào đúng section trong SRS. Mockup không phải source of truth.
 
@@ -347,7 +358,7 @@ Figma MCP sync là lane riêng sau SRS canon:
 /ba-do Đồng bộ Figma cho module {module} của dự án {slug}
 ```
 
-Nó chỉ đọc `srs-index.md`, `screens/*.md`, `DESIGN.md`, `shared-shell-contract.md`, rồi ghi `figma-sync-report.md` hoặc `figma-mismatch-report.md`. Nếu Figma khác canon, sửa canon trước rồi sync lại; không sửa Figma rồi coi đó là requirement mới.
+Nó chỉ đọc `srs-index.md`, `screens/*.md`, `DESIGN.md`, `shared-shell-contract.md`, và `shared-rule-message-index.md`, rồi ghi `figma-sync/figma-sync-report.md` hoặc `figma-sync/figma-mismatch-report.md`. Nếu Figma khác canon, sửa canon trước rồi sync lại; không sửa Figma rồi coi đó là requirement mới.
 
 ## Nâng Cấp
 

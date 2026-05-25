@@ -6,7 +6,7 @@ BA-kit vẫn coi `manual` là lane mặc định ở Step 9. Figma Make là lane
 
 1. `srs` viết Group B + Group C như bình thường.
 2. Step 8.1 sinh:
-   - `03_modules/{module}/wireframe-input.md`
+   - `03_modules/{module}/wireframes/wireframe-input.md`
    - `03_modules/{module}/screen-field-contract.yaml`
 3. `wireframes` resolve lane:
    - `manual`
@@ -15,17 +15,17 @@ BA-kit vẫn coi `manual` là lane mặc định ở Step 9. Figma Make là lane
    - `05_tool-lanes/figma-make/shared-rules.md`
    - `05_tool-lanes/figma-make/shared-prompt-skeleton.md`
    - `05_tool-lanes/figma-make/shared-component-contracts.md`
-   - `03_modules/{module}/make-guidelines.md`
-   - `03_modules/{module}/make-prompt-pack.md`
-   - `03_modules/{module}/prototype-conformance-checklist.md`
+   - `03_modules/{module}/tool-lanes/figma-make/make-guidelines.md`
+   - `03_modules/{module}/tool-lanes/figma-make/make-prompt-pack.md`
+   - `03_modules/{module}/tool-lanes/figma-make/prototype-conformance-checklist.md`
 5. Sau khi Make tạo prototype, team dùng checklist + report để reject drift.
 
 ## Source of truth split
 
-- `srs.md` và `srs-group-c.md`: source of truth nghiệp vụ.
+- `srs.md` và `srs-groups/srs-group-c.md`: source of truth nghiệp vụ.
 - `screen-field-contract.yaml`: bản normalize máy đọc được của screen truth.
 - `DESIGN.md`: visual baseline và navigation schema baseline.
-- `make-guidelines.md` + `make-prompt-pack.md`: downstream control artifacts, không phải source of truth.
+- `tool-lanes/figma-make/make-guidelines.md` + `tool-lanes/figma-make/make-prompt-pack.md`: downstream control artifacts, không phải source of truth.
 
 ## Hard rules
 
@@ -47,8 +47,8 @@ Nếu lane là `manual`, validator sẽ `skip`. Nếu lane là `figma-make`, val
 
 - `screen-field-contract.yaml`
 - shared rules / prompt skeleton / component contracts
-- `make-prompt-pack.md`
-- `prototype-conformance-checklist.md`
+- `tool-lanes/figma-make/make-prompt-pack.md`
+- `tool-lanes/figma-make/prototype-conformance-checklist.md`
 
 ## Report
 

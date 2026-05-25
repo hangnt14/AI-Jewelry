@@ -308,9 +308,9 @@ A full `/ba-start` engagement produces final BA deliverables plus runtime artifa
 | Use case canon | `usecase-canon-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/usecases/*.md` |
 | SRS index | `srs-index-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/srs-index.md` |
 | SRS compile receipt | `srs-compile-receipt-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/srs-compile-receipt.json` |
-| Legacy wireframe constraint pack | `wireframe-input-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/wireframe-input.md` |
-| Legacy wireframe handoff map | `wireframe-map-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/wireframe-map.md` |
-| Legacy wireframe state | BA-kit routing metadata | `plans/{slug}-{date}/03_modules/{module_slug}/wireframe-state.md` |
+| Legacy wireframe constraint pack | `wireframe-input-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-input.md` |
+| Legacy wireframe handoff map | `wireframe-map-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-map.md` |
+| Legacy wireframe state | BA-kit routing metadata | `plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-state.md` |
 | SRS HTML | `scripts/md-to-html.py` | `plans/{slug}-{date}/04_compiled/compiled-srs.html` as the primary browser-editable stakeholder copy |
 
 If you need a clean read-only stakeholder handoff, generate HTML with:

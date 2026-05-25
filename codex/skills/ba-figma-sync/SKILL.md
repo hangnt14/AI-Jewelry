@@ -35,7 +35,7 @@ Read these files in order:
 5. Read `DESIGN.md`, `shared-shell-contract.md`, and optionally `shared-shell-index.md`.
 6. If no Figma MCP tool is available, stop and report that no Figma changes were made.
 7. Use Figma MCP to create/update frames from screen canon, ASCII wireframes, visual state coverage, and shared shell rules.
-8. Write only `figma-sync-report.md` and `figma-mismatch-report.md`; never mutate BA canon.
+8. Write only `figma-sync/figma-sync-report.md` and `figma-sync/figma-mismatch-report.md`; never mutate BA canon.
 </process>
 
 <guardrails>

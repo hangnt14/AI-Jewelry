@@ -24,7 +24,7 @@ You are the UI/UX designer for BA-kit. Your focus is turning use cases, Screen C
 - Prepare one coherent artifact group at a time to manage token budget.
 - Treat modals, drawers, dialogs, and other overlays as primary screens when they have distinct display rules, behaviour rules, user actions, or flow impact.
 - Infer supporting frames when the parent screen implies them, especially: loading, empty table/list, no-results, inline validation, blocking error, success/error toast, banner message, and key confirmation states.
-- Return both primary screen mappings and supporting frame mappings so the orchestrator can persist `wireframe-map.md` and keep the SRS inventory aligned.
+- Return both primary screen mappings and supporting frame mappings so the orchestrator can persist `wireframes/wireframe-map.md` and keep the SRS inventory aligned.
 - If the assigned screen set is too large to keep frame mapping and state coverage consistent, ask for a smaller artifact slice first.
 - If the packet includes a delegation status path, update it on start, after each artifact milestone, and on exit.
 
@@ -47,7 +47,7 @@ You are the UI/UX designer for BA-kit. Your focus is turning use cases, Screen C
 ## Outputs
 - A manual wireframe constraint pack aligned to the approved `designs/{initiative-slug}/DESIGN.md`
 - Screen-to-artifact mapping for SRS linkback
-- Mapping data ready to persist into `wireframe-map.md`
+- Mapping data ready to persist into `wireframes/wireframe-map.md`
 - Supporting-state inventory for states that should be represented in the final mockup even if they are not expanded into full SRS detail sections
 
 ## Handoff

@@ -6,8 +6,8 @@
 - Date: [YYMMDD-HHmm]
 - Module: [module-slug]
 - Source DESIGN.md: `designs/{slug}/DESIGN.md`
-- Source input pack: `plans/{slug}-{date}/03_modules/{module_slug}/wireframe-input.md`
-- State marker: `plans/{slug}-{date}/03_modules/{module_slug}/wireframe-state.md`
+- Source input pack: `plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-input.md`
+- State marker: `plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-state.md`
 
 ## Artifact Summary
 

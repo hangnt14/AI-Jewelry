@@ -28,6 +28,8 @@ def main() -> int:
 
     module_root = args.module_root
     script_dir = Path(__file__).resolve().parent
+    project_root = module_root.parent.parent if module_root.parent.name == "03_modules" else module_root.parent
+    shared_index = project_root / "02_backbone" / "shared-rule-message-index.md"
     checks: list[dict[str, object]] = []
 
     index_path = module_root / "srs-index.md"
@@ -37,7 +39,10 @@ def main() -> int:
         checks.append({"cmd": "check-srs-index-consistency", "returncode": 1, "stdout": "", "stderr": "missing srs-index.md"})
 
     for screen in sorted((module_root / "screens").glob("*.md")):
-        checks.append(run_check([sys.executable, str(script_dir / "check-screen-canon-schema.py"), str(screen)]))
+        cmd = [sys.executable, str(script_dir / "check-screen-canon-schema.py"), str(screen)]
+        if shared_index.exists():
+            cmd.extend(["--shared-index", str(shared_index)])
+        checks.append(run_check(cmd))
 
     compile_receipt = module_root / "srs-compile-receipt.json"
     compiled_srs = module_root / "srs.md"
@@ -45,6 +50,7 @@ def main() -> int:
     if compiled_srs.exists() and not compile_receipt.exists():
         checks.append({"cmd": "compile receipt", "returncode": 1, "stdout": "", "stderr": "compiled srs.md exists but srs-compile-receipt.json is missing"})
     checks.append(run_check([sys.executable, str(script_dir / "check-source-of-truth.py"), str(module_root)]))
+    checks.append(run_check([sys.executable, str(script_dir / "validate-shared-rule-message-registry.py"), "--module-root", str(module_root)]))
 
     ok = all(int(check["returncode"]) == 0 for check in checks)
     result = {"module_root": str(module_root), "ok": ok, "compile_receipt": receipt_status, "checks": checks}

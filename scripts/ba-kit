@@ -1296,14 +1296,21 @@ status_command() {
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "srs" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/srs.md"
       print_srs_receipt_status_line "${module_root_abs}"
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "screen_field_contract" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/screen-field-contract.yaml"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_input" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/wireframe-input.md"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_map" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/wireframe-map.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_input" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/wireframes/wireframe-input.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_map" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/wireframes/wireframe-map.md"
       print_wireframe_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_state" "${slug}" "${date_token}" "${module_name}")"
-      print_tool_lane_status "${repo}/$(render_contract_path "${repo}" "tool_lane_state" "${slug}" "${date_token}" "${module_name}")"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "make_guidelines" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/make-guidelines.md"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "make_prompt_pack" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/make-prompt-pack.md"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "prototype_conformance_checklist" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/prototype-conformance-checklist.md"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "prototype_conformance_report" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/prototype-conformance-report.md"
+      local tool_lane_path tool_lane
+      tool_lane_path="${repo}/$(render_contract_path "${repo}" "tool_lane_state" "${slug}" "${date_token}" "${module_name}")"
+      print_tool_lane_status "${tool_lane_path}"
+      tool_lane="$(read_md_field "${tool_lane_path}" "Selected lane")"
+      if [[ "${tool_lane}" == *"figma-make"* ]]; then
+        print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "make_guidelines" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/tool-lanes/figma-make/make-guidelines.md"
+        print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "make_prompt_pack" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/tool-lanes/figma-make/make-prompt-pack.md"
+        print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "prototype_conformance_checklist" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/tool-lanes/figma-make/prototype-conformance-checklist.md"
+        print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "prototype_conformance_report" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/tool-lanes/figma-make/prototype-conformance-report.md"
+      else
+        printf -- "- [ ] Figma Make pack — not selected\n"
+      fi
     done <<<"${modules}"
   fi
 
@@ -1311,6 +1318,9 @@ status_command() {
   print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "design_doc" "${slug}")" "designs/${slug}/DESIGN.md"
   print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "shared_shell_contract" "${slug}" "${date_token}")" "02_backbone/shared-shell-contract.md"
   print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "shared_shell_index" "${slug}" "${date_token}")" "02_backbone/shared-shell-index.md"
+  print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "common_rules" "${slug}" "${date_token}")" "02_backbone/common-rules.md"
+  print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "message_list" "${slug}" "${date_token}")" "02_backbone/message-list.md"
+  print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "shared_rule_message_index" "${slug}" "${date_token}")" "02_backbone/shared-rule-message-index.md"
 
   printf '\n[Compiled]\n'
   print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "compiled_frd" "${slug}" "${date_token}")" "04_compiled/compiled-frd.html"

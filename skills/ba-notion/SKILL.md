@@ -50,7 +50,7 @@ Use these exact paths from the shared contract:
   - `plans/{slug}-{date}/03_modules/{module_slug}/frd.md`
   - `plans/{slug}-{date}/03_modules/{module_slug}/user-stories.md`
   - `plans/{slug}-{date}/03_modules/{module_slug}/srs.md`
-  - `plans/{slug}-{date}/03_modules/{module_slug}/wireframe-map.md`
+  - `plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-map.md`
 
 ## Publish Modes
 

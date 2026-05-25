@@ -48,6 +48,13 @@ SCREEN_TYPES = {"primary", "primary_overlay", "modal", "drawer", "dialog", "wiza
 ASCII_STATUS = {"missing", "stale", "current"}
 FIGMA_STATUS = {"not-run", "eligible", "blocked", "synced", "stale"}
 OVERLAY_TYPES = {"primary_overlay", "modal", "drawer", "dialog", "wizard_step"}
+FIELD_HEADERS = [
+    "field_id", "label", "control_type", "region_id", "display_rules",
+    "behaviour_rules", "validation_rules", "rule_codes", "message_codes",
+]
+INTERACTIVE_CONTROLS = {"text_input", "textarea", "dropdown", "select", "date_picker", "checkbox", "radio", "button", "table"}
+PLACEHOLDER_RE = re.compile(r"^\[.*\]$")
+CODE_RE = re.compile(r"\b(CR-(?:DIS|BEH|VAL|MIX)-\d{2}|MSG-(?:ERR|WRN|SUC|INF)-\d{2})\b")
 
 
 def parse_frontmatter(text: str) -> dict[str, str]:
@@ -79,8 +86,63 @@ def table_rows_after(text: str, heading: str) -> list[list[str]]:
         rows.append(cells)
     return rows[1:]
 
+def table_after(text: str, heading: str) -> tuple[list[str], list[dict[str, str]]]:
+    start = text.find(heading)
+    if start == -1:
+        return [], []
+    next_heading = text.find("\n## ", start + len(heading))
+    section = text[start: next_heading if next_heading != -1 else len(text)]
+    lines = [line for line in section.splitlines() if line.startswith("|") and "---" not in line]
+    if len(lines) < 2:
+        return [], []
+    headers = [cell.strip() for cell in lines[0].strip("|").split("|")]
+    parsed: list[dict[str, str]] = []
+    for line in lines[1:]:
+        cells = [cell.strip() for cell in line.strip("|").split("|")]
+        if len(cells) < len(headers):
+            cells.extend([""] * (len(headers) - len(cells)))
+        parsed.append(dict(zip(headers, cells)))
+    return headers, parsed
 
-def validate(path: Path) -> dict[str, object]:
+
+def parse_index_codes(path: Path | None) -> set[str]:
+    if not path or not path.is_file():
+        return set()
+    return set(CODE_RE.findall(path.read_text(encoding="utf-8")))
+
+
+def is_blank_or_placeholder(value: str) -> bool:
+    clean = value.strip()
+    return not clean or clean in {"-", "N/A", "[]"} or bool(PLACEHOLDER_RE.match(clean))
+
+
+def validate_fields_table(text: str, declared_codes: set[str]) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    headers, rows = table_after(text, "## Fields")
+    missing_headers = [header for header in FIELD_HEADERS if header not in headers]
+    if missing_headers:
+        errors.append(f"Fields table missing column(s): {', '.join(missing_headers)}")
+        return errors, warnings
+    for row in rows:
+        field_id = row.get("field_id", "[unknown]")
+        control = row.get("control_type", "").strip("` ").lower()
+        for key in ("display_rules", "behaviour_rules", "validation_rules"):
+            if is_blank_or_placeholder(row.get(key, "")):
+                errors.append(f"{field_id}: {key} must be explicit, not blank or placeholder")
+        codes = set(CODE_RE.findall(" ".join(row.get(key, "") for key in ("rule_codes", "message_codes"))))
+        if declared_codes:
+            for code in sorted(codes - declared_codes):
+                errors.append(f"{field_id}: {code} is not declared in shared rule/message index")
+        validation = row.get("validation_rules", "")
+        if "required" in validation.lower() and "MSG-" not in row.get("message_codes", "") and not validation.lower().startswith("n/a:"):
+            errors.append(f"{field_id}: required validation must reference a MSG-* code or state N/A with reason")
+        if control in INTERACTIVE_CONTROLS and not codes:
+            warnings.append(f"{field_id}: interactive field has no CR-* or MSG-* references")
+    return errors, warnings
+
+
+def validate(path: Path, shared_index: Path | None = None) -> dict[str, object]:
     text = path.read_text(encoding="utf-8")
     frontmatter = parse_frontmatter(text)
     errors: list[str] = []
@@ -105,6 +167,10 @@ def validate(path: Path) -> dict[str, object]:
 
     if frontmatter.get("screen_type") in OVERLAY_TYPES and "## Overlay Context" not in text:
         errors.append("overlay screen missing section: ## Overlay Context")
+
+    field_errors, field_warnings = validate_fields_table(text, parse_index_codes(shared_index))
+    errors.extend(field_errors)
+    warnings.extend(field_warnings)
 
     state_rows = table_rows_after(text, "## State Visual Coverage")
     state_ids = []
@@ -136,10 +202,11 @@ def validate(path: Path) -> dict[str, object]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("screen", type=Path)
+    parser.add_argument("--shared-index", type=Path)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    result = validate(args.screen)
+    result = validate(args.screen, args.shared_index)
     if args.json:
         print(json.dumps(result, indent=2, ensure_ascii=False))
     else:

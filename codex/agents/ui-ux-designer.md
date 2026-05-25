@@ -17,7 +17,7 @@ Use this agent when the BA scope includes use cases and screen contracts that ne
 - Treat modal/dialog/drawer overlays as primary screens when they affect flow or have their own interaction rules.
 - Add supporting frames for meaningful states and feedback surfaces, not just the main happy-path screens.
 - Keep screen IDs aligned between the SRS and the wireframe handoff artifacts.
-- Return mapping data that can be persisted into the module `wireframe-map.md`.
+- Return mapping data that can be persisted into the module `wireframes/wireframe-map.md`.
 
 ## Handoff
 

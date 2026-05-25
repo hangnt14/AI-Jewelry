@@ -81,6 +81,9 @@ required_paths = {
     "stories_index",
     "srs_index",
     "screen_field_contract",
+    "common_rules",
+    "message_list",
+    "shared_rule_message_index",
     "tool_lane_state",
     "make_guidelines",
     "make_prompt_pack",
@@ -96,7 +99,7 @@ if missing_paths:
 
 required_outputs = {
     "intake": {"source_summary", "source_chunks_dir", "source_chunk_index"},
-    "backbone": {"backbone", "backbone_index"},
+    "backbone": {"backbone", "backbone_index", "common_rules", "message_list", "shared_rule_message_index"},
     "stories": {"stories", "stories_index"},
     "srs": {"srs", "srs_group", "wireframe_input", "srs_index", "screen_field_contract"},
     "wireframes": {
@@ -145,6 +148,9 @@ required_profile_keys = {
     "wireframe_map",
     "wireframe_state",
     "screen_field_contract",
+    "common_rules",
+    "message_list",
+    "shared_rule_message_index",
     "tool_lane_state",
     "make_guidelines",
     "make_prompt_pack",
@@ -188,6 +194,9 @@ expected_profiles = {
     "srs_index": "agent_facing",
     "wireframe_state": "machine_facing",
     "screen_field_contract": "machine_facing",
+    "common_rules": "agent_facing",
+    "message_list": "agent_facing",
+    "shared_rule_message_index": "agent_facing",
     "tool_lane_state": "machine_facing",
     "make_guidelines": "agent_facing",
     "make_prompt_pack": "agent_facing",
@@ -253,6 +262,9 @@ required_templates = {
     "user-stories-index-template.md",
     "srs-index-template.md",
     "screen-field-contract-template.yaml",
+    "common-rules-template.md",
+    "message-list-template.md",
+    "shared-rule-message-index-template.md",
     "tool-lane-state-template.md",
     "figma-make-shared-rules-template.md",
     "figma-make-shared-prompt-skeleton-template.md",
@@ -376,6 +388,7 @@ max_bytes = {
     "backbone-index-template.md": 1800,
     "user-stories-index-template.md": 1800,
     "srs-index-template.md": 1800,
+    "shared-rule-message-index-template.md": 2200,
     "project-memory-index-template.md": 2600,
     "project-memory-template.md": 2600,
     "project-memory-hot-canonical-vocabulary-template.md": 2200,
@@ -391,6 +404,7 @@ required_tokens = {
     "backbone-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status", "validated_at", "validated_by"],
     "user-stories-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status", "validated_at", "validated_by"],
     "srs-index-template.md": ["index_type", "source_artifact", "generated_at", "stale_status", "validated_at", "validated_by"],
+    "shared-rule-message-index-template.md": ["index_type", "source_common_rules", "source_message_list", "generated_at", "stale_status", "validated_at", "validated_by"],
 }
 for name, limit in max_bytes.items():
     path = templates_dir / name

@@ -15,9 +15,9 @@ Project set exists with:
 
 Missing on purpose:
 - `designs/test-project/DESIGN.md`
-- `03_modules/auth-flow/wireframe-input.md`
-- `03_modules/auth-flow/wireframe-map.md`
-- `03_modules/auth-flow/wireframe-state.md`
+- `03_modules/auth-flow/wireframes/wireframe-input.md`
+- `03_modules/auth-flow/wireframes/wireframe-map.md`
+- `03_modules/auth-flow/wireframes/wireframe-state.md`
 
 ## Input Command
 

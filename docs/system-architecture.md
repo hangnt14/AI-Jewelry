@@ -144,9 +144,9 @@ START
 [Wireframes] ← Wireframe constraint pack
   ↓
   ├─→ DESIGN.md (design system)
-  ├─→ wireframe-input.md (constraints)
-  ├─→ wireframe-map.md (screen map)
-  └─→ wireframe-state.md (state variants)
+  ├─→ wireframes/wireframe-input.md (constraints)
+  ├─→ wireframes/wireframe-map.md (screen map)
+  └─→ wireframes/wireframe-state.md (state variants)
   ↓
 [Package] ← Compiled HTML deliverables
   ↓
@@ -294,8 +294,8 @@ USER-FACING (Markdown, readable dashboards)
 │   └── User stories + acceptance criteria
 ├── srs.md
 │   └── System requirements specification
-├── wireframe-input.md
-│   └── Wireframe constraint pack
+├── wireframes/
+│   └── wireframe-input.md (legacy handoff pack)
 └── compiled-*.html
     └── Stakeholder review packages
 ```
@@ -540,7 +540,7 @@ Module BA creates artifacts:
 ├─ frd.md (functional requirements)
 ├─ user-stories.md (user stories)
 ├─ srs.md (system requirements)
-└─ wireframe-input.md (wireframe constraints)
+└─ wireframes/wireframe-input.md (legacy wireframe constraints)
         ↓
 Module BA requests review:
 "Send module checkout for review"

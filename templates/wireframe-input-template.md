@@ -9,8 +9,8 @@
 - System design document: `designs/{slug}/DESIGN.md`
 - Source FRD: `plans/{slug}-{date}/03_modules/{module_slug}/frd.md`
 - Source user stories: `plans/{slug}-{date}/03_modules/{module_slug}/user-stories.md`
-- Source use cases: `plans/{slug}-{date}/03_modules/{module_slug}/srs-group-b.md`
-- Source screen contract: `plans/{slug}-{date}/03_modules/{module_slug}/srs-group-c.md`
+- Source use cases: `plans/{slug}-{date}/03_modules/{module_slug}/srs-groups/srs-group-b.md`
+- Source screen contract: `plans/{slug}-{date}/03_modules/{module_slug}/srs-groups/srs-group-c.md`
 - Source backbone: `plans/{slug}-{date}/02_backbone/backbone.md`
 - Final SRS target: `plans/{slug}-{date}/03_modules/{module_slug}/srs.md`
 
@@ -23,7 +23,7 @@
 - Không tự phát minh hành vi khi use case hoặc Screen Contract Plus chưa đủ
 - Bắt buộc áp dụng `Portal Matrix` ở backbone và `Navigation Schema` trong `DESIGN.md` để đảm bảo hệ thống menu nhất quán trên toàn bộ các frame
 - BA-kit không gọi MCP để vẽ wireframe trong flow này; user sẽ tự thiết kế bằng tay hoặc bằng công cụ ngoài
-- User chịu trách nhiệm tự gắn wireframe/mockup vào tài liệu cuối theo checklist ở `wireframe-map.md`
+- User chịu trách nhiệm tự gắn wireframe/mockup vào tài liệu cuối theo checklist ở `wireframes/wireframe-map.md`
 - Nếu `DESIGN.md` chưa tồn tại hoặc chưa được người dùng chốt, phải dừng trước khi chuẩn bị handoff
 
 ## Tóm tắt quyết định thiết kế đã chốt (Approved Design Decisions Snapshot)

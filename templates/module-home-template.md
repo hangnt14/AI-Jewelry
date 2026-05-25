@@ -18,8 +18,8 @@
 | `03_modules/{module_slug}/frd.md` | `02_backbone/backbone.md` |
 | `03_modules/{module_slug}/user-stories.md` | `designs/{slug}/DESIGN.md` |
 | `03_modules/{module_slug}/srs.md` | module khác trong `03_modules/` |
-| `03_modules/{module_slug}/wireframe-input.md` | hot/global memory shards |
-| `03_modules/{module_slug}/wireframe-map.md` | compiled output khi chưa assemble |
+| `03_modules/{module_slug}/wireframes/wireframe-input.md` | hot/global memory shards |
+| `03_modules/{module_slug}/wireframes/wireframe-map.md` | compiled output khi chưa assemble |
 
 ## 2. Checklist Trước Khi Gửi Review
 

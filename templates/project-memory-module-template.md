@@ -37,7 +37,7 @@
 | FRD | `03_modules/[module-slug]/frd.md` | [exists/missing] |
 | User Stories | `03_modules/[module-slug]/user-stories.md` | [exists/missing] |
 | SRS | `03_modules/[module-slug]/srs.md` | [exists/missing] |
-| Wireframe Input | `03_modules/[module-slug]/wireframe-input.md` | [exists/missing/not-applicable] |
+| Wireframe Input | `03_modules/[module-slug]/wireframes/wireframe-input.md` | [exists/missing/not-applicable] |
 
 ## Open Issues
 

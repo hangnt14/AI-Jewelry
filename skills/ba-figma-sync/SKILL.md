@@ -40,15 +40,15 @@ Required:
 Optional:
 
 - `plans/{slug}-{date}/02_backbone/shared-shell-index.md`
-- `plans/{slug}-{date}/03_modules/{module_slug}/figma-sync-report.md`
-- `plans/{slug}-{date}/03_modules/{module_slug}/figma-mismatch-report.md`
+- `plans/{slug}-{date}/03_modules/{module_slug}/figma-sync/figma-sync-report.md`
+- `plans/{slug}-{date}/03_modules/{module_slug}/figma-sync/figma-mismatch-report.md`
 
 ## Write Scope
 
 Allowed repo writes:
 
-- `plans/{slug}-{date}/03_modules/{module_slug}/figma-sync-report.md`
-- `plans/{slug}-{date}/03_modules/{module_slug}/figma-mismatch-report.md`
+- `plans/{slug}-{date}/03_modules/{module_slug}/figma-sync/figma-sync-report.md`
+- `plans/{slug}-{date}/03_modules/{module_slug}/figma-sync/figma-mismatch-report.md`
 
 Forbidden repo writes:
 

@@ -11,12 +11,12 @@ Sample này minh họa artifact split cho một module representative. Dùng syn
 ## Expected generated artifacts
 
 - `plans/ops-suite-260522-1030/03_modules/complaint-intake/screen-field-contract.yaml`
-- `plans/ops-suite-260522-1030/03_modules/complaint-intake/tool-lane-state.md`
+- `plans/ops-suite-260522-1030/03_modules/complaint-intake/tool-lanes/tool-lane-state.md`
 - `plans/ops-suite-260522-1030/05_tool-lanes/figma-make/shared-rules.md`
-- `plans/ops-suite-260522-1030/03_modules/complaint-intake/make-guidelines.md`
-- `plans/ops-suite-260522-1030/03_modules/complaint-intake/make-prompt-pack.md`
-- `plans/ops-suite-260522-1030/03_modules/complaint-intake/prototype-conformance-checklist.md`
-- `plans/ops-suite-260522-1030/03_modules/complaint-intake/prototype-conformance-report.md`
+- `plans/ops-suite-260522-1030/03_modules/complaint-intake/tool-lanes/figma-make/make-guidelines.md`
+- `plans/ops-suite-260522-1030/03_modules/complaint-intake/tool-lanes/figma-make/make-prompt-pack.md`
+- `plans/ops-suite-260522-1030/03_modules/complaint-intake/tool-lanes/figma-make/prototype-conformance-checklist.md`
+- `plans/ops-suite-260522-1030/03_modules/complaint-intake/tool-lanes/figma-make/prototype-conformance-report.md`
 
 ## Example control lines
 

@@ -6,7 +6,7 @@
 - Shared prompt skeleton: `plans/{slug}-{date}/05_tool-lanes/figma-make/shared-prompt-skeleton.md`
 - Shared component contracts: `plans/{slug}-{date}/05_tool-lanes/figma-make/shared-component-contracts.md`
 - Module screen truth: `plans/{slug}-{date}/03_modules/{module_slug}/screen-field-contract.yaml`
-- Module prompt pack: `plans/{slug}-{date}/03_modules/{module_slug}/make-prompt-pack.md`
+- Module prompt pack: `plans/{slug}-{date}/03_modules/{module_slug}/tool-lanes/figma-make/make-prompt-pack.md`
 
 ## Hard constraints
 

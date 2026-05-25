@@ -4,6 +4,7 @@
 
 - Lane: `figma-make`
 - Source contract: `plans/{slug}-{date}/03_modules/{module_slug}/screen-field-contract.yaml`
+- Shared rule/message index: `plans/{slug}-{date}/02_backbone/shared-rule-message-index.md`
 - Prototype source: [Figma Make URL / export reference]
 
 ## Checklist

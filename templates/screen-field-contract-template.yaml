@@ -5,10 +5,11 @@ artifact_set:
   lane_ready_for:
     - manual
     - figma-make
-  source_group_b: "plans/{slug}-{date}/03_modules/{module_slug}/srs-group-b.md"
-  source_group_c: "plans/{slug}-{date}/03_modules/{module_slug}/srs-group-c.md"
-  source_wireframe_input: "plans/{slug}-{date}/03_modules/{module_slug}/wireframe-input.md"
+  source_group_b: "plans/{slug}-{date}/03_modules/{module_slug}/srs-groups/srs-group-b.md"
+  source_group_c: "plans/{slug}-{date}/03_modules/{module_slug}/srs-groups/srs-group-c.md"
+  source_wireframe_input: "plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-input.md"
   source_design_doc: "designs/{slug}/DESIGN.md"
+  source_shared_rule_message_index: "plans/{slug}-{date}/02_backbone/shared-rule-message-index.md"
 
 shared_constraints:
   no_extra_fields: true

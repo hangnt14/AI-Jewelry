@@ -45,8 +45,7 @@
       },
       "F": {
         "headings": [
-          "## Quy tắc dùng chung (Common Rules)",
-          "## Danh sách thông điệp (Message List)",
+          "## Tham chiếu quy tắc/thông điệp dùng chung (Shared Rule/Message References)",
           "## Kịch bản kiểm thử (Test Cases)",
           "## Bảng thuật ngữ (Glossary)"
         ]
@@ -67,6 +66,33 @@
       "all": {
         "headings": [
           "# Xương sống yêu cầu (Requirements Backbone)"
+        ]
+      }
+    }
+  },
+  "common-rules-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Danh mục quy tắc dùng chung (Common Rules)"
+        ]
+      }
+    }
+  },
+  "message-list-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Danh sách thông điệp dùng chung (Message List)"
+        ]
+      }
+    }
+  },
+  "shared-rule-message-index-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Chỉ mục rule/message dùng chung (Shared Rule Message Index)"
         ]
       }
     }

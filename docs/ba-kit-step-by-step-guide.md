@@ -370,9 +370,9 @@ Command này còn để tương thích project cũ:
 Nó chuẩn bị manual handoff artifacts:
 
 ```text
-wireframe-input.md
-wireframe-map.md
-wireframe-state.md
+wireframes/wireframe-input.md
+wireframes/wireframe-map.md
+wireframes/wireframe-state.md
 ```
 
 Trong flow mới, đừng coi các file này là source of truth. Source of truth là:

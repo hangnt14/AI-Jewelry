@@ -85,7 +85,7 @@ BA-kit closes this gap with a BA-first operating model and contract-first archit
 | **Project Home Dashboard** | BA-facing resume point with next-step guidance and runtime prompts |
 | **Collaboration Dashboards** | COLLAB-HOME.md (lead view), MODULE-HOME.md (module BA view) |
 | **Design System** | DESIGN.md runtime constraints for UI handoff (colors, fonts, navigation schema) |
-| **Wireframe Constraints** | Manual handoff pack (wireframe-input.md, wireframe-map.md, wireframe-state.md) |
+| **Wireframe Constraints** | Manual handoff pack under `wireframes/` (`wireframe-input.md`, `wireframe-map.md`, `wireframe-state.md`) |
 | **Compiled Packages** | HTML exports for stakeholder review (FRD, SRS, traceability matrix) |
 
 ## Success Metrics
