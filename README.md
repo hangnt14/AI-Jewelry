@@ -104,6 +104,17 @@ plans/
     PROJECT-HOME.md
     COLLAB-HOME.md
     00_source/
+      manifest.json
+      summary.md
+      chunks/
+      chunk-index.md
+    00_reverse/
+      reverse-baseline-lock.json
+      reverse-index.md
+      reverse-focus-excerpts.md
+      reverse-evidence-ledger.md
+      reverse-drift-state.json
+      reverse-read-manifest.ndjson
     01_intake/
       intake.md
       plan.md
@@ -113,25 +124,66 @@ plans/
         option-02.md
         option-03.md
         comparison.md
+        options-receipt.md
     02_backbone/
       backbone.md
+      backbone-index.md
+      shared-shell-contract.md
+      shared-shell-index.md
+      impact-receipt.md
+      index-validation-receipt.md
+      package-snapshot.md
       project-memory.md
       project-memory/
+        index.md
+        log.md
+        hot/
+          canonical-vocabulary.md
+          approved-decisions.md
+          pushback-triggers.md
+        warm/
+          modules/
+            {module_slug}.md
+        cold/
     03_modules/
       {module_slug}/
         MODULE-HOME.md
         frd.md
         user-stories.md
+        user-stories-index.md
         screens/
         usecases/
         data/
+          erd.md
         flows/
         srs.md
         srs-index.md
+        srs-group-a.md
+        srs-group-b.md
+        srs-group-c.md
+        srs-group-d.md
+        srs-group-e.md
+        srs-group-f.md
+        srs-compile-receipt.json
+        screen-field-contract.yaml
         wireframe-input.md
         wireframe-map.md
         wireframe-state.md
+        tool-lane-state.md
+        make-guidelines.md
+        make-prompt-pack.md
+        prototype-conformance-checklist.md
+        prototype-conformance-report.md
+        figma-sync-report.md
+        figma-mismatch-report.md
     04_compiled/
+      compiled-frd.html
+      compiled-srs.html
+    05_tool-lanes/
+      figma-make/
+        shared-rules.md
+        shared-prompt-skeleton.md
+        shared-component-contracts.md
     delegation/
       packets/
       review-packets/
