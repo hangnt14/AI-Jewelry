@@ -26,6 +26,14 @@ Run Step 9 only for the transitional legacy manual-handoff lane. This path is re
 - `paths.wireframe_input`
 - `paths.wireframe_map`
 - `paths.wireframe_state`
+- `paths.tool_lane_state`
+- `paths.make_guidelines`
+- `paths.make_prompt_pack`
+- `paths.prototype_conformance_checklist`
+- `paths.prototype_conformance_report`
+- `paths.figma_make_shared_rules`
+- `paths.figma_make_shared_prompt_skeleton`
+- `paths.figma_make_shared_component_contracts`
 
 These outputs are legacy transitional artifacts. Canonical screen behavior, state coverage, ASCII wireframes, and future Figma sync mapping belong in the module screen/use case/data sources and the routing indexes produced by `ba-start srs`.
 
@@ -64,6 +72,23 @@ If Step 9 runs as part of the lifecycle or SRS pipeline and the user did not exp
 
 Persist `paths.wireframe_state` with `State: skipped`, `not-applicable`, `missing`, or `completed` according to `core/behavior/wireframes.md`.
 
+## Step 9.3A - Resolve Tool Lane
+
+Resolve the execution lane before generating any lane-specific artifact.
+
+- Default lane: `manual`
+- Supported AI lane in v1: `figma-make`
+- Reverse mode: `not-applicable`
+
+Persist `paths.tool_lane_state` with the selected lane, approval source, stale status, and the exact downstream artifacts expected for that lane.
+
+Rules:
+
+- If the user does not explicitly choose an AI tool, keep `manual`.
+- If `figma-make` is selected, require `paths.screen_field_contract` before generating any lane-specific pack.
+- Unsupported lanes must stop instead of falling back silently.
+- Lane selection must not mutate upstream SRS semantics.
+
 ## Step 9.4 - Build Manual Wireframe Handoff Pack And Checklist
 
 For each approved screen group:
@@ -77,3 +102,12 @@ For each approved screen group:
 
 State in both artifacts that BA-kit does not generate the wireframe itself in this flow; the user designs it manually and inserts the final mockup reference into the final document.
 State in both artifacts that compiled `paths.srs` remains a deliverable assembled from canon sources; if the manual handoff reveals requirement drift, update canon sources first, then recompile.
+
+When the selected lane is `figma-make`, additionally:
+
+1. Read `paths.screen_field_contract` as the hard-control artifact.
+2. Generate or refresh the shared lane rules under `paths.figma_make_*`.
+3. Generate module-level `paths.make_guidelines` and `paths.make_prompt_pack`.
+4. Generate `paths.prototype_conformance_checklist`.
+5. Fail closed if the selected screens do not have an exact field allowlist, required-state coverage, or navigation lock.
+6. Route any prototype drift back through `impact` instead of rewriting SRS inline.

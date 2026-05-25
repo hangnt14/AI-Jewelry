@@ -602,6 +602,22 @@ print_srs_receipt_status_line() {
   esac
 }
 
+print_tool_lane_status() {
+  local path="$1"
+
+  if [[ ! -f "${path}" ]]; then
+    printf -- "- [ ] tool lane state — missing\n"
+    return
+  fi
+
+  local lane state
+  lane="$(read_md_field "${path}" "Selected lane")"
+  state="$(read_md_field "${path}" "Lane state")"
+  [[ -n "${lane}" ]] || lane="unknown"
+  [[ -n "${state}" ]] || state="unknown"
+  printf -- "- [!] tool lane — %s / %s — %s\n" "${lane}" "${state}" "$(stat_mtime_pretty "${path}")"
+}
+
 print_json_state_line() {
   local path="$1"
   local label="$2"
@@ -1279,9 +1295,15 @@ status_command() {
       print_dir_status_line "${repo}/$(render_contract_path "${repo}" "flow_root" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/flows/*.md"
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "srs" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/srs.md"
       print_srs_receipt_status_line "${module_root_abs}"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "screen_field_contract" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/screen-field-contract.yaml"
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_input" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/wireframe-input.md"
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_map" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/wireframe-map.md"
       print_wireframe_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_state" "${slug}" "${date_token}" "${module_name}")"
+      print_tool_lane_status "${repo}/$(render_contract_path "${repo}" "tool_lane_state" "${slug}" "${date_token}" "${module_name}")"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "make_guidelines" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/make-guidelines.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "make_prompt_pack" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/make-prompt-pack.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "prototype_conformance_checklist" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/prototype-conformance-checklist.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "prototype_conformance_report" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/prototype-conformance-report.md"
     done <<<"${modules}"
   fi
 
@@ -1294,6 +1316,10 @@ status_command() {
   print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "compiled_frd" "${slug}" "${date_token}")" "04_compiled/compiled-frd.html"
   print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "compiled_srs" "${slug}" "${date_token}")" "04_compiled/compiled-srs.html"
 
+  printf '\n[Tool Lanes]\n'
+  print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "figma_make_shared_rules" "${slug}" "${date_token}")" "05_tool-lanes/figma-make/shared-rules.md"
+  print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "figma_make_shared_prompt_skeleton" "${slug}" "${date_token}")" "05_tool-lanes/figma-make/shared-prompt-skeleton.md"
+  print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "figma_make_shared_component_contracts" "${slug}" "${date_token}")" "05_tool-lanes/figma-make/shared-component-contracts.md"
   print_delegation_status "${repo}" "${slug}" "${date_token}"
 }
 

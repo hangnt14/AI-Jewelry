@@ -37,7 +37,9 @@ Produce Group D only when integrations, NFR exposure, data modelling, API handof
 
 Skip this step when reverse mode is the active lane. Reverse mode treats wireframes as `not-applicable`.
 
-Run the standalone wireframe workflow from [wireframes.md](./wireframes.md), using the same slug, date, and module, only for the transitional legacy manual-handoff lane.
+Run the standalone wireframe workflow from [wireframes.md](./wireframes.md), using the same slug, date, and module.
+Default execution lane stays `manual`. AI-assisted lanes are opt-in and must consume `paths.screen_field_contract`, not raw SRS prose, as the hard-control artifact.
+During migration, the manual lane remains transitional only; canon screen/use case/data sources remain the source of truth.
 
 Mode defaults inside the SRS pipeline:
 

@@ -20,6 +20,20 @@ COMMAND_SCOPES = {
     "status": ["project_home", "project_memory", "memory_index"],
 }
 
+LANE_SCOPES = {
+    "figma-make": [
+        "screen_field_contract",
+        "tool_lane_state",
+        "make_guidelines",
+        "make_prompt_pack",
+        "prototype_conformance_checklist",
+        "prototype_conformance_report",
+        "figma_make_shared_rules",
+        "figma_make_shared_prompt_skeleton",
+        "figma_make_shared_component_contracts",
+    ]
+}
+
 
 def render_path(template: str, *, slug: str, date: str, module: str) -> str:
     return (
@@ -37,6 +51,15 @@ def size_for(root: Path, rel_pattern: str) -> int:
     path = root / rel_pattern
     return path.stat().st_size if path.is_file() else 0
 
+def detect_lane(root: Path, lane_state_rel: str) -> str:
+    path = root / lane_state_rel
+    if not path.is_file():
+        return "manual"
+    for line in path.read_text(encoding="utf-8").splitlines():
+        if line.startswith("- Selected lane:"):
+            return line.split(":", 1)[1].strip().strip("`") or "manual"
+    return "manual"
+
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -52,9 +75,17 @@ def main() -> int:
     paths = contract["paths"]
     profiles = contract.get("artifact_profiles", {})
 
+    scope_keys = list(COMMAND_SCOPES[args.command])
+    if args.command == "wireframes":
+        lane_state_rel = render_path(paths["tool_lane_state"], slug=args.slug, date=args.date, module=args.module)
+        lane = "manual" if "{" in lane_state_rel else detect_lane(repo, lane_state_rel)
+        scope_keys.extend(LANE_SCOPES.get(lane, []))
+    else:
+        lane = ""
+
     rows = []
     total = 0
-    for key in COMMAND_SCOPES[args.command]:
+    for key in scope_keys:
         template = paths.get(key)
         if not template:
             continue
@@ -64,6 +95,8 @@ def main() -> int:
         rows.append((key, profiles.get(key, "unclassified"), rendered, size))
 
     print(f"Context budget for command: {args.command}")
+    if lane:
+        print(f"Resolved tool lane: {lane}")
     print("")
     print("| Path Key | Profile | Resolved Path | Bytes |")
     print("| --- | --- | --- | --- |")
