@@ -1,6 +1,6 @@
 ## First Audit Workflow
 
-1. **Ingest & Understand** — read all provided artefacts, understand the feature
+1. **Ingest & Understand** — read the full module canon set, understand the feature
 2. **Audit** — score completeness across all required knowledge areas
 3. **Report** — deliver a structured readiness report with verdict, score, gaps, and suggestions
 
@@ -9,42 +9,43 @@
 ### Step 1: Read all artefacts
 
 **Reading order:**
-1. Common Rules (CMR) — foundation for detecting conflicts
-2. Use Case document in full
-3. Wireframe / Design Mockup (if available)
-4. API Specification (if available) — only to understand client-side context
+1. `srs-index.md` — module inventory and routing map
+2. `usecases/*.md` — primary functional flows
+3. `screens/*.md` — primary screen behavior and ASCII evidence
+4. `screen-field-contract.yaml` — shared rules, states, validations, navigation
+5. Current compiled `srs.md` — supporting cross-check only
+6. `srs-compile-receipt.json` — proof compiled output matches canon
+7. `DESIGN.md`, shared shell contract, wireframe artifacts, or API spec (if available) — supporting evidence only
 
 Input-type routing:
 | Input Type | Action |
 | :--- | :--- |
-| URL | Invoke `.claude/skills/document-extraction/SKILL.md` |
-| PDF | Invoke `.claude/skills/pdf/SKILL.md` |
-| DOCX | Invoke `.claude/skills/docx/SKILL.md` |
-| File path | Read directly |
-| Image | Use Read tool — describe all UI elements, labels, states |
-| Pasted text | Analyze directly |
+| Module root | Read canon artifacts in the order above |
+| Compiled `srs.md` only | Use as supporting reference; do not treat as sole source if canon artifacts exist |
+| Image / mockup | Describe UI elements, labels, and states as supporting evidence only |
+| API spec | Use only to understand client-side context inside the active platform boundary |
 
-DO NOT score any knowledge area before finishing all documents.
+DO NOT score any knowledge area before finishing all primary canon artifacts.
 
 ### Step 2: Synthesise a Feature Understanding
 
-After reading all documents (including design images), synthesize into 5 sections with **fixed headings**:
+After reading all primary canon artifacts (plus supporting evidence when present), synthesize into 5 sections with **fixed headings**:
 
 ---
 
 ## 1. UI Object Inventory & Mapping
 
-Build table of all UI components from Wireframe, mapped to UC:
+Build table of all UI components from screen canon and compiled evidence, mapped to use cases:
 
 | # | Component Name | Type | In UC? | In Wireframe? | Notes |
 |---|---|---|---|---|---|
 | 1 | Example Button | Button | ✅ | ✅ | |
 
-Per component check: display state? action rule? label consistent?
+Per component check: display state? action rule? label consistent across use case, screen canon, and compiled SRS?
 
-**CMR Cross-Check:**
-- UC does not mention applicable CMR → ⚠️ Partial + question
-- Conflict UC vs CMR → 🔴 Conflict + High-priority question
+**Shared Rule Cross-Check:**
+- Canon sources do not reference applicable shared rules / contract rules → ⚠️ Partial + question
+- Conflict use case vs screen canon / shared rule → 🔴 Conflict + High-priority question
 
 Sub-categories: Data Display (grid/list/table), Controls (filters/search), Navigation (buttons), Others.
 
@@ -78,7 +79,7 @@ UI/UX FEEDBACK: Loading / Toast / Error message
 Per input/display field:
 | Field | Data Type | Required? | Min | Max | Format |
 |---|---|---|---|---|---|
-Missing info → record as gap.
+Missing info → record as gap. If compiled `srs.md` contains detail absent from canon, record it as a source-of-truth drift warning rather than treating it as Clear evidence.
 
 ---
 

@@ -31,7 +31,7 @@
 3. Criterion: Does the tester have enough info to write a test case?
 4. Do NOT deduct points for gaps found at Edge Case Checklist (bonus coverage).
 5. Uncertain Clear↔Partial → choose **Partial**. Uncertain Partial↔Missing → choose **Missing**.
-6. Each sub-item MUST record evidence (`UC §X.Y` / `CMR-NN`) + 1-sentence reason.
+6. Each sub-item MUST record evidence (`UC §X.Y` / `SCR §X.Y` / `SRS Index §X.Y` / `Rule-ID`) + 1-sentence reason.
 
 ---
 
@@ -47,14 +47,14 @@
 ### ⚡ Partial — partial points (see "Partial" column in KA table)
 
 - Has description but is vague, uses unmeasurable language.
-- Only inferable from CMR / wireframe / context — NOT written explicitly in UC.
+- Only inferable from supporting artefacts / mockups / context — NOT written explicitly in canon sources.
 - Contradicts another artefact on the same point.
 - Has correct content but missing necessary boundary cases.
 
 ### ❌ Missing — 0 points
 
 - Completely absent from all artefacts.
-- Has content but is entirely wrong relative to actual behavior or CMR.
+- Has content but is entirely wrong relative to actual behavior or shared rules.
 - Required artefact is BLOCKED making the sub-item unassessable.
 
 ### Quy tắc phân vân
@@ -105,12 +105,12 @@
 
 | Sub-item | Clear | Partial | Tiêu chí Clear |
 |---|:---:|:---:|---|
-| 5.1 Complete component list | 5 | 2 | Every component on wireframe is in UC |
-| 5.2 UC ↔ Wireframe consistency | 3 | 1 | Label names, positions, component types match |
-| 5.3 State / Action / Label per component | 3 | 1 | Each component has: default state, interaction rule, label |
-| 5.4 CMR Cross-Check | 3 | 1 | All applicable CMRs are referenced in UC |
+| 5.1 Complete component list | 5 | 2 | Every relevant component / endpoint in canon sources is inventoried |
+| 5.2 Use case ↔ canon consistency | 3 | 1 | Label names, positions, component types, or endpoint contracts match between use cases and canon sources |
+| 5.3 State / Action / Label per component | 3 | 1 | Each component has: default state, interaction rule, and label in canon evidence |
+| 5.4 Shared rule cross-check | 3 | 1 | All applicable shared rules / rule IDs are referenced in canon sources |
 
-**Rule 5.4:** ≥85% CMR ref → Clear (3pts). 50–<85% → Partial (1pt). <50% → Missing (0pts).
+**Rule 5.4:** ≥85% shared-rule coverage → Clear (3pts). 50–<85% → Partial (1pt). <50% → Missing (0pts).
 
 ### KA #6 — Object Attributes & Behavior Definition (18đ, Critical)
 
@@ -195,7 +195,7 @@ For each KA, MUST output breakdown table:
 ### KA #N — [KA Name] ([total]pts)
 | Sub-item | Max | Score | Status | Evidence / Reason |
 |---|:---:|:---:|:---:|---|
-| N.1 [name] | X | x | ✅/⚡/❌ | UC §X.Y / CMR-NN / Missing |
+| N.1 [name] | X | x | ✅/⚡/❌ | UC §X.Y / SCR §X.Y / Rule-ID / Missing |
 
 **Subtotal KA #N: Y/Total — ✅/⚡/❌**
 **Evaluation:** [1 line — main reason]
@@ -206,10 +206,10 @@ For each KA, MUST output breakdown table:
 ## Cross-Artefact Conflict Check
 
 Only flag conflicts that **affect the platform boundary** (defined in platform profile):
-- UC flow contradicts wireframe?
-- API spec has field not mentioned in UC?
-- UI element in design has no business rule?
-- Label/field name inconsistent across documents?
+- Use case flow contradicts screen canon or compiled SRS?
+- API spec has a field / endpoint behavior not reflected in module canon?
+- Screen / endpoint element in canon has no business rule or shared-rule reference?
+- Label/field name inconsistent across use cases, screens, contracts, or supporting design?
 
 Conflicts → automatic Warnings.
 
@@ -270,7 +270,7 @@ Bullet 1 line / 1 point. Credit all ✅ Complete items.
 
 - **CAN test now:** [areas with enough info]
 - **CANNOT test yet:** [areas blocked by gaps + gap ID reference]
-- **Focus areas once resolved:** Happy path, alternative scenarios, boundary/validation, error/exception, UI checks, CMR compliance, edge cases
+- **Focus areas once resolved:** Happy path, alternative scenarios, boundary/validation, error/exception, UI checks, shared-rule compliance, edge cases
 
 ### 📌 Summary & Recommendation
 
@@ -287,8 +287,8 @@ Bullet 1 line / 1 point. Credit all ✅ Complete items.
 | Missing validation | Input fields, no constraints | "What does [X] accept? Min/Max? Error message?" |
 | Generic error message | "show error" | "Exact message for [X]?" |
 | AC not measurable | "should"/"can" | "Rewrite [X] as pass/fail?" |
-| Wireframe element not in UC | CMR cross-check | "Which rule does element [X] correspond to?" |
-| UC does not ref CMR | No "See CMR-xx" | "Does UC apply CMR-xx?" |
+| Screen/supporting-design element not in canon | Shared-rule cross-check | "Which canon rule or screen behavior does element [X] correspond to?" |
+| Canon source does not ref shared rule | No linked rule/message ID | "Does this flow apply a shared rule or message code?" |
 | Partial API failure | Only full-screen error | "When [A] fails + [B] OK, how does UI handle it?" |
 | No debounce | Nav without interaction guard | "Trigger twice quickly, navigate twice?" |
 | i18n no persistence | Language switch, no storage rule | "Where is language stored? Persists after logout?" |

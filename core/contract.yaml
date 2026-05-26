@@ -108,9 +108,9 @@
     "reverse_drift_state": "plans/{slug}-{date}/00_reverse/reverse-drift-state.json",
     "reverse_read_manifest": "plans/{slug}-{date}/00_reverse/reverse-read-manifest.ndjson",
     "behavior_reverse": "core/behavior/reverse.md",
-    "qc_output_root": "docs/QC-{PLATFORM}/review-doc/{UC-folder-name}",
-    "qc_report": "docs/QC-{PLATFORM}/review-doc/{UC-folder-name}/{filename}_audited_{slug}_v{N}.md",
-    "qc_backlog": "docs/QC-{PLATFORM}/review-doc/{UC-folder-name}/{filename}_question-backlog.md",
+    "qc_output_root": "plans/{slug}-{date}/03_modules/{module_slug}/qc-review",
+    "qc_report": "plans/{slug}-{date}/03_modules/{module_slug}/qc-review/{module_slug}-qc-review-report-v{N}.md",
+    "qc_backlog": "plans/{slug}-{date}/03_modules/{module_slug}/qc-review/{module_slug}-qc-review-question-backlog.md",
     "behavior_qc_review": "core/behavior/qc-review.md"
   },
   "artifact_profiles": {
@@ -311,33 +311,17 @@
       "mutable": false,
       "requires": ["srs"],
       "outputs": ["qc_report", "qc_backlog"],
-      "notes": "Audit UC/SRS for test-readiness. Non-mutable: reads artifacts, produces QC reports. Auto-triggered by quality gates."
+      "notes": "Audit module SRS canon for test-readiness. Non-mutable: reads module-local canon sources first, then compiled SRS as supporting evidence. Auto-triggered after module srs completion."
     }
   },
   "quality_gates": {
-    "pre_srs": {
-      "invoke": "qc-review",
-      "min_version": "1.0.0",
-      "profile": "completeness-clarity-only",
-      "platform": "${defaults.platform}",
-      "block_on": "verdict == NOT_READY",
-      "trigger_after": "stories"
-    },
-    "pre_wireframe": {
+    "post_srs_module_qc": {
       "invoke": "qc-review",
       "min_version": "1.0.0",
       "profile": "full-10ka",
       "platform": "${defaults.platform}",
       "block_on": "score < 70",
       "trigger_after": "srs"
-    },
-    "pre_package": {
-      "invoke": "qc-review",
-      "min_version": "1.0.0",
-      "profile": "cross-artifact-consistency",
-      "platform": "${defaults.platform}",
-      "block_on": "blockers.length > 0",
-      "trigger_after": "wireframes"
     }
   },
   "behavior_shards": {

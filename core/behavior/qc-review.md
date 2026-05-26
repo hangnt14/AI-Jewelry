@@ -12,7 +12,9 @@
 | Must read | `core/contract.yaml`, `core/contract-behavior.md`, `skills/qc-uc-review/SKILL.md` |
 | Must read | `skills/qc-uc-review/profiles/{platform}.md` |
 | Must read | `skills/qc-uc-review/references/scoring-rubric.md` |
-| May read | Target UC/SRS artifacts, CMR, wireframes (as needed by audit) |
+| Must read | Current module canon root resolved from `paths.module_root` |
+| May read | `paths.srs_index`, `paths.usecase_root`, `paths.screen_root`, `paths.screen_field_contract`, `paths.srs`, `paths.srs_compile_receipt` |
+| May read | `paths.design_doc`, `paths.shared_shell_contract`, and legacy wireframe artifacts only as supporting evidence when they already exist |
 | May read | `skills/qc-uc-review/references/first-audit-workflow.md` or `re-audit-workflow.md` |
 | Must not read | Module artifacts outside the current audit scope |
 | Must not read | Other modules' warm shards unless assembling compiled output |
@@ -26,11 +28,12 @@ After a mutable command completes, check `quality_gates` in `contract.yaml` for 
 If found:
 1. Resolve platform: use `--platform` flag if present, else `defaults.platform`.
 2. Load profile from `skills/qc-uc-review/profiles/{platform}.md`.
-3. Execute audit per `skills/qc-uc-review/references/first-audit-workflow.md`.
-4. Produce verdict signal: `{ verdict, score, platform, blockers, report_path }`.
-5. Evaluate `block_on` condition from gate config.
-6. If `block_on` is false: log gate pass, proceed.
-7. If `block_on` is true: enter Remediation Loop below.
+3. Resolve the current module root and prefer canon artifacts in this order: `paths.srs_index` -> `paths.usecase_root` -> `paths.screen_root` -> `paths.screen_field_contract` -> `paths.srs` -> optional supporting artifacts.
+4. Execute audit per `skills/qc-uc-review/references/first-audit-workflow.md`.
+5. Produce verdict signal: `{ verdict, score, platform, blockers, report_path }`.
+6. Evaluate `block_on` condition from gate config.
+7. If `block_on` is false: log gate pass, proceed.
+8. If `block_on` is true: enter Remediation Loop below.
 
 ---
 
@@ -41,7 +44,7 @@ Parse verdict signal: `{ verdict, score, platform, blockers, report_path }`
 | Verdict | Score range | Action |
 |---|---|---|
 | `READY` | score >= 85 | Log pass. Proceed to next lifecycle step. |
-| `CONDITIONALLY_READY` | 70 <= score < 85 | Enter remediation loop. |
+| `CONDITIONALLY_READY` | 70 <= score < 85 | Evaluate `block_on`. If the active gate does not block this score band, log a warning/pass and proceed. If the active gate blocks it, enter remediation. |
 | `NOT_READY` | score < 70 | Enter remediation loop. |
 | Auto-fail | Any critical KA (#1–#9) = 0 | Enter remediation loop regardless of score. |
 
@@ -83,12 +86,12 @@ Hard limit: max_retries = 2. After 2 attempts, always escalate — never loop fu
 
 Gaps where the required information is derivable from existing artifacts without a business decision:
 
-- Missing exception flows → derivable from CMR error patterns
+- Missing exception flows → derivable from module use case + screen canon + shared rules
 - Edge case coverage gaps → derivable from platform profile checklist (groups A–E)
-- Missing AC section → synthesizable from documented flows and postconditions
+- Missing AC section → synthesizable from documented flows and postconditions already present in the canon set
 - Inconsistent terminology → fixable by aligning to backbone canonical vocabulary
-- Missing postconditions → derivable from flow outcomes already described in UC
-- Missing CMR cross-references → resolvable by scanning CMR and matching applicable rules
+- Missing postconditions → derivable from outcomes already described in use case canon
+- Missing shared-rule cross-references → resolvable by scanning `screen-field-contract.yaml`, shared shell rules, and compiled SRS references
 
 ### requires_user_input
 
@@ -110,7 +113,7 @@ User may pass `--skip-gate` to bypass QC gate enforcement.
 
 Requires explicit confirmation before proceeding:
 
-> "Are you sure? Skipping the QC gate means downstream artifacts may be built on untestable requirements. Type 'confirm skip' to proceed."
+> "Are you sure? Skipping the QC gate means downstream module handoff may proceed on untestable canon sources. Type 'confirm skip' to proceed."
 
 On confirmation: log skip event and continue lifecycle.
 On no confirmation: abort skip, return to gate enforcement.

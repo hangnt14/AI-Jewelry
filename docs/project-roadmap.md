@@ -19,7 +19,7 @@
 - [x] 37 artifact templates
 - [x] Project Home dashboard
 - [x] Installation for Claude Code, Codex, Antigravity
-- [x] Quality gates (pre-SRS, pre-wireframe, pre-package)
+- [x] Contract-driven module QC after SRS plus package aggregate validation
 
 ### v1.0 (April 2026)
 **Focus:** Reverse Mode & Collaboration
@@ -44,8 +44,8 @@
 
 ## Current Work (v1.1)
 
-### QC-UC-Review Integration (In Progress)
-**Status:** 80% complete (as of May 18, 2026)
+### QC-UC-Review Integration (Near Complete)
+**Status:** 95% complete (as of May 26, 2026)
 **Branch:** `feat/qc-uc-review-integration`
 
 **Objectives:**
@@ -63,11 +63,12 @@
 - [x] Quality scoring algorithm (10-point audit)
 - [x] Report generation (markdown + JSON)
 - [x] Codex adapter integration
+- [x] Module-scoped post-SRS QC gate contract and canon-first routing
+- [x] Documentation + fixture coverage for module QC gate timing
 
 **In Progress:**
 - [ ] Antigravity adapter integration
-- [ ] Runtime parity tests for QC skill
-- [ ] Documentation updates (skill-catalog.md)
+- [ ] Runtime parity adapter execution for QC skill
 - [ ] Edge case handling (large SRS files)
 
 **Remaining:**
@@ -75,7 +76,7 @@
 - [ ] Performance optimization (large projects)
 - [ ] Release notes + migration guide
 
-**Estimated Completion:** May 25, 2026
+**Estimated Completion:** May 26, 2026
 
 ## Planned Releases (v1.2+)
 

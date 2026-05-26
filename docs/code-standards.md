@@ -641,7 +641,7 @@ Use consistent terminology across all files:
 | Artifact | Deliverable document (FRD, SRS, etc.) |
 | Skill | BA workflow automation (ba-start, ba-collab) |
 | Shard | Command-specific behavior file |
-| Gate | Quality checkpoint (pre-SRS, pre-wireframe) |
+| Gate | Quality checkpoint (post-SRS module QC, package validation) |
 | Slug | Project identifier (kebab-case) |
 
 ### Cross-References

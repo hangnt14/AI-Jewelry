@@ -23,15 +23,16 @@ Mọi phát biểu trong output PHẢI đặt **chủ ngữ là App/Client**, KH
 
 ## Input Contract
 
-- CMR: `docs/BA/SRS-mobile/Common rule/CMR_Mobile.md` (read first)
-- UC folder: `docs/BA/SRS-mobile/[UC-folder-name]/`
-- Question Backlog: `docs/QC-MOBILE/review-doc/[UC-folder-name]/*_question-backlog.md` (if exists)
-- Important: Check input directory for existing versions, read the highest version.
+- Module root: `plans/{slug}-{date}/03_modules/{module_slug}/`
+- Primary evidence order: `srs-index.md` -> `usecases/*.md` -> `screens/*.md` -> `screen-field-contract.yaml`
+- Supporting evidence: current `srs.md`, `srs-compile-receipt.json`, `DESIGN.md`, shared shell contract, legacy wireframe files (if they already exist)
+- Question Backlog: `plans/{slug}-{date}/03_modules/{module_slug}/qc-review/*-qc-review-question-backlog.md` (if exists)
+- Important: Check the QC output directory for existing versions and read the highest report version.
 
 ## Output Contract
 
-- Output folder: `docs/QC-MOBILE/review-doc/[UC-folder-name]/`
-- Versioning: If `v[N]` exists → `v[N+1]`. NEVER overwrite.
+- Output folder: `plans/{slug}-{date}/03_modules/{module_slug}/qc-review/`
+- Versioning: If `v[N]` exists -> `v[N+1]`. NEVER overwrite.
 
 ---
 
@@ -61,8 +62,8 @@ If UC does not mention an item → record gap + question.
 - 3.4 Fallback: role not in enum → how does the **App UI** handle it?
 
 ### KA #5 — UI Object Inventory & Mapping
-- 5.2 UC ↔ Wireframe consistency: check label names, positions, component types match between UC and mobile wireframe/mockup.
-- 5.4 CMR Cross-Check: reference `CMR_Mobile.md`. ≥85% applicable CMRs referenced → Clear.
+- 5.2 Use case ↔ screen canon consistency: check label names, positions, component types match between module use cases, screen canon, and supporting mockup when present.
+- 5.4 Shared-rule cross-check: reference `screen-field-contract.yaml`, shared shell rules, and explicit rule/message IDs. ≥85% applicable shared rules referenced → Clear.
 
 ### KA #7 — Functional Logic & Workflow Decomposition
 - 7.3 Exception & Error Flows: error handling for every **API call from the client** — what does the App display/do when the call fails or times out?
@@ -73,21 +74,23 @@ If UC does not mention an item → record gap + question.
 
 ---
 
-## CMR Path
+## Shared Rule Sources
 
-```
-docs/BA/SRS-mobile/Common rule/CMR_Mobile.md
+```text
+plans/{slug}-{date}/03_modules/{module_slug}/screen-field-contract.yaml
+plans/{slug}-{date}/02_backbone/shared-shell-contract.md
+plans/{slug}-{date}/03_modules/{module_slug}/srs.md
 ```
 
-Read CMR before scoring KA #5 (5.4 CMR Cross-Check) and before flagging any cross-artefact conflicts.
+Read shared rule sources before scoring KA #5 (5.4 Shared-rule cross-check) and before flagging any cross-artefact conflicts.
 
 ---
 
 ## Output Naming Convention
 
-```
-docs/QC-MOBILE/review-doc/[UC-folder-name]/[UC-ID]_audited_[feature-slug]_v[N].md
-docs/QC-MOBILE/review-doc/[UC-folder-name]/[UC-ID]_question-backlog.md
+```text
+plans/{slug}-{date}/03_modules/{module_slug}/qc-review/{module_slug}-qc-review-report-v[N].md
+plans/{slug}-{date}/03_modules/{module_slug}/qc-review/{module_slug}-qc-review-question-backlog.md
 ```
 
 ---
@@ -96,12 +99,12 @@ docs/QC-MOBILE/review-doc/[UC-folder-name]/[UC-ID]_question-backlog.md
 
 | Output folder state | Action |
 | :--- | :--- |
-| No `*_audited_*_v[N].md` file | → **First audit** workflow |
-| Has `*_audited_*` + backlog all Answered | → **Re-audit** workflow |
-| Has `*_audited_*` + backlog has Open unanswered | → **WARN** + **ASK** user (see SKILL.md Step 0) |
-| Has `*_audited_*` + no backlog | → **ASK** user: view current version or re-audit? |
-| UC folder input does not exist | → **STOP** — ask user to verify UC path |
-| Output folder does not exist (but UC exists) | → Create folder + continue first-audit |
+| No `*-qc-review-report-v[N].md` file | → **First audit** workflow |
+| Has `*-qc-review-report-*` + backlog all Answered | → **Re-audit** workflow |
+| Has `*-qc-review-report-*` + backlog has Open unanswered | → **WARN** + **ASK** user (see SKILL.md Step 0) |
+| Has `*-qc-review-report-*` + no backlog | → **ASK** user: view current version or re-audit? |
+| Module root or canon evidence missing | → **STOP** — ask user to verify module canon paths |
+| Output folder does not exist (but module root exists) | → Create folder + continue first-audit |
 
 ---
 

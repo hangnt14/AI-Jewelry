@@ -169,7 +169,7 @@ BA-kit/
 **`core/contract.yaml`** (456 LOC)
 - Single source of truth for all paths, commands, states, thresholds
 - Defines 18 commands (intake, backbone, frd, stories, srs, wireframes, package, status, next, impact, options, reverse, qc-review, etc.)
-- Specifies 3 quality gates (pre-SRS, pre-wireframe, pre-package)
+- Specifies post-`srs` module QC plus aggregate package validation
 - Lists activation levels (base, modular, program)
 - Maps behavior shards to commands
 - Canonical for: paths, defaults, state enums, resolution sequences
@@ -194,7 +194,7 @@ BA-kit/
 **`skills/ba-start/`** (Main BA lifecycle engine)
 - Unified skill covering all lifecycle steps
 - Dispatches to step files based on subcommand
-- Handles full lifecycle: intake → backbone → FRD/stories → SRS → wireframes → package
+- Handles full lifecycle: intake → backbone → FRD/stories → SRS → module QC → wireframes/figma downstream → package
 - Also handles: status, next, reverse, impact
 
 **`skills/ba-do/`** (Natural language router)
@@ -310,9 +310,8 @@ scripts/*.py (validation, conversion, automation)
 
 | Gate | Trigger | Profile | Block Criteria |
 |------|---------|---------|----------------|
-| **Pre-SRS** | After user stories | Completeness-clarity | NOT_READY status |
-| **Pre-Wireframe** | After SRS | Full 10-point audit | Score < 70 |
-| **Pre-Package** | Before HTML export | Cross-artifact consistency | Blockers exist |
+| **Post-SRS Module QC** | After module SRS | Full 10-point audit | Score < 70 |
+| **Package Validation** | During package | Aggregate consistency compile check | Package blockers exist |
 
 ## Runtime Adapters
 

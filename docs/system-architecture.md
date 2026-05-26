@@ -129,7 +129,7 @@ START
   ↓
   ├─→ As a / I want / so that format
   ├─→ Acceptance criteria (SMART)
-  └─→ Pre-SRS Quality Gate (completeness-clarity)
+  └─→ Input to module SRS authoring
   ↓
 [SRS] ← System requirements specification
   ↓
@@ -139,64 +139,63 @@ START
   ├─→ Use cases (UC-*)
   ├─→ Screen specifications (SCR-*)
   ├─→ Error codes (E-*)
-  └─→ Pre-Wireframe Quality Gate (full 10-point audit)
+  └─→ `srs.md` + `srs-compile-receipt.json`
   ↓
-[Wireframes] ← Wireframe constraint pack
+[Module QC] ← Automatic canon-first readiness audit
+  ↓
+  ├─→ Reads `srs-index.md`, `usecases/*.md`, `screens/*.md`
+  ├─→ Reads `screen-field-contract.yaml`
+  ├─→ Uses compiled `srs.md` as supporting evidence
+  ├─→ Writes `03_modules/{module}/qc-review/*`
+  └─→ May go directly to package when no UI handoff lane is needed
+  ↓
+[Wireframes] ← Optional wireframe constraint pack
   ↓
   ├─→ DESIGN.md (design system)
   ├─→ wireframe-input.md (constraints)
   ├─→ wireframe-map.md (screen map)
-  └─→ wireframe-state.md (state variants)
+  └─→ wireframe-state.md (state variants, no auto QC trigger)
   ↓
 [Package] ← Compiled HTML deliverables
   ↓
   ├─→ compiled-frd.html
   ├─→ compiled-srs.html
   ├─→ Traceability matrix
-  └─→ Pre-Package Quality Gate (cross-artifact consistency)
+  └─→ Aggregate validation across emitted artifacts
   ↓
 END (Ready for stakeholder handoff)
 ```
 
-## Quality Gate System
+## Quality And Validation System
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                    Quality Gate 1: Pre-SRS                    │
+│                 Module QC Gate: Post-SRS Module Audit         │
 ├──────────────────────────────────────────────────────────────┤
-│ Trigger:     After user stories completed                    │
-│ Profile:     Completeness-clarity only                       │
-│ Criteria:    • Every story has ≥1 AC                         │
-│              • No orphaned requirements                       │
-│              • Vocabulary consistent                         │
-│ Block If:    Status = NOT_READY                              │
-│ Auto-Remedy: Max 2 retries (add missing ACs, fix terms)      │
-└──────────────────────────────────────────────────────────────┘
-                          ↓
-┌──────────────────────────────────────────────────────────────┐
-│                  Quality Gate 2: Pre-Wireframe                │
-├──────────────────────────────────────────────────────────────┤
-│ Trigger:     After SRS completed                             │
+│ Trigger:     After module SRS completed                      │
 │ Profile:     Full 10-point audit                             │
-│ Criteria:    • Completeness (all sections present)           │
-│              • Clarity (no ambiguous language)               │
-│              • Consistency (no contradictions)               │
-│              • Traceability (goals → FR → AC → test)         │
-│              • Acceptance (all stakeholders signed off)      │
-│              • Feasibility (no impossible requirements)      │
-│              • Testability (all AC are testable)             │
-│              • Prioritization (P0/P1/P2 assigned)            │
-│              • Dependencies (external deps documented)       │
-│              • Risks (known risks flagged)                   │
+│ Evidence:    • srs-index.md                                  │
+│              • usecases/*.md + screens/*.md                  │
+│              • screen-field-contract.yaml                    │
+│              • compiled srs.md as supporting reference       │
 │ Block If:    Score < 70                                      │
-│ Auto-Remedy: Max 2 retries (address low-scoring sections)    │
+│ Auto-Remedy: Max 2 retries, fix canon sources first          │
 └──────────────────────────────────────────────────────────────┘
                           ↓
 ┌──────────────────────────────────────────────────────────────┐
-│                  Quality Gate 3: Pre-Package                  │
+│               Downstream UI Lane: Wireframes / Figma          │
 ├──────────────────────────────────────────────────────────────┤
-│ Trigger:     Before HTML export                              │
-│ Profile:     Cross-artifact consistency                      │
+│ Trigger:     After SRS and module QC when UI support is needed│
+│ Purpose:     Manual handoff / downstream visual sync only    │
+│ QC Note:     No auto `qc-review` gate fires after wireframes │
+│ Source:      Canon screen/use case files remain the truth    │
+└──────────────────────────────────────────────────────────────┘
+                          ↓
+┌──────────────────────────────────────────────────────────────┐
+│                  Package Validation Boundary                  │
+├──────────────────────────────────────────────────────────────┤
+│ Trigger:     During `package` compile/validate run           │
+│ Scope:       Whole-system aggregate HTML handoff             │
 │ Criteria:    • UC steps match screen actions (same wording)  │
 │              • Screen fields match UC data (same names)      │
 │              • Error messages consistent (MSG-* codes)       │
@@ -204,8 +203,8 @@ END (Ready for stakeholder handoff)
 │              • Traceability complete (no orphaned items)     │
 │              • Links valid (no broken references)            │
 │              • Wireframes attached (if UI-backed)            │
-│ Block If:    Blockers exist                                  │
-│ Auto-Remedy: Max 2 retries (fix inconsistencies)             │
+│ Block If:    Package validation detects blockers             │
+│ Auto-Remedy: None. Fix upstream canon artifacts first        │
 └──────────────────────────────────────────────────────────────┘
 ```
 
@@ -564,7 +563,7 @@ If approved:
 └─ Module marked "completed"
 ```
 
-## Quality Gate Scoring (Pre-Wireframe)
+## Quality Gate Scoring (Post-SRS Module QC)
 
 ```
 10-Point Audit Scoring:

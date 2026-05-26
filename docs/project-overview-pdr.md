@@ -36,7 +36,7 @@ BA-kit closes this gap with a BA-first operating model and contract-first archit
 
 | User Type | Use Case |
 |-----------|----------|
-| Solo IT Business Analyst | Full lifecycle: intake → backbone → FRD/stories → SRS → wireframe constraints → package |
+| Solo IT Business Analyst | Full lifecycle: intake → backbone → FRD/stories → SRS → module QC → optional wireframe constraints → package |
 | Product Manager (BA work) | Requirements definition, user story generation, acceptance criteria |
 | Consulting Team | Discovery engagement, requirements capture, stakeholder handoff |
 | Solution Analyst | Module-based collaboration, cross-team coordination, change impact analysis |
@@ -48,7 +48,7 @@ BA-kit closes this gap with a BA-first operating model and contract-first archit
 - **Intake & Normalization:** Structured elicitation, gap analysis, open questions tracking
 - **Requirements Backbone:** Single source of truth after scope lock (vocabulary, decisions, assumptions)
 - **Gated Artifact Emission:** FRD, user stories, SRS, wireframe constraints emitted only when prerequisites met
-- **Quality Gates:** Pre-SRS (completeness), pre-wireframe (full 10-point audit), pre-package (cross-artifact consistency)
+- **Quality & Validation Boundaries:** Automatic module QC after `srs`, then aggregate validation during `package`
 - **Packaging:** Compiled HTML deliverables for stakeholder review
 
 ### 2. Module Collaboration
@@ -96,7 +96,7 @@ BA-kit closes this gap with a BA-first operating model and contract-first archit
 | Non-technical BA resume | From PROJECT-HOME.md without CLI | Achieved |
 | Module collaboration | No Git/PR learning required | Achieved |
 | Requirement completeness | 100% have acceptance criteria | Achieved |
-| Quality gate automation | 3 gates (pre-SRS, pre-wireframe, pre-package) | Achieved |
+| Module QC automation | Post-`srs` module gate + package aggregate validation | Achieved |
 | Codex integration | Repo-native via AGENTS.md | Achieved |
 | Antigravity integration | CLI + Knowledge Item workflow | Achieved |
 
@@ -108,7 +108,7 @@ BA-kit closes this gap with a BA-first operating model and contract-first archit
 4. **Templates are first-class assets** because BA deliverables are repeatable across projects
 5. **PlantUML for swimlanes**, Mermaid for other diagrams (portable, markdown-native)
 6. **Hybrid methodology default** for solo IT BA work (formal where risk is high, lightweight where speed matters)
-7. **Gated artifact emission** (SRS/wireframes only when needed) instead of always emitting full set
+7. **Gated artifact emission** (SRS/wireframes only when needed) plus canon-first module QC after SRS instead of legacy pre-wireframe gating
 8. **PROJECT-HOME.md is dashboard, not source of truth** (backbone → intake → module artifacts are canonical)
 9. **GitHub is optional transport layer** (BA-facing state lives in Collab Home, Module Home, review packets)
 10. **Contract-first architecture** (single contract.yaml for paths, commands, states, thresholds)

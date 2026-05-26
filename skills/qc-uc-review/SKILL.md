@@ -3,14 +3,14 @@ name: qc-uc-review
 version: 1.0.0
 user-invocable: true
 argument-hint: "--platform <mobile|web|api>"
-description: Reviews a use case (UC) document to determine whether it is ready for test design. Produces a readiness verdict (Ready / Not Ready), a completeness score (0–100%), and a detailed gap report with missing sections, unclear items, and concrete suggestions to fix each issue. Use this skill whenever a user says `review uc`, `review requirement`.
-verdict-interface: '{ verdict: "READY"|"CONDITIONALLY READY"|"NOT READY", score: number, platform: string, blockers: string[], report_path: string }'
+description: Reviews a module SRS canon set to determine whether it is ready for test design. Produces a readiness verdict, a completeness score (0–100%), and a detailed gap report with missing sections, unclear items, and concrete suggestions to fix each issue. Use this skill whenever a user says `review uc`, `review requirement`, or when BA-kit auto-triggers QC after module `srs`.
+verdict-interface: '{ verdict: "READY"|"CONDITIONALLY_READY"|"NOT_READY", score: number, platform: string, blockers: string[], report_path: string }'
 ---
 # Requirements Readiness Review Skill
 
 ## Purpose
 
-You are a Senior QC Analyst auditing requirement documents for test-design readiness. You ensure every requirement is complete, testable, and traceable before it reaches the QA test design phase.
+You are a Senior QC Analyst auditing module requirement canon for test-design readiness. You ensure every requirement is complete, testable, and traceable before it reaches the QA test design phase.
 
 You operate by **YAGNI**, **KISS**, and **DRY**. Requirements should be minimal enough to build what's needed, clear enough to test, and free of duplication.
 
@@ -31,20 +31,20 @@ Load the platform profile **before** starting any audit work. The profile define
 - Subject framing rules (who is the actor in findings)
 - Platform-specific edge case groups
 - Input/output path conventions
-- KA adjustments and CMR path
+- KA adjustments and shared-rule evidence sources
 
 ## Bước 0: Routing Check (BẮT BUỘC chạy đầu tiên)
 
-Xác định UC folder từ đường dẫn input, kiểm tra output folder theo convention trong platform profile:
+Xác định module root hiện tại từ BA-kit contract context, rồi kiểm tra output folder theo convention trong platform profile:
 
 | Trạng thái output folder | Hành động |
 | :--- | :--- |
-| Không có file `*_audited_*_v[N].md` | → **First audit** workflow |
-| Có `*_audited_*` + backlog có Answered (all Open resolved) | → **Re-audit** workflow |
-| Có `*_audited_*` + backlog còn Open chưa trả lời | → **CẢNH BÁO** + **HỎI** user (xem bên dưới) |
-| Có `*_audited_*` + không có backlog | → **HỎI** user: muốn xem version hiện tại hay re-audit? |
-| UC folder input không tồn tại | → **STOP** — yêu cầu user kiểm tra đường dẫn UC |
-| Output folder chưa tồn tại (nhưng UC có) | → Tự tạo folder + tiếp tục first-audit |
+| Không có file `*-qc-review-report-v[N].md` | → **First audit** workflow |
+| Có `*-qc-review-report-*` + backlog có Answered (all Open resolved) | → **Re-audit** workflow |
+| Có `*-qc-review-report-*` + backlog còn Open chưa trả lời | → **CẢNH BÁO** + **HỎI** user (xem bên dưới) |
+| Có `*-qc-review-report-*` + không có backlog | → **HỎI** user: muốn xem version hiện tại hay re-audit? |
+| Module root hoặc canon source bắt buộc không tồn tại | → **STOP** — yêu cầu user kiểm tra `module_root`, `srs-index.md`, `usecases/`, `screens/`, `screen-field-contract.yaml`, `srs-compile-receipt.json` |
+| Output folder chưa tồn tại (nhưng module root hợp lệ) | → Tự tạo folder + tiếp tục first-audit |
 
 ### Xử lý khi backlog còn Open
 
@@ -52,7 +52,7 @@ Khi phát hiện backlog còn câu hỏi Open chưa được trả lời, skill 
 
 1. **Cảnh báo** user: thông báo số câu Open / tổng số câu trong backlog.
 2. **Hỏi** user chọn 1 trong 2 hướng:
-   - **Tạo mới v[N+1] (First audit lại):** Chạy lại first-audit workflow từ đầu với UC input hiện tại → tạo file `*_audited_*_v[N+1].md` mới hoàn toàn (không dựa trên bản cũ).
+   - **Tạo mới v[N+1] (First audit lại):** Chạy lại first-audit workflow từ đầu với module canon hiện tại → tạo file `*-qc-review-report-v[N+1].md` mới hoàn toàn (không dựa trên bản cũ).
    - **Re-audit:** Chạy re-audit workflow dựa trên bản audited hiện tại — chỉ tích hợp các câu đã Answered/Deferred, bỏ qua các câu Open (ghi nhận trong Changelog là chưa được trả lời).
 3. Thực hiện workflow theo lựa chọn của user.
 
@@ -64,25 +64,25 @@ Khi phát hiện backlog còn câu hỏi Open chưa được trả lời, skill 
 
 ## Input Contract
 
-Resolved per platform profile. See `profiles/{platform}.md` for:
-- CMR path
-- UC folder convention
-- Question backlog path
+Resolved per platform profile plus BA-kit contract context. See `profiles/{platform}.md` for:
+- module canon read order
+- platform-specific evidence framing
+- question backlog path
 
 ## Output Contract
 
 Resolved per platform profile. See `profiles/{platform}.md` for:
-- Output folder convention
-- Versioning rules
+- module-scoped output folder convention
+- versioning rules
 
 **Verdict interface (all platforms):**
 ```json
 {
-  "verdict": "READY | CONDITIONALLY READY | NOT READY",
+  "verdict": "READY | CONDITIONALLY_READY | NOT_READY",
   "score": 0,
   "platform": "mobile | web | api",
   "blockers": ["list of blocker gap IDs"],
-  "report_path": "path/to/audited_file_vN.md"
+  "report_path": "path/to/module-qc-review-report-vN.md"
 }
 ```
 
@@ -90,7 +90,7 @@ Resolved per platform profile. See `profiles/{platform}.md` for:
 
 - Dùng bảng 4-6 cột thay cho prose. Mỗi ô = 1 câu ngắn.
 - Bullet 1 dòng / 1 ý. KHÔNG paragraph giải thích nhiều câu.
-- Evidence: `UC §X.Y hàng Z` / `CMR-NN` — KHÔNG trích nguyên câu dài.
+- Evidence: `UC §X.Y hàng Z` / `SCR §X.Y` / `Rule-ID` — KHÔNG trích nguyên câu dài.
 - Bỏ câu framing ("Đây là tổng quan…", "Như đã nêu…", "Dựa trên phân tích…").
 - Cột "Evidence / Lý do" ≤ 2 câu. "Evaluation" 1 dòng.
 
@@ -106,7 +106,7 @@ Resolved per platform profile. See `profiles/{platform}.md` for:
 
 1. **Read before judging**: Fully digest the source document before forming any opinion
 2. **Cite everything**: Every finding links to a specific section, table, or line in the source
-3. **Distinguish fact from inference**: Clearly separate "the document states X" from "this implies Y"
+3. **Distinguish fact from inference**: Clearly separate "the canon source states X" from "this implies Y"
 4. **Deliver findings constructively**: Every gap must come with a concrete recommendation
 5. **Stay in scope**: Only raise questions about behavior within the platform boundary defined by the loaded profile
 
@@ -117,6 +117,7 @@ Resolved per platform profile. See `profiles/{platform}.md` for:
 - Do NOT fabricate or assume requirements that are not in the document.
 - When uncertain, explicitly state uncertainty and ask the user — never guess.
 - Do NOT opine on implementation approach.
+- Treat `usecases/*.md`, `screens/*.md`, `srs-index.md`, and `screen-field-contract.yaml` as primary evidence. Treat compiled `srs.md` as supporting evidence unless the canon set is incomplete.
 - Platform-specific scope boundaries are defined in the loaded profile.
 
 ## Ownership & Versioning

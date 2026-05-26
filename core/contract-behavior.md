@@ -259,16 +259,17 @@ Gate enforcement is automatic — no user invocation needed. Gates fire AFTER th
 
 When `qc-review` is invoked directly or via gate:
 - `--platform <mobile|web|api>` — override `defaults.platform` for this run
-- `--profile <full-10ka|completeness-clarity-only|cross-artifact-consistency>` — override gate profile
+- `--profile <full-10ka>` — override the runtime gate profile for this run
+- Legacy/manual-only profiles `completeness-clarity-only` and `cross-artifact-consistency` may still be used for ad hoc operator review, but they are not referenced by `quality_gates`
 - `--skip-gate` — bypass QC gate enforcement; requires explicit user confirmation before proceeding
 
 ### Gate Profiles
 
 | Profile | Scope |
 |---|---|
-| `completeness-clarity-only` | KA #1–#4 only (identity, scope, actors, preconditions) |
-| `full-10ka` | All 10 KAs, full scoring rubric |
-| `cross-artifact-consistency` | Cross-artefact conflict check + blocker scan only |
+| `full-10ka` | Runtime gate profile. All 10 KAs, full scoring rubric. |
+| `completeness-clarity-only` | Legacy/manual-only narrow review of KA #1–#4. Not used by `quality_gates`. |
+| `cross-artifact-consistency` | Legacy/manual-only blocker scan. Not used by `quality_gates`. |
 
 ## Reverse Mode Behavior
 

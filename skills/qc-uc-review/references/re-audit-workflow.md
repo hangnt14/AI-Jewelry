@@ -2,7 +2,7 @@
 
 ### Step 0 — Backlog Status Check (Warning Only)
 
-1. Locate and read the `question-backlog` file.
+1. Locate and read the module `question-backlog` file.
 2. Count Open / Answered / Deferred questions.
 3. If there are still Open questions:
    - **Warn** the user: "Backlog has X/Y questions still Open and unanswered."
@@ -17,14 +17,14 @@
 
 ### Step 1 — Ingest Current State & Answers
 
-1. Locate the highest version of the audited file.
+1. Locate the highest version of the module QC report file.
 2. Locate and read the `question-backlog` file — `Answered Questions` section and `Deferred Questions` section.
 3. If there are remaining Open questions (user chose Option B), note them as unresolved — do NOT attempt to answer them or infer answers.
 
 ### Step 2 — Apply Answers & Resolve Gaps
 
 1. Analyze the BA's answers (Answered + Deferred) in the backlog.
-2. Incorporate the clarified business rules, logic, and UI behavior into the 5 synthesis sections of the previous audited file:
+2. Incorporate the clarified business rules, logic, and UI behavior into the 5 synthesis sections of the previous module QC report:
    - UI Object Inventory & Mapping
    - Object Attributes & Behavior Definition
    - Functional Logic & Workflow Decomposition
