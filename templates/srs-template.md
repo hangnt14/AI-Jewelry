@@ -1,6 +1,6 @@
 # Đặc tả yêu cầu phần mềm (Software Requirements Specification)
 
-> **Compiled deliverable:** Tài liệu này là bản SRS đọc/handoff cho stakeholder. Khi dự án dùng canon-first SRS, nguồn chỉnh sửa chính nằm ở `usecases/*.md`, `screens/*.md`, `data/erd.md`, `flows/*.md`, và `srs-index.md`; sau đó compile lại vào `srs.md`. Không chỉnh trực tiếp `srs.md` như source of truth trừ khi có manual override và backport vào canon.
+> **Compiled deliverable:** Tài liệu này là bản SRS đọc/handoff cho stakeholder. Khi dự án dùng canon-first SRS, nguồn chỉnh sửa chính nằm ở `usecases/*.md`, `screens/*.md`, `data/erd.md`, `flows/*.md`, và `srs-index.md`; sau đó compile lại vào `srs.md`. ASCII wireframe bắt buộc nằm trong từng `screens/*.md` và được compile vào đây. Không chỉnh trực tiếp `srs.md` như source of truth trừ khi có manual override và backport vào canon.
 
 **Dự án (Project):** [Tên dự án]
 **Phiên bản (Version):** [v1.0]
@@ -136,7 +136,7 @@ Viết mục chi tiết màn hình đầy đủ từ use case canon, screen cano
 **UC liên kết (Linked Use Cases):** [UC-01, UC-02]
 **User Stories liên kết (Linked User Stories):** [US-001, US-002]
 
-> **Quy tắc nhất quán:** Màn hình này phải triển khai đúng các tương tác mô tả trong use cases liên kết. Tên trường, nhãn hành động, trình tự luồng, `Portal ID`, `Nav Schema ID`, và active-menu behavior phải khớp giữa Use Case, Screen Contract Plus, wireframe constraint pack, và màn hình này. Nếu user tự gắn wireframe/mockup, hình đó cũng phải phản ánh bảng trường và bố cục của màn hình này.
+> **Quy tắc nhất quán:** Màn hình này phải triển khai đúng các tương tác mô tả trong use cases liên kết. Tên trường, nhãn hành động, trình tự luồng, `Portal ID`, `Nav Schema ID`, và active-menu behavior phải khớp giữa Use Case, Screen Contract Plus, screen canon ASCII, và màn hình này. Nếu user tự gắn wireframe/mockup, hình đó cũng phải phản ánh bảng trường và bố cục của màn hình này.
 >
 > Supporting frames liệt kê ở trên cũng phải được phản ánh bằng mockup, ảnh phụ, hoặc ghi chú tương ứng khi chúng được ngụ ý bởi trạng thái, validation rules, hành vi bảng/danh sách, hoặc feedback patterns của màn hình.
 
@@ -176,8 +176,8 @@ Các rule/message dùng chung không được định nghĩa lại trong SRS mod
 - [MSG-ERR-01]
 - [MSG-SUC-01]
 
-## Hướng dẫn gắn wireframe thủ công (Manual Wireframe Attachment Guide)
-User có thể dán ảnh, thêm link, hoặc để bản phác thảo text ở đây khi việc đó giúp reviewer đọc markdown riêng. Với flow canon-first, ASCII wireframe nên nằm trong screen canon và được compile vào đây.
+## ASCII Wireframes
+ASCII wireframe là bắt buộc cho mọi UI-backed screen và phải được compile từ screen canon. User có thể dán thêm ảnh/mockup/link sau đó, nhưng mockup ngoài không thay thế ASCII trong `screens/*.md`.
 
 ```text
 +--------------------------------------------------+

@@ -21,12 +21,7 @@ ALLOWED_SUFFIXES = {
         "/srs-compile-receipt.json",
         "/screen-field-contract.yaml",
     ),
-    "wireframes": (
-        "/wireframes/",
-        "/tool-lanes/tool-lane-state.md",
-        "/tool-lanes/figma-make/",
-        "/05_tool-lanes/figma-make/",
-    ),
+    "wireframes": (),
     "figma-sync": (
         "/figma-sync/figma-sync-report.md",
         "/figma-sync/figma-mismatch-report.md",

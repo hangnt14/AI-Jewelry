@@ -19,7 +19,7 @@ layout_variant: [LAYOUT-VARIANT]
 navigation_region_visible: true
 primary_actor: [Actor]
 goal: [Primary screen goal]
-ascii_status: missing
+ascii_status: current
 figma_sync_eligible: false
 figma_sync_status: not-run
 trace:

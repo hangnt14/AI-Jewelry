@@ -52,7 +52,7 @@ All slugs follow kebab-case with ASCII-only characters.
 | User Stories | `plans/{slug}-{date}/03_modules/{module_slug}/user-stories.md` | `plans/payment-260518-1241/03_modules/checkout/user-stories.md` |
 | SRS | `plans/{slug}-{date}/03_modules/{module_slug}/srs.md` | `plans/payment-260518-1241/03_modules/checkout/srs.md` |
 | SRS Groups | `plans/{slug}-{date}/03_modules/{module_slug}/srs-groups/srs-group-{A-F}.md` | `plans/payment-260518-1241/03_modules/checkout/srs-groups/srs-group-a.md` |
-| Wireframe Input | `plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-input.md` | `plans/payment-260518-1241/03_modules/checkout/wireframes/wireframe-input.md` |
+| Screen Canon | `plans/{slug}-{date}/03_modules/{module_slug}/screens/{screen_slug}.md` | `plans/payment-260518-1241/03_modules/checkout/screens/scr-checkout.md` |
 | Design System | `designs/{slug}/DESIGN.md` | `designs/payment/DESIGN.md` |
 | Project Home | `plans/{slug}-{date}/PROJECT-HOME.md` | `plans/payment-260518-1241/PROJECT-HOME.md` |
 | Collab Home | `plans/{slug}-{date}/COLLAB-HOME.md` | `plans/payment-260518-1241/COLLAB-HOME.md` |

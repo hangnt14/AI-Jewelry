@@ -14,7 +14,7 @@
 - HTML output belongs under `paths.compiled_root`.
 - Use indexes first for cross-reference discovery and load full source artifacts only when compilation or validation needs exact content.
 - Block package when `paths.srs` exists but `paths.srs_compile_receipt` is missing or stale.
-- During migration, block package only when wireframe state is `missing` under the shared prerequisite rule and the module has no canon-first screen sources to compile from.
+- Block package when UI-backed canon screens are missing required ASCII coverage or the compile receipt is stale.
 
 ## Status And Next
 
@@ -25,6 +25,6 @@
 - `status` must show canon SRS state explicitly: `paths.srs_index`, screen/use case/data/flow source counts, `paths.srs`, and `paths.srs_compile_receipt`.
 - `status` must show shared shell state separately: `paths.design_doc`, `paths.shared_shell_contract`, and `paths.shared_shell_index`.
 - `next` must recommend `ba-start srs` when canon sources, `srs-index.md`, or the compile receipt are missing/stale.
-- `next` must not recommend legacy `wireframes` once canon-first screen/use case sources exist.
+- `next` must not recommend legacy `wireframes`; missing or stale ASCII coverage is fixed by `ba-start srs`.
 - Figma sync readiness is downstream-only: current canon + current compile receipt + shared shell + `DESIGN.md`. Any Figma mismatch belongs in `paths.figma_mismatch_report`, not in canon files.
 - `next` recommends the next command and does not mutate artifacts.

@@ -15,7 +15,7 @@ Re-entry after long sessions, reruns, or host auto-compact still starts with `pa
 - Group B: use case specifications.
 - Group C: Screen Contract Plus and Screen Inventory.
 - Group D: technical/NFR/API/data slices only when justified.
-- Group E: final screen descriptions after wireframe handoff is resolved.
+- Group E: final screen descriptions after mandatory ASCII coverage is verified in screen canon.
 - Group F: validation, glossary, and traceability.
 - Assemble inline after all required groups are verified.
 
@@ -24,9 +24,8 @@ When SRS writes or refreshes `paths.srs_index`, generate it with `stale_status: 
 ## Navigation And Screen Contract Rules
 
 - Reverse-mode carveout: when `paths.reverse_baseline_lock` exists and reverse-backed SRS work is active,
-  do not require `paths.design_doc` or wireframe artifacts as a prerequisite for Group C or Group E.
-  Instead require current reverse evidence, treat wireframes as `not-applicable`, and route any
-  future-state UI request back through `impact`.
+  do not require `paths.design_doc` as a prerequisite for Group C or Group E.
+  Instead require current reverse evidence and route any future-state UI request back through `impact`.
 - Before Group C for UI-backed screens, require approved `paths.design_doc` with a Navigation Schema for every portal used by the module.
 - Treat `paths.design_doc` Navigation Schema as source of truth for `Nav Schema ID`, menu labels, and allowed active-menu paths.
 - Copy `Expected Active Menu Item` exactly from an allowed menu item/path in the matching schema.
@@ -38,15 +37,14 @@ When SRS writes or refreshes `paths.srs_index`, generate it with `stale_status: 
 
 Run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {paths.srs_group group=c}` after Group C and before Group E when UI-backed screens exist. Treat `NAV_SCHEMA_MISMATCH`, `MENU_SCHEMA_MISMATCH`, and `MENU_ACTIVE_MISSING` as blocking.
 
-## Wireframe Handoff Gates
+## ASCII Wireframe Gates
 
-- Reverse-mode carveout: if reverse evidence is the active gate, skip Step 8.2 and Step 9. Do not
-  block on `paths.design_doc`, `paths.wireframe_input`, `paths.wireframe_map`, or `paths.wireframe_state`.
+- Reverse-mode carveout: if reverse evidence is the active gate, skip Step 8.2 and cite evidence instead of generating future-state ASCII.
 - In reverse mode, canonical SRS writes must cite reverse evidence and trace IDs before promotion.
-- If `paths.design_doc` is missing or unresolved, run Step 8.2 from `srs-wireframes.md` and stop if the user does not approve the design direction.
-- Build `paths.wireframe_input` after Groups B and C from exact use case, screen contract, portal, navigation, and trace excerpts.
-- Build `paths.screen_field_contract` after Step 8.1 when UI-backed screens exist. This artifact is the normalized machine-facing truth derived from Screen Contract Plus plus supporting wireframe context.
+- If `paths.design_doc` is missing or unresolved for a forward UI-backed module, run Step 8.2 from `srs-wireframes.md` and stop if the user does not approve the design direction.
+- Build `paths.screen_field_contract` after Step 8.1 when UI-backed screens exist. This artifact is the normalized machine-facing truth derived from Screen Contract Plus and screen canon.
 - `paths.screen_field_contract` must preserve exact `Portal ID`, `Nav Schema ID`, `Expected Active Menu Item`, field allowlists, required states, Display / Behaviour / Validation rules, rule codes, message codes, and short raw excerpts when prose cannot be normalized safely.
 - `paths.screen_field_contract` is owned by `srs`, not by downstream wireframe tool lanes. Tool lanes may consume or validate it, but they must not rewrite source-of-truth screen semantics.
-- Manual wireframe insertion is out-of-band; do not block final screen descriptions on an attached mockup.
+- Every UI-backed `screens/*.md` file must include `## ASCII Wireframe`, at least one ASCII subsection per required state, and `ascii_status: current` before SRS assembly is accepted.
+- Manual mockup insertion is out-of-band and optional; it must not replace the required ASCII wireframe in screen canon.
 - If IA or menu behavior must change after Group C, route through `impact` instead of silently rewriting Group E.

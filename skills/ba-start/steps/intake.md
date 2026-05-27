@@ -69,7 +69,7 @@ Review the normalized intake against a BA completeness checklist:
 - Are scope boundaries defined (in-scope vs out-of-scope)?
 - Are success criteria or KPIs stated?
 - Are compliance or regulatory obligations mentioned?
-- Are UI screens described enough to prepare a wireframe constraint pack?
+- Are UI screens described enough to prepare mandatory ASCII wireframes?
 - Are processes described enough to map?
 
 Flag each gap explicitly.
@@ -129,7 +129,7 @@ Deliverable selection:
 - Detailed functional spec needed: FRD
 - Agile team needs stories: user stories
 - System spec with screens, use cases, or test cases: SRS
-- UI screens mentioned: prepare `DESIGN.md` plus module-level wireframe handoff artifacts
+- UI screens mentioned: prepare `DESIGN.md` plus module-level screen canon ASCII
 
 Mode defaults:
 

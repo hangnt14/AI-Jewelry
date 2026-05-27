@@ -65,7 +65,7 @@ Snapshot: current | degraded | absent
 
 [Designs]
 - [ ] designs/{slug}/DESIGN.md — missing
-- [!] wireframe handoff — skipped — 2026-03-26
+- [x|!| ] screen canon ASCII — current/missing/stale
 
 [Reverse Lane]  ← omit section when reverse_baseline_lock absent
 - [x|!| ] reverse-baseline-lock.json — {scan_timestamp} | absent
@@ -79,8 +79,7 @@ Snapshot: current | degraded | absent
 Status rules:
 
 - Derive artifact presence from snapshot `artifacts` list when current; otherwise filesystem stat only.
-- Print `exists` or `missing` with last-modified date. For wireframe handoff, print state + marker date.
-- When wireframe handoff `completed`, list runtime design file, wireframe input pack, and wireframe map.
+- Print `exists` or `missing` with last-modified date. For screen canon ASCII, report current/missing/stale from screen canon validation.
 - Report SRS canon directories by markdown file count only; do not read screen/use case content.
 - Report `srs-compile-receipt.json` as `current`, `missing`, `stale`, or `not applicable` using file presence and modified times against canon source directories.
 - Report shared shell files separately from module SRS files because shell/menu ownership is system-level.

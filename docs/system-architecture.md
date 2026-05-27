@@ -149,12 +149,11 @@ START
   ├─→ Writes `03_modules/{module}/qc-review/*`
   └─→ May go directly to package when no UI handoff lane is needed
   ↓
-[Wireframes] ← Optional wireframe constraint pack
+[ASCII Wireframes] ← Required screen-canon visual coverage
   ↓
   ├─→ DESIGN.md (design system)
-  ├─→ wireframes/wireframe-input.md (constraints)
-  ├─→ wireframes/wireframe-map.md (screen map)
-  └─→ wireframes/wireframe-state.md (state variants, no auto QC trigger)
+  ├─→ screens/*.md (ASCII by state)
+  └─→ srs-compile-receipt.json
   ↓
 [Package] ← Compiled HTML deliverables
   ↓
@@ -293,8 +292,8 @@ USER-FACING (Markdown, readable dashboards)
 │   └── User stories + acceptance criteria
 ├── srs.md
 │   └── System requirements specification
-├── wireframes/
-│   └── wireframe-input.md (legacy handoff pack)
+├── screens/
+│   └── scr-*.md (mandatory ASCII wireframes)
 └── compiled-*.html
     └── Stakeholder review packages
 ```
@@ -539,7 +538,7 @@ Module BA creates artifacts:
 ├─ frd.md (functional requirements)
 ├─ user-stories.md (user stories)
 ├─ srs.md (system requirements)
-└─ wireframes/wireframe-input.md (legacy wireframe constraints)
+└─ screens/*.md (mandatory ASCII wireframes)
         ↓
 Module BA requests review:
 "Send module checkout for review"

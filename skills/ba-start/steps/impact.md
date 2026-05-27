@@ -30,7 +30,7 @@ Run the change-impact triage path only. Do not mutate artifacts.
 - Require `paths.intake`. If missing, print exact path and stop.
 - Read `paths.backbone` when it exists.
 - Read module-scoped downstream artifacts only when relevant to suspected impact:
-  `paths.frd`, `paths.stories`, `paths.srs`, `paths.screen_field_contract`, `paths.wireframe_input`, `paths.wireframe_map`, `paths.wireframe_state`, `paths.tool_lane_state`, `paths.make_guidelines`, `paths.make_prompt_pack`, `paths.prototype_conformance_checklist`, `paths.prototype_conformance_report`, `paths.design_doc`, `paths.plan`
+  `paths.frd`, `paths.stories`, `paths.srs`, `paths.screen_field_contract`, `paths.tool_lane_state`, `paths.make_guidelines`, `paths.make_prompt_pack`, `paths.prototype_conformance_checklist`, `paths.prototype_conformance_report`, `paths.design_doc`, `paths.plan`
 
 ## Decision Rules
 
@@ -60,7 +60,7 @@ Impact anchors:
 - FRD: feature wording, workflows, business rules, integration points
 - user stories: story intent and acceptance criteria
 - SRS: use cases, Screen Contract Plus, validation rules, screen inventory, final screen descriptions
-- wireframe artifacts: manual wireframe constraint pack, normalized screen-field contract, runtime `DESIGN.md` assumptions, tool-lane state, handoff checklist, prompt/control pack, review checklist/report, wireframe state
+- UI artifacts: screen canon ASCII, normalized screen-field contract, runtime `DESIGN.md` assumptions, tool-lane state, prompt/control pack, and review checklist/report
 
 ## Routing Rules
 

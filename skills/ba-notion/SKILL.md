@@ -25,7 +25,6 @@ Use this maintenance skill when the user wants to publish BA output into Notion 
   - `frd`
   - `stories`
   - `srs`
-  - `wireframe-map`
 - Or an explicit file path to a markdown artifact
 
 Prefer markdown BA artifacts as the Notion source. If the user asks for packaged HTML, use the matching markdown artifact when it exists and explain that Notion editing should be driven from the markdown source-of-truth.
@@ -36,7 +35,7 @@ When the source is an artifact alias instead of a direct file path:
 
 1. Resolve `--slug <slug>` first.
 2. Resolve `--date <YYMMDD-HHmm>` next.
-3. Require `--module <module_slug>` for `frd`, `stories`, `srs`, and `wireframe-map` aliases.
+3. Require `--module <module_slug>` for `frd`, `stories`, and `srs` aliases.
 4. Use exact modular BA-kit artifact paths only.
 5. Never silently choose a slug, dated set, or module by mtime.
 6. If multiple candidates exist, stop and ask the user to choose.
@@ -50,7 +49,6 @@ Use these exact paths from the shared contract:
   - `plans/{slug}-{date}/03_modules/{module_slug}/frd.md`
   - `plans/{slug}-{date}/03_modules/{module_slug}/user-stories.md`
   - `plans/{slug}-{date}/03_modules/{module_slug}/srs.md`
-  - `plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-map.md`
 
 ## Publish Modes
 

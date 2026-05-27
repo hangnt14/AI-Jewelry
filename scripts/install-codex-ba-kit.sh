@@ -26,6 +26,13 @@ GUARDRAIL_SCRIPTS=(
   "guardrail_common.py"
   "validate-index-quality.py"
 )
+STALE_TEMPLATE_FILES=(
+  "wireframe-input-template.md"
+  "wireframe-map-template.md"
+)
+STALE_CORE_PATHS=(
+  "references"
+)
 
 if [[ ! -d "${SOURCE_SKILLS}" ]] && [[ ! -d "${SOURCE_AGENTS}" ]]; then
   echo "BA-kit Codex conversion not found."
@@ -88,6 +95,24 @@ install_guardrail_runtime_assets() {
   done
 
   cp "${ROOT_DIR}/docs/runtime-hard-guardrails.md" "${GUARDRAIL_DOC_TARGET}/runtime-hard-guardrails.md"
+}
+
+remove_stale_templates() {
+  local target_dir="$1"
+  local file_name
+
+  for file_name in "${STALE_TEMPLATE_FILES[@]}"; do
+    rm -f "${target_dir}/${file_name}"
+  done
+}
+
+remove_stale_core_paths() {
+  local target_dir="$1"
+  local path_name
+
+  for path_name in "${STALE_CORE_PATHS[@]}"; do
+    rm -rf "${target_dir}/${path_name}"
+  done
 }
 
 generate_codex_assets
@@ -220,8 +245,10 @@ NODE
 install_cli
 if [[ -d "${CORE_SOURCE}" ]]; then
   copy_tree "${CORE_SOURCE}" "${CORE_TARGET}"
+  remove_stale_core_paths "${CORE_TARGET}"
   echo "Installed BA core to ${CORE_TARGET}"
 fi
+remove_stale_templates "${TARGET_TEMPLATES}"
 install_guardrail_runtime_assets
 echo "Installed guardrail runtime assets to ${CORE_TARGET}"
 write_manifest

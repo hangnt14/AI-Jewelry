@@ -67,9 +67,8 @@ python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} -
 
 Fix blocking navigation validator findings before continuing.
 
-## Step 8.1 - Build Wireframe Constraint Pack And Normalized Screen Truth
+## Step 8.1 - Build Normalized Screen Truth
 
-After Groups B and C are complete, assemble `paths.wireframe_input` before any manual design work starts.
 When the module has UI-backed screens, also compile `paths.screen_field_contract` as the machine-facing field contract consumed by AI tool lanes.
 
 Source inputs:
@@ -79,8 +78,6 @@ Source inputs:
 - relevant portal snapshot from `paths.backbone`
 - relevant FRD and user-story excerpts for traceability
 
-The pack must include artifact set information, target design document path, use case excerpts, Screen Contract Plus, Screen Inventory, portal/navigation snapshots, active-menu evidence requirements, navigation exceptions, manual-design constraints, approved design snapshot or gaps, grouping/handoff plan, and stop conditions.
-
 `paths.screen_field_contract` must include:
 
 - one normalized screen entry per UI-backed primary screen
@@ -88,4 +85,5 @@ The pack must include artifact set information, target design document path, use
 - explicit field allowlist and `no_extra_fields` constraint
 - required states and navigation lock
 - Display / Behaviour / Validation rule slices, rule codes, and message codes
+- one required ASCII coverage row per documented state so screen canon authors cannot skip visual coverage
 - short raw source excerpts when a rule cannot be atomized safely without loss

@@ -12,7 +12,7 @@ BA-kit uses a hybrid business analysis approach. The toolkit can shift toward Ag
 | Elicitation and Collaboration | Gap analysis, clarifying questions |
 | Requirements Life Cycle Management | FRD, user stories, SRS, traceability |
 | Strategy Analysis | Gap analysis, domain research |
-| Requirements Analysis and Design Definition | FRD, SRS (use cases, screens, NFRs), wireframe constraints |
+| Requirements Analysis and Design Definition | FRD, SRS (use cases, screens, NFRs), screen canon ASCII |
 | Solution Evaluation | Test cases, quality review |
 
 ## Agile BA Mode
@@ -84,7 +84,7 @@ Expected product behavior when requirements and API docs coexist:
 
 ### Greenfield Product
 
-Start with `/ba-start` and a raw requirements document. The skill produces intake, FRD, user stories with AC, a pre-wireframe screen spec, SRS with enriched screen descriptions, and a wireframe constraint pack for user-managed mockups when UI support is justified.
+Start with `/ba-start` and a raw requirements document. The skill produces intake, FRD, user stories with AC, Screen Contract Plus, screen canon with mandatory ASCII wireframes, and SRS with enriched screen descriptions when UI support is justified.
 
 ### Business Requirements Plus API Documentation
 

@@ -15,7 +15,7 @@ Agent coding environments are optimized for software implementation. Business an
 - Structured elicitation and intake normalization before requirements authoring
 - Single persisted source of truth (backbone) before formal and Agile artifacts are emitted
 - Traceability from business goals through requirements to test cases
-- Reusable templates for recurring deliverables (FRD, SRS, user stories, wireframe constraints)
+- Reusable templates for recurring deliverables (FRD, SRS, user stories, screen canon ASCII)
 - Module-based collaboration without forcing BAs to learn Git first
 - Professional handoff packages for product, engineering, and operations teams
 
@@ -36,7 +36,7 @@ BA-kit closes this gap with a BA-first operating model and contract-first archit
 
 | User Type | Use Case |
 |-----------|----------|
-| Solo IT Business Analyst | Full lifecycle: intake → backbone → FRD/stories → SRS → module QC → optional wireframe constraints → package |
+| Solo IT Business Analyst | Full lifecycle: intake → backbone → FRD/stories → SRS with mandatory ASCII → module QC → package |
 | Product Manager (BA work) | Requirements definition, user story generation, acceptance criteria |
 | Consulting Team | Discovery engagement, requirements capture, stakeholder handoff |
 | Solution Analyst | Module-based collaboration, cross-team coordination, change impact analysis |
@@ -47,7 +47,7 @@ BA-kit closes this gap with a BA-first operating model and contract-first archit
 ### 1. Lifecycle Management
 - **Intake & Normalization:** Structured elicitation, gap analysis, open questions tracking
 - **Requirements Backbone:** Single source of truth after scope lock (vocabulary, decisions, assumptions)
-- **Gated Artifact Emission:** FRD, user stories, SRS, wireframe constraints emitted only when prerequisites met
+- **Gated Artifact Emission:** FRD, user stories, SRS, and screen canon ASCII emitted only when prerequisites met
 - **Quality & Validation Boundaries:** Automatic module QC after `srs`, then aggregate validation during `package`
 - **Packaging:** Compiled HTML deliverables for stakeholder review
 
@@ -85,7 +85,7 @@ BA-kit closes this gap with a BA-first operating model and contract-first archit
 | **Project Home Dashboard** | BA-facing resume point with next-step guidance and runtime prompts |
 | **Collaboration Dashboards** | COLLAB-HOME.md (lead view), MODULE-HOME.md (module BA view) |
 | **Design System** | DESIGN.md runtime constraints for UI handoff (colors, fonts, navigation schema) |
-| **Wireframe Constraints** | Manual handoff pack under `wireframes/` (`wireframe-input.md`, `wireframe-map.md`, `wireframe-state.md`) |
+| **ASCII Wireframes** | Mandatory screen-canon ASCII under `screens/*.md`, compiled into SRS |
 | **Compiled Packages** | HTML exports for stakeholder review (FRD, SRS, traceability matrix) |
 
 ## Success Metrics

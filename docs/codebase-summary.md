@@ -77,7 +77,7 @@ BA-kit/
 │   ├── collab-home-template.md
 │   ├── module-home-template.md
 │   ├── design-md-template.md
-│   ├── wireframe-input-template.md
+│   ├── screen-canon-template.md
 │   ├── srs-group-a-template.md    # SRS groups A-F
 │   ├── user-story-template.md
 │   ├── impact-receipt-template.md
@@ -272,7 +272,7 @@ BA-kit/
 
 **Design & UI**
 - `design-md-template.md`: Design system document
-- `wireframe-input-template.md`: Wireframe constraint pack
+- `screen-canon-template.md`: Screen canon with mandatory ASCII wireframe coverage
 
 **Receipts & Validation**
 - `impact-receipt-template.md`: Change impact receipt
