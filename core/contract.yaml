@@ -8,7 +8,6 @@
     "platform": "mobile"
   },
   "states": {
-    "wireframe": ["completed", "skipped", "not-applicable", "missing"],
     "tool_lane": ["manual", "figma-make", "not-applicable"],
     "delegation": ["queued", "running", "completed", "needs-repartition", "blocked", "failed"],
     "heartbeat_minutes": 5,
@@ -56,9 +55,6 @@
     "figma_sync_report": "plans/{slug}-{date}/03_modules/{module_slug}/figma-sync/figma-sync-report.md",
     "figma_mismatch_report": "plans/{slug}-{date}/03_modules/{module_slug}/figma-sync/figma-mismatch-report.md",
     "screen_field_contract": "plans/{slug}-{date}/03_modules/{module_slug}/screen-field-contract.yaml",
-    "wireframe_input": "plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-input.md",
-    "wireframe_map": "plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-map.md",
-    "wireframe_state": "plans/{slug}-{date}/03_modules/{module_slug}/wireframes/wireframe-state.md",
     "tool_lane_state": "plans/{slug}-{date}/03_modules/{module_slug}/tool-lanes/tool-lane-state.md",
     "make_guidelines": "plans/{slug}-{date}/03_modules/{module_slug}/tool-lanes/figma-make/make-guidelines.md",
     "make_prompt_pack": "plans/{slug}-{date}/03_modules/{module_slug}/tool-lanes/figma-make/make-prompt-pack.md",
@@ -149,9 +145,6 @@
     "figma_sync_report": "agent_facing",
     "figma_mismatch_report": "agent_facing",
     "screen_field_contract": "machine_facing",
-    "wireframe_input": "agent_facing",
-    "wireframe_map": "agent_facing",
-    "wireframe_state": "machine_facing",
     "tool_lane_state": "machine_facing",
     "make_guidelines": "agent_facing",
     "make_prompt_pack": "agent_facing",
@@ -242,15 +235,15 @@
       "module_required": true,
       "mutable": true,
       "requires": ["backbone", "stories"],
-      "outputs": ["srs", "srs_group", "srs_index", "screen_root", "usecase_root", "module_erd", "flow_root", "srs_compile_receipt", "wireframe_input", "screen_field_contract"],
-      "notes": "Transitional canon-first SRS command. Canonical authoring sources are module screen/use case/data files plus routing indexes. The compiled deliverable remains paths.srs. paths.wireframe_input is legacy transitional output until the new ASCII/Figma flow fully replaces Step 9 handoff artifacts."
+      "outputs": ["srs", "srs_group", "srs_index", "screen_root", "usecase_root", "module_erd", "flow_root", "srs_compile_receipt", "screen_field_contract", "design_doc"],
+      "notes": "Canon-first SRS command. Canonical authoring sources are module screen/use case/data files plus routing indexes. Every UI-backed screen canon file must include current ASCII wireframe coverage before compile. The compiled deliverable remains paths.srs."
     },
     "wireframes": {
       "module_required": true,
-      "mutable": true,
-      "requires": ["wireframe_input"],
-      "outputs": ["design_doc", "wireframe_map", "wireframe_state", "tool_lane_state", "make_guidelines", "make_prompt_pack", "prototype_conformance_checklist", "prototype_conformance_report", "figma_make_shared_rules", "figma_make_shared_prompt_skeleton", "figma_make_shared_component_contracts"],
-      "notes": "Legacy transitional command. During migration it continues to manage manual handoff artifacts only. Future ASCII/Figma generation must consume canon screen files and shared shell contracts instead of redefining requirements."
+      "mutable": false,
+      "requires": ["srs_index", "screen_root", "srs_compile_receipt"],
+      "outputs": [],
+      "notes": "Deprecated compatibility inspection command. Do not create legacy wireframe pack artifacts. ASCII wireframes are mandatory inside screen canon files and compiled through srs."
     },
     "figma-sync": {
       "module_required": true,
@@ -351,7 +344,7 @@
     "qc-review": ["behavior_qc_review"]
   },
   "source_of_truth_order": ["backbone", "intake"],
-  "next_step_order": ["intake", "options", "backbone", "frd", "stories", "srs", "wireframes", "package", "status"],
+  "next_step_order": ["intake", "options", "backbone", "frd", "stories", "srs", "package", "status"],
   "reverse": {
     "canonical": false,
     "evidence_zone": true,
@@ -371,7 +364,7 @@
       "backbone_change": "backbone",
       "story_detail_change": "stories",
       "srs_behavior_change": "srs",
-      "ui_impact_follow_up": "wireframes"
+      "ui_impact_follow_up": "srs"
     }
   },
   "output_modes": {

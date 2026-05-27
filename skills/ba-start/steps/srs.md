@@ -24,7 +24,7 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the gr
 
 1. Read this router for SRS preflight and orchestration.
 2. Read [srs-core.md](./srs-core.md) for Step 8 and Step 8.1.
-3. Read [srs-wireframes.md](./srs-wireframes.md) for Step 8.2, Step 9, Step 10, and Group D.
+3. Read [srs-wireframes.md](./srs-wireframes.md) for Step 8.2, mandatory ASCII coverage, Step 10, and Group D.
 4. Read [srs-assembly.md](./srs-assembly.md) for Step 10.1 and Step 11.
 
 ## Prerequisites
@@ -33,7 +33,7 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the gr
 - Require `paths.backbone`, `paths.stories`, `paths.backbone_index`, and `paths.stories_index`.
 - If a required artifact is missing, print the exact missing path, tell the user which subcommand to run first, and stop.
 - Run preflight from indexes first; read only targeted backbone/story sections, optional module FRD, and `paths.plan` when it exists.
-- In reverse mode, gate on a valid reverse baseline, current drift state, and traceable reverse evidence; do not require `paths.design_doc` or wireframe artifacts.
+- In reverse mode, gate on a valid reverse baseline, current drift state, and traceable reverse evidence; do not require `paths.design_doc`.
 
 ## Outputs
 
@@ -44,9 +44,7 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the gr
 - `paths.usecase_root` and module `paths.usecase_item` files as canonical use case sources
 - `paths.module_erd` and optional `paths.flow_item` files when data/flow detail is justified
 - `paths.srs_compile_receipt`
-- `paths.wireframe_input`
 - `paths.design_doc` when Step 8.2/Step 9 confirms or refreshes the UI design direction
-- wireframe artifacts and state produced during Step 9
 
 Treat generated index/state/memory artifacts as `agent_facing` or `machine_facing`; keep them compact.
 When `paths.srs_index` is written or refreshed, keep `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run `python3 scripts/validate-index-quality.py --repo . --index-key srs_index --slug <slug> --date <date> --module <module> --writeback` before downstream work treats the index as `current`.
@@ -57,7 +55,7 @@ Treat `paths.srs` as the compiled, reader-facing deliverable. Direct edits to `p
 ```text
 Step 8   -> srs-core.md
 Step 8.2 -> srs-wireframes.md only for forward DESIGN.md gating
-Step 9   -> srs-wireframes.md in forward mode only
+ASCII     -> srs-wireframes.md in forward mode only
 Step 10  -> srs-wireframes.md
 Step 10.1 + 11 -> srs-assembly.md
 ```

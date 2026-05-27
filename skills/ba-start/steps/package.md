@@ -37,9 +37,7 @@ Run Step 12 only.
 - Require at least one emitted downstream artifact for the selected mode.
 - If the engagement emitted any module SRS, require at least one module `paths.srs`.
 - If a module SRS exists in canon-first form, require `paths.srs_compile_receipt` and treat missing/stale receipt as a package blocker.
-- Read `paths.wireframe_state` when present.
-- If wireframe state is `missing` and the module does not have canon-first screen sources plus a valid compile receipt, print the exact marker path and stop.
-- If wireframe state is `completed`, `skipped`, or `not-applicable`, continue.
+- If a module has UI-backed screen canon, require current ASCII coverage in `screens/*.md`.
 
 ## Outputs
 

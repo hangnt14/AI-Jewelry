@@ -25,7 +25,7 @@ Assembly procedure:
 
 1. Write the SRS skeleton to `paths.srs` using the `srs-template.md` heading structure.
 2. Resolve `paths.srs_index` first. Use its registries to locate canonical `usecases/*.md`, `screens/*.md`, optional `data/erd.md`, and `flows/*.md`.
-3. For legacy transitional groups still emitted in this migration window, append group fragments (`A -> B -> C -> D -> E -> F`) into the matching compiled sections.
+3. Append group fragments (`A -> B -> C -> D -> E -> F`) into the matching compiled sections when they are emitted.
 4. For canon-first sections, compile near-verbatim from source files:
    - use case canon files into the Use Cases section, including the primary diagram
    - screen canon files into Screen Descriptions, including state visual coverage, overlay context, ASCII wireframes, and Figma frame map
@@ -38,6 +38,7 @@ Assembly procedure:
    - UC actor actions use the same wording as screen User Actions
    - UC system responses match screen Behaviour Rules
    - alternate flows are reflected in screen error states
+   - every UI-backed screen canon file has `ascii_status: current` and required `## ASCII Wireframe` state subsections
    - user story acceptance criteria are covered by UC postconditions and screen validation rules
    - final screen descriptions do not redefine `Portal ID`, `Nav Schema ID`, or active/highlight behavior captured in Group C, screen canon, or the shared shell contract
    - run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {paths.srs_group group=c}` when UI-backed screens and `paths.design_doc` exist
@@ -53,8 +54,8 @@ Group A
   -> Group B
   -> Group D
 Group B -> Group C
-Group C -> Wireframes
-Wireframes -> Group E
+Group C -> ASCII wireframes
+ASCII wireframes -> Group E
 Group E -> Group F
 Group F -> Canon/index verification -> Assembly -> Compile receipt
 ```

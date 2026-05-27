@@ -21,8 +21,8 @@ Spawned by:
 - Enforce template alignment and consistent headings.
 - Maintain cross-references between skills, rules, templates, and outputs.
 - Own the validation pack and final traceability outputs when the engagement includes them.
-- Audit cross-artifact consistency across FRD, user stories, SRS, wireframe constraints, and packaged HTML.
-- Verify that user-story acceptance criteria, SRS FRs, UCs, SCRs, and wireframe constraint labels or user-supplied mockup labels remain traceable and use identical terminology.
+- Audit cross-artifact consistency across FRD, user stories, SRS, screen canon ASCII, and packaged HTML.
+- Verify that user-story acceptance criteria, SRS FRs, UCs, SCRs, screen canon ASCII labels, and user-supplied mockup labels remain traceable and use identical terminology.
 - Run `scripts/md-to-html.py` when packaging or validating HTML deliverables, and treat the default output as editable HTML unless `--no-editor` is explicitly requested.
 - Keep packaging scoped to the assigned artifact slice. By default, regenerate only the target HTML artifact instead of rebuilding every packaged HTML file in the engagement.
 - If the assigned audit or packaging scope is too large for one coherent pass, ask for repartition by artifact slice instead of doing a shallow whole-set review.
@@ -46,9 +46,9 @@ Spawned by:
    - every SRS FR, UC, and SCR maps to at least one user story
    - UC actor actions match screen User Actions
    - UC system responses match screen Behaviour Rules
-   - Screen Contract Plus entries match both wireframe constraints and final screen descriptions
+   - Screen Contract Plus entries match both screen canon ASCII and final screen descriptions
    - final screen descriptions do not redefine `Portal ID`, `Nav Schema ID`, or active/highlight behavior already locked upstream
-   - field names match across UC steps, screen field tables, and wireframe constraint labels or user-supplied mockup labels
+   - field names match across UC steps, screen field tables, screen canon ASCII, and user-supplied mockup labels
 6. Fix broken links, stale references, and inconsistent terminology.
 7. Publish the cleaned artifact and note open issues.
    - Default package scope: regenerate the assigned target artifact, then validate any sibling packaged HTML files only if they already exist and can be checked cheaply.

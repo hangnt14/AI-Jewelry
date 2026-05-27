@@ -81,9 +81,8 @@ create_workflow_ki() {
 4. Scope lock → Select mode (lite/hybrid/formal)
 5. Build requirements backbone (source of truth)
 6. Emit downstream artifacts only when gates are open:
-   - FRD, user stories, selective SRS, wireframe constraints
-7. Manual wireframe handoff preparation from persisted input pack
-8. Final screen descriptions with the wireframe handoff map
+   - FRD, user stories, canon-first SRS, mandatory ASCII screen wireframes
+7. Final screen descriptions compiled from screen canon ASCII
 9. Quality review and HTML packaging
 
 ## BA-Friendly Entrypoints
@@ -96,7 +95,7 @@ Prefer natural Vietnamese intent first, then map to the internal workflow:
 | "Tiếp tục dự án này" | read PROJECT-HOME.md, then ba-next |
 | "Tôi nên làm gì tiếp?" | ba-next |
 | "Đánh giá thay đổi này" | impact |
-| "Chuẩn bị handoff UI" | wireframes/manual handoff pack |
+| "Chuẩn bị ASCII wireframe" | ba-start srs |
 | "Đồng bộ Figma cho module X" | ba-figma-sync downstream visual sync |
 | "Xuất gói bàn giao" | package |
 | "Kiểm tra trạng thái" | status |
@@ -117,7 +116,6 @@ COLLAB-HOME.md and MODULE-HOME.md are BA-facing collaboration dashboards. GitHub
 | `/ba-start frd --slug X --module Y` | "Read skills/ba-start/SKILL.md and run frd for slug X module Y" |
 | `/ba-start stories --slug X --module Y` | "Read skills/ba-start/SKILL.md and run stories for slug X module Y" |
 | `/ba-start srs --slug X --module Y` | "Read skills/ba-start/SKILL.md and run srs for slug X module Y" |
-| `/ba-start wireframes --slug X --module Y` | "Read skills/ba-start/SKILL.md and run wireframes for slug X module Y" |
 | `/ba-figma-sync --slug X --module Y` | "Read skills/ba-figma-sync/SKILL.md and sync Figma for slug X module Y" |
 | `/ba-start package --slug X` | "Read skills/ba-start/SKILL.md and run package for slug X" |
 | `/ba-start status --slug X` | "Read skills/ba-start/SKILL.md and run status for slug X" |
@@ -149,8 +147,6 @@ COLLAB-HOME.md and MODULE-HOME.md are BA-facing collaboration dashboards. GitHub
 | User stories | templates/user-story-template.md |
 | SRS | templates/srs-template.md |
 | Design system | templates/design-md-template.md |
-| Wireframe input | templates/wireframe-input-template.md |
-| Wireframe map | templates/wireframe-map-template.md |
 | Project memory summary | templates/project-memory-template.md |
 | Project memory index | templates/project-memory-index-template.md |
 | Memory packet | templates/memory-packet-template.md |

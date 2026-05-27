@@ -45,7 +45,7 @@ Parse arguments before doing any work.
 1. Read tokens left to right.
 2. Extract `--slug <slug>`, `--date <date>`, `--module <module_slug>`, and `--mode <lite|hybrid|formal>` when present.
 3. The first remaining lifecycle token is the subcommand: `intake`, `impact`, `options`, `backbone`, `frd`, `stories`, `srs`, `wireframes`, `package`, `status`, or `next`.
-4. Friendly aliases may be translated before execution: continue/resume -> `next`, change assessment -> `impact`, option brainstorming/selection -> `options`, UI handoff -> `wireframes`, handoff package -> `package`, status check -> `status`.
+4. Friendly aliases may be translated before execution: continue/resume -> `next`, change assessment -> `impact`, option brainstorming/selection -> `options`, UI/ASCII wireframe refresh -> `srs`, handoff package -> `package`, status check -> `status`.
 5. If no subcommand is present, run the full lifecycle from intake.
 6. For `intake`, allow one free argument as the source path hint.
 7. For `impact`, allow one free argument as the change file path hint.
@@ -97,8 +97,7 @@ Use the resolution order from `resolution.*`.
 
 - Use `commands.<name>.requires` plus `paths.*` to resolve exact prerequisite files.
 - If any required artifact is missing, print the exact missing path, the prior command to run, and stop.
-- For `package`, block only when wireframe state is `missing`.
-- If no wireframe-state marker exists, treat it as `not-applicable` only when the SRS set has no UI-backed screens or Screen Contract Plus section. Otherwise treat it as `missing`.
+- For `package`, require current canon sources and compile receipt. UI-backed modules must have ASCII coverage in screen canon; external mockup state is not a package gate.
 
 ## Options Decision-Ledger Gate
 
@@ -128,7 +127,7 @@ Shared read-scope reminder for the gate:
 
 ## Overwrite Behavior
 
-Before mutating `backbone`, `frd`, `stories`, `srs`, `wireframes`, or `package`:
+Before mutating `backbone`, `frd`, `stories`, `srs`, or `package`:
 
 1. Check whether the target output path already exists.
 2. If it exists, print the exact path and ask whether to overwrite.

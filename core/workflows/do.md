@@ -29,7 +29,7 @@ Match intent using the first rule that fits:
 | asking what the next BA step should be | `ba-next` | state-aware recommendation |
 | adding, changing, removing, or correcting a requirement/rule/scope item | `ba-impact` | change triage before mutation |
 | a bare correction statement in an existing BA project context | `ba-impact` | safe default before edits |
-| asking to prepare UI handoff, mockup checklist, or wireframe constraints | `ba-start wireframes` | friendly alias for manual wireframe handoff |
+| asking to prepare or refresh ASCII wireframes, UI screen visuals, or screen review evidence | `ba-start srs` | ASCII wireframes are mandatory in screen canon |
 | asking to export, publish a review package, or create stakeholder handoff HTML | `ba-start package` | friendly alias for packaging |
 | asking to brainstorm solution options, create multiple solution directions, compare solution approaches, choose an option, or skip optioning | `ba-start options` | pre-backbone decision support |
 | reconstructing docs from existing source code, reverse-engineering requirements from a codebase, or "tao tai lieu tu code co san" | `ba-start reverse` | reverse mode entry — source-first reconstruction |
@@ -37,7 +37,7 @@ Match intent using the first rule that fits:
 | classifying reverse evidence, separating as-built drift from future-state requests | `ba-start reverse impact` | reverse evidence triage |
 | promoting validated reverse evidence to backbone or SRS | `ba-start reverse promote` | reverse promotion path |
 | exploring a vague idea, brainstorming a feature concept, or describing an idea without structured requirements ("ý tưởng", "brainstorm", "thử nghĩ", "explore idea", "idea cho feature", "tôi có ý tưởng") — no file path provided, no structured stakeholders/goals/scope | `/brainstorm` | pre-intake idea clarification |
-| directly generating or rerunning intake/options/backbone/frd/stories/srs/wireframes/package | `ba-start` with the matching subcommand | direct BA lifecycle step |
+| directly generating or rerunning intake/options/backbone/frd/stories/srs/package | `ba-start` with the matching subcommand | direct BA lifecycle step |
 | a new BA engagement from raw input | `ba-start` | full lifecycle |
 
 If the text could match both `ba-impact` and a direct edit request, prefer `ba-impact` unless the user explicitly says to update, edit, overwrite, regenerate, or rerun a named artifact or step.

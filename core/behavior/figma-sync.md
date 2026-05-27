@@ -10,7 +10,7 @@
 - Must read `paths.srs_index` before individual screen files.
 - May read `paths.screen_root`, `paths.design_doc`, `paths.shared_shell_contract`, `paths.shared_shell_index`, and `paths.shared_rule_message_index`.
 - May read `paths.srs_compile_receipt` to confirm compiled SRS freshness.
-- Must not read or use legacy `paths.wireframe_input` as the visual source when canon screen files exist.
+- Must not read or use legacy wireframe pack artifacts as the visual source when canon screen files exist.
 
 ## Write Scope
 

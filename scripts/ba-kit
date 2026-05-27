@@ -480,20 +480,6 @@ print_artifact_status_line() {
   fi
 }
 
-print_wireframe_status_line() {
-  local path="$1"
-
-  if [[ ! -f "${path}" ]]; then
-    printf -- "- [!] wireframe handoff — missing\n"
-    return
-  fi
-
-  local state
-  state="$(read_md_field "${path}" "State")"
-  [[ -n "${state}" ]] || state="unknown"
-  printf -- "- [!] wireframe handoff — %s — %s\n" "${state}" "$(stat_mtime_pretty "${path}")"
-}
-
 count_markdown_files() {
   local path="$1"
   [[ -d "${path}" ]] || {
@@ -554,7 +540,7 @@ srs_receipt_state() {
 
   source_count="$(canon_source_count "${module_root}")"
   if [[ "${source_count}" -eq 0 ]]; then
-    printf 'legacy-or-missing\n'
+    printf 'canon-missing\n'
     return 0
   fi
   if [[ ! -f "${srs_path}" ]]; then
@@ -1296,9 +1282,6 @@ status_command() {
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "srs" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/srs.md"
       print_srs_receipt_status_line "${module_root_abs}"
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "screen_field_contract" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/screen-field-contract.yaml"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_input" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/wireframes/wireframe-input.md"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_map" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/wireframes/wireframe-map.md"
-      print_wireframe_status_line "${repo}/$(render_contract_path "${repo}" "wireframe_state" "${slug}" "${date_token}" "${module_name}")"
       local tool_lane_path tool_lane
       tool_lane_path="${repo}/$(render_contract_path "${repo}" "tool_lane_state" "${slug}" "${date_token}" "${module_name}")"
       print_tool_lane_status "${tool_lane_path}"

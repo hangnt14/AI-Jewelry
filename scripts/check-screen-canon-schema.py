@@ -158,6 +158,8 @@ def validate(path: Path, shared_index: Path | None = None) -> dict[str, object]:
         errors.append(f"invalid screen_type: {frontmatter['screen_type']}")
     if frontmatter.get("ascii_status") and frontmatter["ascii_status"] not in ASCII_STATUS:
         errors.append(f"invalid ascii_status: {frontmatter['ascii_status']}")
+    if frontmatter.get("ascii_status") and frontmatter["ascii_status"] != "current":
+        errors.append("ascii_status must be current")
     if frontmatter.get("figma_sync_status") and frontmatter["figma_sync_status"] not in FIGMA_STATUS:
         errors.append(f"invalid figma_sync_status: {frontmatter['figma_sync_status']}")
 
@@ -192,7 +194,7 @@ def validate(path: Path, shared_index: Path | None = None) -> dict[str, object]:
 
     for state_id in state_ids:
         if state_id not in ascii_states:
-            warnings.append(f"{state_id}: no matching ASCII subsection")
+            errors.append(f"{state_id}: no matching ASCII subsection")
         if state_id.startswith("ST-") and state_id not in figma_states:
             warnings.append(f"{state_id}: no matching Figma Frame Map row")
 

@@ -12,6 +12,13 @@ CORE_SOURCE="${ROOT_DIR}/core"
 CORE_TARGET="${TARGET_HOME}/ba-kit"
 LOCAL_BIN_TARGET="${HOME}/.local/bin"
 STATE_TARGET="${HOME}/.local/share/ba-kit/installations"
+STALE_TEMPLATE_FILES=(
+  "wireframe-input-template.md"
+  "wireframe-map-template.md"
+)
+STALE_CORE_PATHS=(
+  "references"
+)
 
 copy_tree() {
   local source_dir="$1"
@@ -19,6 +26,24 @@ copy_tree() {
 
   mkdir -p "$target_dir"
   cp -R "${source_dir}/." "$target_dir/"
+}
+
+remove_stale_templates() {
+  local target_dir="$1"
+  local file_name
+
+  for file_name in "${STALE_TEMPLATE_FILES[@]}"; do
+    rm -f "${target_dir}/${file_name}"
+  done
+}
+
+remove_stale_core_paths() {
+  local target_dir="$1"
+  local path_name
+
+  for path_name in "${STALE_CORE_PATHS[@]}"; do
+    rm -rf "${target_dir}/${path_name}"
+  done
 }
 
 install_cli() {
@@ -52,7 +77,9 @@ done
 copy_tree "${ROOT_DIR}/rules" "${RULES_TARGET}"
 copy_tree "${ROOT_DIR}/agents" "${AGENTS_TARGET}"
 copy_tree "${ROOT_DIR}/templates" "${TEMPLATES_TARGET}"
+remove_stale_templates "${TEMPLATES_TARGET}"
 copy_tree "${CORE_SOURCE}" "${CORE_TARGET}"
+remove_stale_core_paths "${CORE_TARGET}"
 install_cli
 write_manifest
 

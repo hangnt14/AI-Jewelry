@@ -1,6 +1,6 @@
 ## Scenario
 
-BA runs `ba-start srs` for a module in a project with an active reverse lane and validated reverse evidence, but no `DESIGN.md` or wireframe artifacts.
+BA runs `ba-start srs` for a module in a project with an active reverse lane and validated reverse evidence, but no `DESIGN.md`.
 
 ## Input State
 
@@ -15,9 +15,6 @@ Project set exists with:
 
 Missing on purpose:
 - `designs/test-project/DESIGN.md`
-- `03_modules/auth-flow/wireframes/wireframe-input.md`
-- `03_modules/auth-flow/wireframes/wireframe-map.md`
-- `03_modules/auth-flow/wireframes/wireframe-state.md`
 
 ## Input Command
 
@@ -28,8 +25,7 @@ ba-start srs --slug test-project --module auth-flow
 - Resolves the active reverse lane before applying forward UI gating.
 - Uses reverse evidence as the blocking prerequisite for reverse-backed SRS work.
 - Does not stop to request `DESIGN.md`.
-- Does not stop to request `wireframe-input`, `wireframe-map`, or `wireframe-state`.
-- Treats wireframes as `not-applicable` for this reverse-backed pass.
+- Does not stop to request forward-state ASCII wireframe generation.
 - Routes future-state UI changes back through `impact` instead of inventing design prerequisites.
 
 ## Expected Outcome

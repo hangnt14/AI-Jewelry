@@ -33,7 +33,7 @@ Xuất gói bàn giao cho stakeholder
 
 Agent sẽ map intent sang workflow an toàn:
 
-- Lifecycle BA: intake, options khi cần, backbone, stories, FRD, SRS, wireframe handoff, package.
+- Lifecycle BA: intake, options khi cần, backbone, stories, FRD, SRS with mandatory ASCII, package.
 - Reverse BA: quét code/evidence để dựng as-built SRS, khóa baseline commit, theo dõi drift, và chỉ promote nội dung có evidence rõ.
 - Collaboration BA: claim module, check conflict, create review packet, optional GitHub PR handoff.
 - Git/GitHub là implementation detail; commit, push, PR, merge chỉ chạy khi user approve rõ.
@@ -46,10 +46,9 @@ Raw input
 -> PROJECT-HOME.md
 -> Option pack + comparison khi intake cần nhiều hướng solution
 -> Requirements Backbone
--> Module canon artifacts: FRD / Stories / usecases/*.md / screens/*.md / srs-index.md
+-> Module canon artifacts: FRD / Stories / usecases/*.md / screens/*.md with mandatory ASCII / srs-index.md
 -> DESIGN.md + shared-shell-contract.md
 -> Compiled SRS deliverable (`srs.md`) with screen descriptions + ASCII wireframes
--> Optional legacy wireframe handoff artifacts during migration
 -> Optional Figma sync as downstream consumer
 -> Optional tool lane: screen-field-contract + Make control pack + conformance review
 -> Final SRS + HTML package
@@ -86,8 +85,7 @@ Lead BA chia module
 | `03_modules/{module}/frd.md` | Functional Requirements Document theo module |
 | `03_modules/{module}/user-stories.md` | User stories và acceptance criteria |
 | `03_modules/{module}/srs.md` | SRS/use case/screen spec theo module |
-| `screens/*.md` / `usecases/*.md` / `srs-index.md` | Canon authoring sources và routing layer cho SRS module |
-| `03_modules/{module}/wireframes/wireframe-*.md` | Legacy transitional handoff artifacts cho flow manual cũ |
+| `screens/*.md` / `usecases/*.md` / `srs-index.md` | Canon authoring sources; mỗi UI-backed screen phải có ASCII wireframe |
 | `03_modules/{module}/screen-field-contract.yaml` | Contract máy đọc được cho field/rule/state/navigation sau Step 8.1 |
 | `03_modules/{module}/tool-lanes/tool-lane-state.md` | Lane đã chọn cho Step 9: `manual` mặc định hoặc tool lane opt-in |
 | `05_tool-lanes/figma-make/*` | Shared prompt skeleton và shared component contracts cho Figma Make |
@@ -173,10 +171,6 @@ plans/
           srs-group-f.md
         srs-compile-receipt.json
         screen-field-contract.yaml
-        wireframes/
-          wireframe-input.md
-          wireframe-map.md
-          wireframe-state.md
         tool-lanes/
           tool-lane-state.md
           figma-make/
@@ -259,7 +253,6 @@ Command-level fallback:
 /ba-start options --slug warehouse-rfp --skip
 /ba-start backbone --slug warehouse-rfp
 /ba-start srs --slug warehouse-rfp --module auth-flow
-/ba-start wireframes --slug warehouse-rfp --module auth-flow
 /ba-start package --slug warehouse-rfp
 /ba-start status --slug warehouse-rfp
 /ba-start reverse --slug warehouse-rfp
@@ -273,12 +266,12 @@ Dùng `options` khi intake cho thấy cần 1-3 hướng solution trước khi v
 
 Dùng `reverse` khi mục tiêu là dựng tài liệu as-built từ hệ thống đang chạy hoặc code đã commit. Reverse lane chỉ promote nội dung có evidence rõ, không suy diễn business intent, không dùng cho future-state request, và bỏ qua wireframes vì không đề xuất UI mới. Nếu user đang yêu cầu thay đổi mong muốn trong tương lai, chuyển sang `impact` hoặc lifecycle forward bình thường.
 
-## Tool Lane Cho Step 9
+## Tool Lane Sau SRS
 
-- `manual` vẫn là mặc định. Flow cũ không bị phá.
+- ASCII wireframe luôn bắt buộc trong `03_modules/{module}/screens/*.md` và được compile vào `srs.md`.
 - Nếu user opt-in `figma-make`, BA-kit không dùng raw `srs.md` làm prompt chính.
 - `srs` phải compile `screen-field-contract.yaml` sau Group C / Step 8.1.
-- `wireframes` đọc contract này để sinh:
+- Tool lane đọc contract này để sinh:
   - shared prompt assets ở `05_tool-lanes/figma-make/`
   - `03_modules/{module}/tool-lanes/figma-make/make-guidelines.md`
   - `03_modules/{module}/tool-lanes/figma-make/make-prompt-pack.md`
@@ -341,15 +334,9 @@ ba-kit check-write-scope --command figma-sync plans/{slug}-{date}/03_modules/{mo
 
 `doctor-srs` kiểm tra `srs-index.md`, screen canon schema, và compile receipt. `check-write-scope` dùng cho hook/runtime để chặn lệnh downstream như Figma sync sửa nhầm canon.
 
-`/ba-start wireframes` giữ tên để tương thích ngược trong giai đoạn migration, nhưng không generate hình UI. Bước này chỉ chuẩn bị legacy manual handoff pack:
+`/ba-start wireframes` chỉ còn là compatibility validation command. Flow hiện tại không tạo legacy wireframe pack artifacts. Nếu ASCII thiếu hoặc stale, chạy lại `/ba-start srs --slug <slug> --module <module>`.
 
-- `designs/{slug}/DESIGN.md`
-- `02_backbone/shared-shell-contract.md` (hướng mới cho ownership machine-readable)
-- `03_modules/{module}/wireframes/wireframe-input.md`
-- `03_modules/{module}/wireframes/wireframe-map.md`
-- `03_modules/{module}/wireframes/wireframe-state.md`
-
-User hoặc designer tự tạo mockup/wireframe rồi attach vào đúng section trong SRS. Mockup không phải source of truth.
+User hoặc designer có thể attach mockup ngoài vào đúng section trong SRS. Mockup không phải source of truth và không thay thế ASCII wireframe.
 
 Figma MCP sync là lane riêng sau SRS canon:
 

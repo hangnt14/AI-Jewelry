@@ -176,7 +176,6 @@ require_tokens(
         "/ba-start frd --slug warehouse-rfp --module auth-flow",
         "/ba-start stories --slug warehouse-rfp --module auth-flow",
         "/ba-start srs --slug warehouse-rfp --module auth-flow",
-        "/ba-start wireframes --slug warehouse-rfp --module auth-flow",
         "plans/{slug}-{date}/01_intake/plan.md",
     ],
     "Getting started must document options commands and artifacts",
@@ -188,7 +187,6 @@ require_tokens(
         "/ba-start options --slug warehouse-rfp --select option-02",
         "/ba-start options --slug warehouse-rfp --skip",
         "plans/{slug}-{date}/01_intake/options/",
-        "/ba-start wireframes --slug warehouse-rfp --module auth-flow",
         "plans/{slug}-{date}/01_intake/plan.md",
     ],
     "Codex setup must mention the options flow command surface and artifacts",
@@ -203,12 +201,10 @@ require_tokens(
         "/ba-start frd --slug <slug> --module <module_slug>",
         "/ba-start stories --slug <slug> --module <module_slug>",
         "/ba-start srs --slug <slug> --module <module_slug>",
-        "/ba-start wireframes --slug <slug> --module <module_slug>",
         "/ba-figma-sync --slug <slug> --module <module_slug>",
         "| `options` |",
         "| `ba-figma-sync` | Sync approved SRS screen canon to Figma through Figma MCP and write sync/mismatch reports |",
-        "| `srs` | Produce grouped SRS artifacts, canon screen/use case/data sources, routing indexes, legacy transitional wireframe input when still needed, and compiled `srs.md` |",
-        "| `wireframes` | Legacy transitional Step 9 for manual handoff artifacts only |",
+        "| `srs` | Produce grouped SRS artifacts, canon screen/use case/data sources, mandatory ASCII wireframes, routing indexes, and compiled `srs.md` |",
     ],
     "Skill catalog must document options deliverables and explicit command surface",
 )
@@ -223,7 +219,7 @@ for path_label, doc_text in (
 require_tokens(
     source_skill,
     [
-        "argument-hint: \"[intake|impact|options|backbone|frd|stories|srs|wireframes|package|status|next] [file|--slug|--date|--module|--mode|--select|--skip]\"",
+        "argument-hint: \"[intake|impact|options|backbone|frd|stories|srs|package|status|next] [file|--slug|--date|--module|--mode|--select|--skip]\"",
         "/ba-start options --slug <slug>",
         "/ba-start options --slug <slug> --select option-02",
         "/ba-start options --slug <slug> --skip",
@@ -402,14 +398,14 @@ require_in_order(
     do_workflow,
     [
         "asking to brainstorm solution options, create multiple solution directions, compare solution approaches, choose an option, or skip optioning",
-        "directly generating or rerunning intake/options/backbone/frd/stories/srs/wireframes/package",
+        "directly generating or rerunning intake/options/backbone/frd/stories/srs/package",
     ],
     "ba-do must prioritize optioning intent above the generic direct-step route",
 )
 require_tokens(
     next_workflow,
     [
-        "when the next exact command would be module-scoped (`frd`, `stories`, `srs`, or `wireframes`), resolve the module using the contract rules before emitting the command",
+        "when the next exact command would be module-scoped (`frd`, `stories`, or `srs`),",
         "if multiple module directories exist, stop and ask instead of emitting an incomplete module-scoped command",
         "plan",
         "options index",
@@ -427,13 +423,12 @@ require_tokens(
         "ba-start frd --slug <slug> --module <module_slug>",
         "ba-start stories --slug <slug> --module <module_slug>",
         "ba-start srs --slug <slug> --module <module_slug>",
-        "ba-start wireframes --slug <slug> --module <module_slug>",
     ],
     "ba-next options inspection or recommendation regressed",
 )
 require_regex(
     do_workflow,
-    r"directly generating or rerunning intake/options/backbone/frd/stories/srs/wireframes/package",
+    r"directly generating or rerunning intake/options/backbone/frd/stories/srs/package",
     "ba-do generic direct-step route must include options",
 )
 require_regex(

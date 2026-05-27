@@ -1,7 +1,7 @@
 ---
 name: ba-start
 description: Lifecycle engine for BA-kit. Accepts raw requirements, normalizes them, locks scope, builds a requirements backbone, emits canon-first SRS artifacts, and packages deliverables.
-argument-hint: "[intake|impact|options|backbone|frd|stories|srs|wireframes|package|status|next] [file|--slug|--date|--module|--mode|--select|--skip]"
+argument-hint: "[intake|impact|options|backbone|frd|stories|srs|package|status|next] [file|--slug|--date|--module|--mode|--select|--skip]"
 ---
 
 # BA Start
@@ -30,7 +30,6 @@ Use this skill when the BA lifecycle step is explicit. Treat `ba-do` as the free
 /ba-start frd --slug <slug> --module <module_slug>
 /ba-start stories --slug <slug> --module <module_slug>
 /ba-start srs --slug <slug> --module <module_slug>
-/ba-start wireframes --slug <slug> --module <module_slug>
 /ba-start package --slug <slug>
 /ba-start status --slug <slug>
 /ba-start next --slug <slug>
@@ -51,7 +50,7 @@ Figma MCP sync is intentionally outside `ba-start`. Use `ba-figma-sync` only aft
 | `frd` | `steps/frd.md` | Step 6 |
 | `stories` | `steps/stories.md` | Step 7 |
 | `srs` | `steps/srs.md` | Canon-first SRS router; owns `screens/`, `usecases/`, `srs-index.md`, compiled `srs.md`, and compile receipt |
-| `wireframes` | `steps/wireframes.md` | Legacy transitional manual handoff only |
+| `wireframes` | `steps/wireframes.md` | Deprecated compatibility validation; ASCII belongs in `screens/*.md` |
 | `package` | `steps/package.md` | Step 12 |
 | `status` | `steps/status.md` | inspection only |
 | `next` | `../../core/workflows/next.md` | next-step recommendation; no mutation |

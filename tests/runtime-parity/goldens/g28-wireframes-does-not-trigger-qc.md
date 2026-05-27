@@ -1,4 +1,4 @@
-# Golden: F28 - Wireframes Stays Downstream And Does Not Trigger QC
+# Golden: F28 - Deprecated Wireframes Does Not Trigger QC
 
 ## Behavior Envelope
 
@@ -6,9 +6,9 @@
 | --- | --- |
 | resolved_command | ba-start wireframes |
 | resolved_slug | test-project |
-| source_of_truth_artifact | plans/test-project-20260526/03_modules/auth-flow/wireframe-input.md |
-| read_scope | core/contract.yaml, core/contract-behavior.md, core/behavior/wireframes.md, plans/test-project-20260526/03_modules/auth-flow/wireframe-input.md, plans/test-project-20260526/03_modules/auth-flow/srs.md, plans/test-project-20260526/03_modules/auth-flow/qc-review/auth-flow-qc-review-report-v1.md |
-| write_target | plans/test-project-20260526/03_modules/auth-flow/wireframe-state.md |
+| source_of_truth_artifact | plans/test-project-20260526/03_modules/auth-flow/screens/scr-login.md |
+| read_scope | core/contract.yaml, core/contract-behavior.md, core/behavior/wireframes.md, plans/test-project-20260526/03_modules/auth-flow/srs-index.md, plans/test-project-20260526/03_modules/auth-flow/screens/scr-login.md, plans/test-project-20260526/03_modules/auth-flow/srs-compile-receipt.json |
+| write_target | NONE |
 | approval_gate | NOT_REQUIRED |
 | activation_level | Base |
 | fallback_code | NONE |
@@ -24,4 +24,5 @@
 ## Notes
 
 - QC already happened after `srs`. `wireframes` must not create `auth-flow-qc-review-report-v2.md`.
+- The compatibility command must not create legacy visual handoff artifacts.
 - Aggregate cross-artifact validation is deferred to `ba-start package`.

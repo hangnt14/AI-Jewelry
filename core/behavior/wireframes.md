@@ -2,16 +2,15 @@
 
 ## Read Scope
 
-- Must read: `core/contract.yaml`, `core/contract-behavior.md`, `paths.wireframe_input`, and `skills/ba-start/steps/wireframes.md`.
-- May read: `paths.project_memory` or hot decisions, `paths.design_doc`, `paths.shared_shell_contract`, `paths.shared_shell_index`, `paths.tool_lane_state`, `paths.screen_field_contract`, module warm shard, and `paths.srs_index` for targeted screen lookup.
+- Must read: `core/contract.yaml`, `core/contract-behavior.md`, `paths.srs_index`, `paths.screen_root`, and `skills/ba-start/steps/wireframes.md`.
+- May read: `paths.design_doc`, `paths.shared_shell_contract`, `paths.shared_shell_index`, `paths.screen_field_contract`, and targeted screen canon files.
 - Must not read: `log.md`, `cold/`, other module shards, unrelated module artifacts.
 
-## Transitional Scope
+## Deprecated Command Scope
 
-- This behavior remains active only for the legacy manual wireframe handoff lane.
-- Canonical requirement ownership does **not** live in `paths.wireframe_input` or `paths.wireframe_map`.
-- Canonical screen/UI behavior is moving to module-local `paths.screen_item`, `paths.usecase_item`, `paths.module_erd`, and routing indexes under `paths.srs_index`.
-- Future ASCII and Figma generation must consume canon screen sources plus the shared shell contract instead of mutating upstream BA meaning here.
+- `wireframes` is a compatibility validation command only.
+- Do not create legacy wireframe pack artifacts.
+- Canonical ASCII wireframes live in module-local `paths.screen_item` files and are compiled by `ba-start srs`.
 
 ## Design Document Handling
 
@@ -22,32 +21,11 @@
 - Keep `defaults.ui_baseline` as fallback only when the approved design document does not specify another direction.
 - Do not proceed when design direction, portal navigation schema, or active-menu rules remain unresolved.
 
-## Wireframe-State Behavior
+## ASCII Validation Behavior
 
-- Use values from `states.wireframe` only: `completed`, `skipped`, `not-applicable`, or `missing`.
-- Use values from `states.tool_lane` for tool-lane selection: `manual`, `figma-make`, or `not-applicable`.
-- `wireframes` is read-only on upstream BA artifacts.
-- It may regenerate only the runtime `DESIGN.md`, wireframe input pack, wireframe map, and wireframe state.
-- Direct edits to `paths.srs` are not the source-of-truth path. If manual wireframe work reveals requirement changes, route through canon source edits first, then recompile `paths.srs`.
-- It may also regenerate downstream tool-lane control artifacts that are explicitly listed in `commands.wireframes.outputs`.
-- Default lane is `manual` when the user does not explicitly opt into a supported AI lane.
-- AI tool lanes must fail closed when `paths.screen_field_contract` is missing or incomplete for the targeted UI-backed screens.
-- If the selected tool lane changes, treat prior tool-specific artifacts for that module as stale and regenerate them from current `paths.screen_field_contract`.
-- If `impact` changes screen inventory, field rules, navigation, required states, validation behavior, common rules, or messages, treat `paths.screen_field_contract`, `paths.shared_rule_message_index`, `paths.make_guidelines`, `paths.make_prompt_pack`, `paths.prototype_conformance_checklist`, and `paths.prototype_conformance_report` as stale until the owning steps rerun.
+- Require each UI-backed screen canon file to contain `## ASCII Wireframe`.
+- Require `ascii_status: current`.
+- Require ASCII subsections for every required visual state.
+- If validation fails, route to `ba-start srs --slug <slug> --module <module_slug>`.
 
-## Allowed Outputs
-
-- `paths.design_doc`
-- `paths.wireframe_input`
-- `paths.wireframe_map`
-- `paths.wireframe_state`
-- `paths.tool_lane_state`
-- `paths.make_guidelines`
-- `paths.make_prompt_pack`
-- `paths.prototype_conformance_checklist`
-- `paths.prototype_conformance_report`
-- `paths.figma_make_shared_rules`
-- `paths.figma_make_shared_prompt_skeleton`
-- `paths.figma_make_shared_component_contracts`
-
-The wireframe map/checklist is a handoff artifact, not the source of truth for requirements. Screen and behavior changes discovered during wireframing route through `impact`.
+No outputs are allowed from this command. Screen and behavior changes discovered during visual review route through `impact`, then `srs`.

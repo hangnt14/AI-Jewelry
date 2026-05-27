@@ -40,7 +40,7 @@
           "## Tham chiếu Wireframe / Mockup thủ công (Manual Wireframe / Mockup Reference)",
           "## Ý đồ thiết kế màn hình (Screen Design Intent)",
           "## Vùng màn hình (Screen Regions)",
-          "## Hướng dẫn gắn wireframe thủ công (Manual Wireframe Attachment Guide)"
+          "## ASCII Wireframes"
         ]
       },
       "F": {
@@ -165,24 +165,6 @@
       "all": {
         "headings": [
           "# Mẫu User Story (User Story Template)"
-        ]
-      }
-    }
-  },
-  "wireframe-input-template.md": {
-    "groups": {
-      "all": {
-        "headings": [
-          "# Gói constraint wireframe (Wireframe Constraint Pack)"
-        ]
-      }
-    }
-  },
-  "wireframe-map-template.md": {
-    "groups": {
-      "all": {
-        "headings": [
-          "# Bản đồ handoff wireframe thủ công (Manual Wireframe Handoff Map)"
         ]
       }
     }

@@ -364,15 +364,13 @@ Nếu output block, sửa canon rồi chạy lại `ba-start srs`.
 Command này còn để tương thích project cũ:
 
 ```text
-/ba-start wireframes --slug warehouse-rfp --module auth-flow
+/ba-start srs --slug warehouse-rfp --module auth-flow
 ```
 
-Nó chuẩn bị manual handoff artifacts:
+Nó chuẩn bị screen canon với ASCII bắt buộc:
 
 ```text
-wireframes/wireframe-input.md
-wireframes/wireframe-map.md
-wireframes/wireframe-state.md
+screens/*.md
 ```
 
 Trong flow mới, đừng coi các file này là source of truth. Source of truth là:
