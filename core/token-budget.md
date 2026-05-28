@@ -25,8 +25,8 @@ Muc tieu cua file nay la khoa tran kich thuoc cho instruction surface cua BA-kit
   "files": [
     {
       "path": "core/contract.yaml",
-      "baseline": 23074,
-      "max": 24500,
+      "baseline": 24796,
+      "max": 25500,
       "label": "machine contract"
     },
     {

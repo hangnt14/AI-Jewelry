@@ -26,6 +26,8 @@ LANE_SCOPES = {
         "tool_lane_state",
         "make_guidelines",
         "make_prompt_pack",
+        "make_uc_prompt",
+        "make_uc_change_log",
         "prototype_conformance_checklist",
         "prototype_conformance_report",
         "figma_make_shared_rules",
@@ -40,6 +42,7 @@ def render_path(template: str, *, slug: str, date: str, module: str) -> str:
         template.replace("{slug}", slug)
         .replace("{date}", date)
         .replace("{module_slug}", module)
+        .replace("{usecase_slug}", "*")
         .replace("{group}", "*")
         .replace("{option}", "*")
     )

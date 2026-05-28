@@ -14,6 +14,8 @@ BA-kit vẫn coi `manual` là lane mặc định ở Step 9. Figma Make là lane
    - `05_tool-lanes/figma-make/shared-component-contracts.md`
    - `03_modules/{module}/tool-lanes/figma-make/make-guidelines.md`
    - `03_modules/{module}/tool-lanes/figma-make/make-prompt-pack.md`
+   - `03_modules/{module}/tool-lanes/figma-make/usecases/uc-{usecase_slug}-make-prompt.md`
+   - `03_modules/{module}/tool-lanes/figma-make/usecases/uc-{usecase_slug}-change-log.md`
    - `03_modules/{module}/tool-lanes/figma-make/prototype-conformance-checklist.md`
 5. Sau khi Make tạo prototype, team dùng checklist + report để reject drift.
 
@@ -24,6 +26,27 @@ BA-kit vẫn coi `manual` là lane mặc định ở Step 9. Figma Make là lane
 - `ascii-screen/*.md`: source of truth cho ASCII wireframe.
 - `DESIGN.md`: visual baseline và navigation schema baseline.
 - `tool-lanes/figma-make/make-guidelines.md` + `tool-lanes/figma-make/make-prompt-pack.md`: downstream control artifacts, không phải source of truth.
+
+## Per-UC prompts and change logs
+
+Mỗi use case có hai file riêng dưới `tool-lanes/figma-make/usecases/`:
+
+- `uc-{usecase_slug}-make-prompt.md`: paste-ready Figma Make prompt, scoped chặt vào screens/fields/states của một UC. File này kế thừa shared skeleton cho design system, color palette, typography — không định nghĩa lại.
+- `uc-{usecase_slug}-change-log.md`: versioned incremental change prompts. Mỗi version ghi lại approved prototype change cho version đó, kèm paste-ready prompt riêng. Không dùng để smuggle requirement changes — material drift phải route qua `ba-start impact`.
+
+### Quy tắc per-UC prompt
+
+- UC-01 không phải style authority — `DESIGN.md` mới là visual baseline.
+- Mỗi UC prompt chỉ describe screens/fields/states thuộc UC đó.
+- Hard negatives bắt buộc: "Do not modify any other element outside this UC scope".
+- Shared prompt skeleton dùng chung cho mọi UC — không copy-paste vào từng file.
+
+### Quy tắc change log
+
+- Change log là optional — chỉ tạo khi có approved prototype change đầu tiên.
+- Mỗi version là một paste-ready prompt độc lập.
+- Version cũ giữ lại để audit, version mới nhất là active Make prompt.
+- "Do NOT modify any other element" luôn có trong mỗi version prompt.
 
 ## Hard rules
 

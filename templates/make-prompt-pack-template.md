@@ -13,6 +13,22 @@
 - Do not change top-level navigation
 - If a rule is missing, omit instead of inventing
 
+## Per-UC prompts
+
+Each use case has its own paste-ready prompt and change log under `tool-lanes/figma-make/usecases/`:
+
+- `uc-{usecase_slug}-make-prompt.md` — paste-ready Figma Make prompt scoped to one UC
+- `uc-{usecase_slug}-change-log.md` — versioned incremental change prompts
+
+These files are referenced from this pack but live as separate artifacts to keep prompts scoped and paste-ready.
+
+### UC-01 - [Use Case Name]
+
+- Prompt: `tool-lanes/figma-make/usecases/uc-01-make-prompt.md`
+- Change log: `tool-lanes/figma-make/usecases/uc-01-change-log.md`
+
+<!-- Add additional UC rows as needed -->
+
 ## Screen bundle
 
 ### SCR-01 - [Screen Name]
