@@ -6,7 +6,7 @@
 **Chế độ triển khai (Engagement Mode):** [lite | hybrid | formal]
 **Chủ sở hữu (Owner):** [BA owner]
 
-## Tóm tắt quyết định phạm vi (Scope Lock Summary)
+## Tóm tắt phạm vi đã chốt
 
 - Vấn đề kinh doanh:
 - Kết quả mong muốn:
@@ -69,7 +69,7 @@ Chốt ở cấp hệ thống trước khi viết screen spec theo module. Đây
 - Hướng tham chiếu ban đầu: [Tham chiếu DESIGN.md / brand / custom brief]
 - Quyết định người dùng cần chốt trước Step 9: [Màu sắc, typography, density, component feel, responsive priority, navigation schema theo portal, active-menu rule, breadcrumb/back behavior, anti-patterns]
 
-## Gating quyết định artifact (Artifact Emission Gates)
+## Điều kiện tiến hành từng tài liệu
 
 - FRD: [Required / Optional] + lý do
 - User stories: [Required / Optional] + lý do

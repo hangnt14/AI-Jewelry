@@ -97,10 +97,10 @@ def load_index(path: Path) -> tuple[set[str], str, list[str]]:
 
 def module_files(module_root: Path) -> list[Path]:
     patterns = [
-        "screens/*.md",
+        "ascii-screen/*.md",
         "usecases/*.md",
         "srs.md",
-        "srs-groups/*.md",
+        "srs/*.md",
         "screen-field-contract.yaml",
     ]
     files: list[Path] = []

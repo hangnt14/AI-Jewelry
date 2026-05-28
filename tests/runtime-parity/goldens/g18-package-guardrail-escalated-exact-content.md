@@ -7,7 +7,7 @@
 | resolved_command | ba-start package |
 | resolved_slug | test-project |
 | source_of_truth_artifact | plans/test-project-20260424/03_modules/auth-flow/srs.md |
-| read_scope | core/contract.yaml, core/contract-behavior.md, plans/test-project-20260424/02_backbone/backbone-index.md, plans/test-project-20260424/03_modules/auth-flow/user-stories-index.md, plans/test-project-20260424/03_modules/auth-flow/srs-index.md, plans/test-project-20260424/02_backbone/project-memory/index.md, plans/test-project-20260424/02_backbone/project-memory.md, plans/test-project-20260424/03_modules/auth-flow/srs.md |
+| read_scope | core/contract.yaml, core/contract-behavior.md, plans/test-project-20260424/02_backbone/backbone-index.md, plans/test-project-20260424/03_modules/auth-flow/userstories/index.md, plans/test-project-20260424/03_modules/auth-flow/usecases/index.md, plans/test-project-20260424/03_modules/auth-flow/ascii-screen/index.md, plans/test-project-20260424/02_backbone/project-memory/index.md, plans/test-project-20260424/02_backbone/project-memory.md, plans/test-project-20260424/03_modules/auth-flow/srs.md |
 | write_target | plans/test-project-20260424/04_compiled/compiled-srs.html |
 | approval_gate | NOT_REQUIRED |
 | activation_level | Base |
@@ -22,18 +22,19 @@
 | resolved_slug | test-project |
 | guardrail_mode | index-first |
 | indexes.backbone_index.state | current |
-| indexes.stories_index.state | current |
-| indexes.srs_index.state | current |
-| allow_reads_includes | core/contract.yaml, core/contract-behavior.md, plans/test-project-20260424/02_backbone/backbone-index.md, plans/test-project-20260424/03_modules/auth-flow/user-stories-index.md, plans/test-project-20260424/03_modules/auth-flow/srs-index.md, plans/test-project-20260424/02_backbone/project-memory/index.md, plans/test-project-20260424/02_backbone/project-memory.md |
-| deny_reads_includes | plans/test-project-20260424/01_intake/intake.md, plans/test-project-20260424/02_backbone/backbone.md, plans/test-project-20260424/03_modules/auth-flow/user-stories.md, plans/test-project-20260424/03_modules/auth-flow/srs.md |
-| message | GUARDRAIL: cmd=package mode=index-first idx=backbone_index+stories_index+srs_index current=3 allow=contract.yaml,backbone-index.md,user-stories-index.md,srs-index.md,index.md deny=summary,chunk-index,intake,backbone,user-stories,srs,log |
+| indexes.userstories_index.state | current |
+| indexes.usecases_index.state | current |
+| indexes.ascii_screen_index.state | current |
+| allow_reads_includes | core/contract.yaml, core/contract-behavior.md, plans/test-project-20260424/02_backbone/backbone-index.md, plans/test-project-20260424/03_modules/auth-flow/userstories/index.md, plans/test-project-20260424/03_modules/auth-flow/usecases/index.md, plans/test-project-20260424/03_modules/auth-flow/ascii-screen/index.md, plans/test-project-20260424/02_backbone/project-memory/index.md, plans/test-project-20260424/02_backbone/project-memory.md |
+| deny_reads_includes | plans/test-project-20260424/01_intake/intake.md, plans/test-project-20260424/02_backbone/backbone.md, plans/test-project-20260424/03_modules/auth-flow/userstories/us-login.md, plans/test-project-20260424/03_modules/auth-flow/srs.md |
+| message | GUARDRAIL: cmd=package mode=index-first idx=backbone_index+userstories_index+usecases_index+ascii_screen_index current=4 allow=contract.yaml,backbone-index.md,index.md,index.md,index.md,index.md,project-memory.md deny=summary,chunk-index,intake,backbone,us-login,srs,log |
 
 ## Guardrail Audit
 
 | Field | Expected Value |
 | --- | --- |
 | status | warn |
-| actual_reads_includes | core/contract.yaml, core/contract-behavior.md, plans/test-project-20260424/02_backbone/backbone-index.md, plans/test-project-20260424/03_modules/auth-flow/user-stories-index.md, plans/test-project-20260424/03_modules/auth-flow/srs-index.md, plans/test-project-20260424/02_backbone/project-memory/index.md, plans/test-project-20260424/02_backbone/project-memory.md, plans/test-project-20260424/03_modules/auth-flow/srs.md |
+| actual_reads_includes | core/contract.yaml, core/contract-behavior.md, plans/test-project-20260424/02_backbone/backbone-index.md, plans/test-project-20260424/03_modules/auth-flow/userstories/index.md, plans/test-project-20260424/03_modules/auth-flow/usecases/index.md, plans/test-project-20260424/03_modules/auth-flow/ascii-screen/index.md, plans/test-project-20260424/02_backbone/project-memory/index.md, plans/test-project-20260424/02_backbone/project-memory.md, plans/test-project-20260424/03_modules/auth-flow/srs.md |
 | actual_reads_excludes | plans/test-project-20260424/01_intake/intake.md, plans/test-project-20260424/02_backbone/backbone.md |
 | violations.count | 0 |
 | warnings.count | 1 |

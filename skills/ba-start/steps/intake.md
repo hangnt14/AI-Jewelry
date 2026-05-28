@@ -118,7 +118,8 @@ Also create or refresh `paths.project_home` using [../../../templates/project-ho
 Project Home rules:
 
 - write it in Vietnamese unless the user explicitly requested English
-- translate technical command names into BA-facing labels
+- translate technical command names into BA-facing labels using the terminology matrix in `core/contract-behavior.md`
+- replace internal terms (`source of truth`, `decision ledger`, `artifact gate`, `canon`, `compile receipt`, `index`) with the approved Vietnamese labels from the wording-layer policy
 - show the current lifecycle state, the recommended next step, and decisions the user must make
 - include runtime-specific quick prompts for Claude Code, Codex, and Antigravity
 - do not treat Project Home as source of truth; it is a navigation dashboard over the contract artifacts

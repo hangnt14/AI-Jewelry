@@ -204,7 +204,7 @@ require_tokens(
         "/ba-figma-sync --slug <slug> --module <module_slug>",
         "| `options` |",
         "| `ba-figma-sync` | Sync approved SRS screen canon to Figma through Figma MCP and write sync/mismatch reports |",
-        "| `srs` | Produce grouped SRS artifacts, canon screen/use case/data sources, mandatory ASCII wireframes, routing indexes, and compiled `srs.md` |",
+        "| `srs` | Produce folder-based SRS sources, use cases, mandatory ASCII screens, routing indexes, and compiled `srs.md` |",
     ],
     "Skill catalog must document options deliverables and explicit command surface",
 )

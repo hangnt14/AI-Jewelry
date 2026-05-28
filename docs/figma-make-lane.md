@@ -7,7 +7,7 @@ BA-kit vẫn coi `manual` là lane mặc định ở Step 9. Figma Make là lane
 1. `srs` viết Group B + Group C như bình thường.
 2. Step 8.1 sinh:
    - `03_modules/{module}/screen-field-contract.yaml`
-3. `srs` sinh ASCII bắt buộc trong `03_modules/{module}/screens/*.md`.
+3. `srs` sinh ASCII bắt buộc trong `03_modules/{module}/ascii-screen/*.md`.
 4. Nếu lane là `figma-make`, tool lane sinh:
    - `05_tool-lanes/figma-make/shared-rules.md`
    - `05_tool-lanes/figma-make/shared-prompt-skeleton.md`
@@ -19,9 +19,9 @@ BA-kit vẫn coi `manual` là lane mặc định ở Step 9. Figma Make là lane
 
 ## Source of truth split
 
-- `srs.md` và `srs-groups/srs-group-c.md`: source of truth nghiệp vụ.
+- `srs/spec.md`, `srs/flows.md`, `srs/states.md`, và `srs/erd.md`: source of truth nghiệp vụ theo lát cắt.
 - `screen-field-contract.yaml`: bản normalize máy đọc được của screen truth.
-- `screens/*.md`: source of truth cho ASCII wireframe.
+- `ascii-screen/*.md`: source of truth cho ASCII wireframe.
 - `DESIGN.md`: visual baseline và navigation schema baseline.
 - `tool-lanes/figma-make/make-guidelines.md` + `tool-lanes/figma-make/make-prompt-pack.md`: downstream control artifacts, không phải source of truth.
 

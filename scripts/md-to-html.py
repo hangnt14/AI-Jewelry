@@ -42,29 +42,29 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 ARTIFACT_VARIANTS = {
     "generic": {
-        "badge": "BA-kit Document",
-        "label": "Business Analysis Deliverable",
-        "summary": "Structured BA output packaged in the shared BA-kit HTML shell.",
+        "badge": "Tài liệu BA-kit",
+        "label": "Tài liệu phân tích nghiệp vụ",
+        "summary": "Tài liệu BA được đóng gói trong khung HTML dùng chung của BA-kit.",
     },
     "intake": {
-        "badge": "Intake Form",
-        "label": "Discovery Intake",
-        "summary": "Normalized source intake used to anchor scope, stakeholders, and downstream BA routing.",
+        "badge": "Phiếu tiếp nhận",
+        "label": "Tiếp nhận yêu cầu",
+        "summary": "Thông tin đầu vào đã chuẩn hóa, dùng để xác định phạm vi, stakeholder, và các bước BA tiếp theo.",
     },
     "frd": {
         "badge": "FRD",
-        "label": "Functional Requirements Document",
-        "summary": "Functional scope, workflows, business rules, and acceptance criteria packaged in the shared stakeholder shell.",
+        "label": "Tài liệu yêu cầu chức năng",
+        "summary": "Phạm vi chức năng, luồng nghiệp vụ, quy tắc kinh doanh, và tiêu chí chấp nhận được đóng gói trong khung stakeholder dùng chung.",
     },
     "stories": {
         "badge": "User Stories",
-        "label": "Agile Delivery Scope",
-        "summary": "Story-level backlog framing with traceable acceptance criteria and implementation intent.",
+        "label": "Phạm vi bàn giao Agile",
+        "summary": "Backlog theo story với tiêu chí chấp nhận có thể truy vết và định hướng triển khai.",
     },
     "srs": {
         "badge": "SRS",
-        "label": "Software Requirements Specification",
-        "summary": "Unified system specification with traceability, use cases, screens, and embedded wireframe evidence.",
+        "label": "Đặc tả yêu cầu phần mềm",
+        "summary": "Đặc tả hệ thống thống nhất với truy vết, use case, màn hình, và bằng chứng wireframe ASCII.",
     },
 }
 
@@ -81,16 +81,16 @@ METADATA_ALIASES = {
 }
 
 DISPLAY_LABELS = {
-    "project": "Project",
+    "project": "Dự án",
     "slug": "Slug",
-    "date": "Date",
-    "requester": "Requester",
-    "source": "Source",
-    "owner": "Owner",
-    "version": "Version",
+    "date": "Ngày",
+    "requester": "Người yêu cầu",
+    "source": "Tài liệu gốc",
+    "owner": "Chủ sở hữu",
+    "version": "Phiên bản",
     "epic": "Epic",
-    "feature": "Feature",
-    "story_id": "Story ID",
+    "feature": "Tính năng",
+    "story_id": "Mã story",
 }
 
 
@@ -200,10 +200,10 @@ def format_document_meta(doc_type: str, metadata: dict[str, str], md_path: Path)
         "story_id",
         "source",
     ]
-    rows = [('Artifact', ARTIFACT_VARIANTS[doc_type]["label"])]
+    rows = [('Loại tài liệu', ARTIFACT_VARIANTS[doc_type]["label"])]
     rows.extend((DISPLAY_LABELS[key], metadata[key]) for key in ordered_keys if metadata.get(key))
-    rows.append(("Source Markdown", str(md_path)))
-    rows.append(("Generated", datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z")))
+    rows.append(("Tệp markdown gốc", str(md_path)))
+    rows.append(("Thời điểm tạo", datetime.now().astimezone().strftime("%Y-%m-%d %H:%M %Z")))
     return "\n".join(
         (
             '      <div class="doc-meta-card">'
@@ -222,9 +222,9 @@ def render_document_shell(md: str, md_path: Path) -> tuple[str, str]:
     metadata = extract_document_metadata(md, md_path)
     summary = variant["summary"]
     if metadata.get("project"):
-        summary = f"{summary} Project context: {metadata['project']}."
+        summary = f"{summary} Dự án: {metadata['project']}."
     shell = f"""  <section class="document-chrome">
-    <div class="doc-kicker">BA-kit Unified HTML Deliverable</div>
+    <div class="doc-kicker">BA-kit — Tài liệu bàn giao</div>
     <div class="doc-hero">
       <div class="doc-hero__content">
         <div class="doc-type-badge">{escape(variant["badge"])}</div>
@@ -1334,18 +1334,18 @@ def convert(md_path: Path, *, base_dir: Optional[Path] = None, editor_enabled: b
     editor_script = f"<script>{EDITOR_JS}</script>" if editor_enabled else ""
     editor_toolbar = """  <div id="editor-toolbar" class="editor-toolbar">
     <div class="editor-toolbar__group">
-      <button class="editor-button is-primary" data-action="toggle-edit" type="button">Disable Editing</button>
-      <button class="editor-button" data-action="add-paragraph" type="button">Add Paragraph</button>
-      <button class="editor-button" data-action="add-heading" type="button">Add Heading</button>
-      <button class="editor-button" data-action="add-image" type="button">Add Image</button>
-      <button class="editor-button" data-action="replace-image" type="button">Replace Image</button>
-      <button class="editor-button" data-action="duplicate-block" type="button">Duplicate Block</button>
-      <button class="editor-button is-danger" data-action="delete-block" type="button">Delete Block</button>
-      <button class="editor-button" data-action="rebuild-toc" type="button">Refresh TOC</button>
-      <button class="editor-button" data-action="download-html" type="button">Download Edited HTML</button>
+      <button class="editor-button is-primary" data-action="toggle-edit" type="button">Tắt chỉnh sửa</button>
+      <button class="editor-button" data-action="add-paragraph" type="button">Thêm đoạn văn</button>
+      <button class="editor-button" data-action="add-heading" type="button">Thêm tiêu đề</button>
+      <button class="editor-button" data-action="add-image" type="button">Thêm ảnh</button>
+      <button class="editor-button" data-action="replace-image" type="button">Thay ảnh</button>
+      <button class="editor-button" data-action="duplicate-block" type="button">Nhân đôi khối</button>
+      <button class="editor-button is-danger" data-action="delete-block" type="button">Xóa khối</button>
+      <button class="editor-button" data-action="rebuild-toc" type="button">Làm mới mục lục</button>
+      <button class="editor-button" data-action="download-html" type="button">Tải HTML đã chỉnh</button>
     </div>
-    <div id="editor-status" class="editor-toolbar__status">Editing enabled. Click a block to select it, then edit text or use the toolbar.</div>
-    <div class="editor-help">You can edit text directly, replace wireframe images from local files, add new headings or paragraphs, remove blocks, then download a clean HTML copy without touching source code.</div>
+    <div id="editor-status" class="editor-toolbar__status">Chế độ chỉnh sửa đang bật. Nhấn vào một khối để chọn, sau đó chỉnh nội dung hoặc dùng thanh công cụ.</div>
+    <div class="editor-help">Bạn có thể chỉnh văn bản trực tiếp, thay ảnh wireframe từ file local, thêm tiêu đề hoặc đoạn văn mới, xóa khối, rồi tải về bản HTML sạch mà không cần chạm vào mã nguồn.</div>
   </div>
 """ if editor_enabled else ""
     editor_input = '  <input id="editor-image-input" class="editor-hidden" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml">\n' if editor_enabled else ""

@@ -46,7 +46,7 @@ Raw input
 -> PROJECT-HOME.md
 -> Option pack + comparison khi intake cần nhiều hướng solution
 -> Requirements Backbone
--> Module canon artifacts: FRD / Stories / usecases/*.md / screens/*.md with mandatory ASCII / srs-index.md
+-> Module canon artifacts: FRD / userstories/*.md / usecases/*.md / ascii-screen/*.md / srs/*.md
 -> DESIGN.md + shared-shell-contract.md
 -> Compiled SRS deliverable (`srs.md`) with screen descriptions + ASCII wireframes
 -> Optional Figma sync as downstream consumer
@@ -75,7 +75,7 @@ Lead BA chia module
 | `01_intake/intake.md` | Input đã chuẩn hóa, gap analysis, câu hỏi mở |
 | `01_intake/plan.md` | Kế hoạch artifact sẽ sinh theo mode/gate |
 | `01_intake/options/*` | Bộ phương án solution và bảng so sánh trước backbone |
-| `02_backbone/backbone.md` | Source of truth sau scope lock |
+| `02_backbone/backbone.md` | Tài liệu gốc sau khi chốt phạm vi |
 | `02_backbone/common-rules.md` | Registry duy nhất cho rule code dùng chung `CR-*` |
 | `02_backbone/message-list.md` | Registry duy nhất cho message code dùng chung `MSG-*` |
 | `02_backbone/shared-rule-message-index.md` | Index gọn để runtime đọc trước khi mở registry đầy đủ |
@@ -83,9 +83,9 @@ Lead BA chia module
 | `COLLAB-HOME.md` | Dashboard cộng tác: ai làm module nào, review status, blocker |
 | `03_modules/{module}/MODULE-HOME.md` | Dashboard riêng cho Module BA: scope được sửa, checklist review |
 | `03_modules/{module}/frd.md` | Functional Requirements Document theo module |
-| `03_modules/{module}/user-stories.md` | User stories và acceptance criteria |
+| `03_modules/{module}/userstories/*.md` + `userstories/index.md` | User stories và acceptance criteria |
 | `03_modules/{module}/srs.md` | SRS/use case/screen spec theo module |
-| `screens/*.md` / `usecases/*.md` / `srs-index.md` | Canon authoring sources; mỗi UI-backed screen phải có ASCII wireframe |
+| `ascii-screen/*.md` / `usecases/*.md` / `srs/*.md` | Canon authoring sources; mỗi UI-backed screen phải có ASCII wireframe |
 | `03_modules/{module}/screen-field-contract.yaml` | Contract máy đọc được cho field/rule/state/navigation sau Step 8.1 |
 | `03_modules/{module}/tool-lanes/tool-lane-state.md` | Lane đã chọn cho Step 9: `manual` mặc định hoặc tool lane opt-in |
 | `05_tool-lanes/figma-make/*` | Shared prompt skeleton và shared component contracts cho Figma Make |
@@ -95,7 +95,7 @@ Lead BA chia module
 | `04_compiled/*.html` | Bản HTML stakeholder review/edit trong browser |
 | `designs/{slug}/DESIGN.md` | Design direction runtime cho UI handoff |
 
-`PROJECT-HOME.md`, `COLLAB-HOME.md`, và `MODULE-HOME.md` là dashboard. Source of truth vẫn là `backbone.md`, sau đó là `intake.md` và module artifacts.
+`PROJECT-HOME.md`, `COLLAB-HOME.md`, và `MODULE-HOME.md` là trang điều phối. Tài liệu gốc vẫn là `backbone.md`, sau đó là `intake.md` và module artifacts.
 
 ## Cấu Trúc Thư Mục
 
@@ -153,21 +153,23 @@ plans/
       {module_slug}/
         MODULE-HOME.md
         frd.md
-        user-stories.md
-        user-stories-index.md
-        screens/
+        userstories/
+          index.md
+          us-{story_slug}.md
+        ascii-screen/
+          index.md
+          {screen_slug}.md
         usecases/
-        data/
+          index.md
+          uc-{usecase_slug}.md
+          diagrams.md
+        srs/
+          spec.md
+          flows.md
+          states.md
           erd.md
-        flows/
         srs.md
-        srs-index.md
-        srs-groups/
-          srs-group-a.md
-          srs-group-b.md
-          srs-group-c.md
-          srs-group-d.md
-          srs-group-e.md
+        srs-compile-receipt.json
           srs-group-f.md
         srs-compile-receipt.json
         screen-field-contract.yaml
@@ -268,7 +270,7 @@ Dùng `reverse` khi mục tiêu là dựng tài liệu as-built từ hệ thốn
 
 ## Tool Lane Sau SRS
 
-- ASCII wireframe luôn bắt buộc trong `03_modules/{module}/screens/*.md` và được compile vào `srs.md`.
+- ASCII wireframe luôn bắt buộc trong `03_modules/{module}/ascii-screen/*.md` và được compile vào `srs.md`.
 - Nếu user opt-in `figma-make`, BA-kit không dùng raw `srs.md` làm prompt chính.
 - `srs` phải compile `screen-field-contract.yaml` sau Group C / Step 8.1.
 - Tool lane đọc contract này để sinh:
@@ -317,10 +319,12 @@ Agent xử lý nội bộ:
 
 `/ba-start srs` đang chuyển dần sang mô hình canon-first:
 
-- `03_modules/{module}/screens/*.md`
+- `03_modules/{module}/ascii-screen/*.md`
 - `03_modules/{module}/usecases/*.md`
-- `03_modules/{module}/data/erd.md` khi cần
-- `03_modules/{module}/srs-index.md`
+- `03_modules/{module}/srs/spec.md`
+- `03_modules/{module}/srs/flows.md`, `srs/states.md`, `srs/erd.md` khi cần
+- `03_modules/{module}/usecases/index.md`
+- `03_modules/{module}/ascii-screen/index.md`
 - `03_modules/{module}/srs.md` như compiled deliverable đầy đủ
 
 Direct edit nên đi vào canon sources trước, rồi mới compile lại `srs.md`.
@@ -329,10 +333,10 @@ Guardrail nhanh:
 
 ```bash
 ba-kit doctor-srs plans/{slug}-{date}/03_modules/{module}
-ba-kit check-write-scope --command figma-sync plans/{slug}-{date}/03_modules/{module}/screens/scr-01.md
+ba-kit check-write-scope --command figma-sync plans/{slug}-{date}/03_modules/{module}/ascii-screen/scr-01.md
 ```
 
-`doctor-srs` kiểm tra `srs-index.md`, screen canon schema, và compile receipt. `check-write-scope` dùng cho hook/runtime để chặn lệnh downstream như Figma sync sửa nhầm canon.
+`doctor-srs` kiểm tra `ascii-screen/index.md`, screen canon schema, và compile receipt. `check-write-scope` dùng cho hook/runtime để chặn lệnh downstream như Figma sync sửa nhầm canon.
 
 `/ba-start wireframes` chỉ còn là compatibility validation command. Flow hiện tại không tạo legacy wireframe pack artifacts. Nếu ASCII thiếu hoặc stale, chạy lại `/ba-start srs --slug <slug> --module <module>`.
 
@@ -345,7 +349,7 @@ Figma MCP sync là lane riêng sau SRS canon:
 /ba-do Đồng bộ Figma cho module {module} của dự án {slug}
 ```
 
-Nó chỉ đọc `srs-index.md`, `screens/*.md`, `DESIGN.md`, `shared-shell-contract.md`, và `shared-rule-message-index.md`, rồi ghi `figma-sync/figma-sync-report.md` hoặc `figma-sync/figma-mismatch-report.md`. Nếu Figma khác canon, sửa canon trước rồi sync lại; không sửa Figma rồi coi đó là requirement mới.
+Nó chỉ đọc `ascii-screen/index.md`, `ascii-screen/*.md`, `DESIGN.md`, `shared-shell-contract.md`, và `shared-rule-message-index.md`, rồi ghi `figma-sync/figma-sync-report.md` hoặc `figma-sync/figma-mismatch-report.md`. Nếu Figma khác canon, sửa canon trước rồi sync lại; không sửa Figma rồi coi đó là requirement mới.
 
 ## Nâng Cấp
 

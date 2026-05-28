@@ -38,55 +38,55 @@ Print a checklist like this:
 ```text
 Project: {slug}
 Date set: {date}
-Snapshot: current | degraded | absent
+Gói bàn giao tại thời điểm: hiện tại | cũ | chưa có
 
-[Core]
-- [x] PROJECT-HOME.md — 2026-03-26
-- [x] 01_intake/intake.md — 2026-03-26
-- [x] 02_backbone/backbone.md — 2026-03-26
+[Tài liệu gốc]
+- [x] PROJECT-HOME.md (trang điều phối dự án) — 2026-03-26
+- [x] 01_intake/intake.md (phiếu tiếp nhận yêu cầu) — 2026-03-26
+- [x] 02_backbone/backbone.md (khung yêu cầu đã chốt) — 2026-03-26
 
 [Module: auth-flow]
-- [x] 03_modules/auth-flow/user-stories.md — 2026-03-26
-- [x] 03_modules/auth-flow/srs-index.md — 2026-03-26
-- [x] 03_modules/auth-flow/screens/*.md — 4 file(s)
-- [x] 03_modules/auth-flow/usecases/*.md — 3 file(s)
-- [ ] 03_modules/auth-flow/data/*.md — missing
-- [ ] 03_modules/auth-flow/flows/*.md — missing
-- [ ] 03_modules/auth-flow/srs.md — missing
-- [!] srs-compile-receipt.json — missing; rerun ba-start srs
+- [x] 03_modules/auth-flow/userstories/index.md — 2026-03-26
+- [x] 03_modules/auth-flow/usecases/index.md — 2026-03-26
+- [x] 03_modules/auth-flow/ascii-screen/index.md — 2026-03-26
+- [x] 03_modules/auth-flow/ascii-screen/*.md — 4 file(s)
+- [x] 03_modules/auth-flow/srs/spec.md — 2026-03-26
+- [ ] 03_modules/auth-flow/srs/flows.md — chưa có
+- [ ] 03_modules/auth-flow/srs/states.md — chưa có
+- [ ] 03_modules/auth-flow/srs/erd.md — chưa có
+- [ ] 03_modules/auth-flow/srs.md — chưa có
+- [!] srs-compile-receipt.json (biên bản tổng hợp) — chưa có; chạy lại ba-start srs
 
-[Shared Shell]
+[Khung giao diện dùng chung]
 - [x] designs/{slug}/DESIGN.md — 2026-03-26
 - [x] 02_backbone/shared-shell-contract.md — 2026-03-26
 - [x] 02_backbone/shared-shell-index.md — 2026-03-26
 
-[Compiled]
+[Tài liệu đã tổng hợp]
 - [x] 04_compiled/compiled-frd.html — 2026-03-26
 
-[Designs]
-- [ ] designs/{slug}/DESIGN.md — missing
-- [x|!| ] screen canon ASCII — current/missing/stale
+[Thiết kế]
+- [ ] designs/{slug}/DESIGN.md — chưa có
+- [x|!| ] ASCII màn hình — hiện tại/chưa có/cũ
 
-[Reverse Lane]  ← omit section when reverse_baseline_lock absent
-- [x|!| ] reverse-baseline-lock.json — {scan_timestamp} | absent
-- [x|!| ] reverse-index.md — stale_status: {unknown|current|stale} | absent
-- [x| ] reverse-focus-excerpts.md — {entry_count} excerpts | absent
-- [x| ] reverse-evidence-ledger.md — {total} entries | absent
-- [x| ] reverse-drift-state.json — present | absent
+[Làn ngược (Reverse Lane)]  ← bỏ qua khi không có reverse_baseline_lock
+- [x|!| ] reverse-baseline-lock.json — {scan_timestamp} | chưa có
+- [x|!| ] reverse-index.md — stale_status: {unknown|current|stale} | chưa có
+- [x| ] reverse-focus-excerpts.md — {entry_count} excerpts | chưa có
+- [x| ] reverse-evidence-ledger.md — {total} entries | chưa có
+- [x| ] reverse-drift-state.json — có | chưa có
 
 ```
 
 Status rules:
 
-- Derive artifact presence from snapshot `artifacts` list when current; otherwise filesystem stat only.
-- Print `exists` or `missing` with last-modified date. For screen canon ASCII, report current/missing/stale from screen canon validation.
-- Report SRS canon directories by markdown file count only; do not read screen/use case content.
-- Report `srs-compile-receipt.json` as `current`, `missing`, `stale`, or `not applicable` using file presence and modified times against canon source directories.
-- Report shared shell files separately from module SRS files because shell/menu ownership is system-level.
-- Report Figma readiness indirectly: current canon sources + current compile receipt + shared shell + `DESIGN.md` present. Actual Figma sync status belongs to the downstream sync report, not `ba-start status`.
-- Print compact memory/shard/activation metadata from `paths.project_memory` and `paths.memory_index` only.
-- For delegated slices, print tracker state; mark `likely stalled` when heartbeat exceeds `stall_after_minutes`.
-- Do not read artifact content to produce this output.
+- Prefer current snapshot; otherwise stat files only.
+- Print exists/missing with mtime; count SRS canon markdown files without opening them.
+- Mark receipt current/missing/stale from mtime against canon source directories.
+- Report shared shell separately from module SRS files.
+- Figma readiness = canon + receipt + shell + `DESIGN.md`; detailed sync state belongs to sync reports.
+- Read only compact memory metadata and delegation tracker state.
+- Do not read artifact content.
 
 Reverse lane status rules:
 - Omit `[Reverse Lane]` when `reverse_baseline_lock` absent (stat only).

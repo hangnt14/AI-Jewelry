@@ -75,7 +75,7 @@ Generate the index with `stale_status: unknown`, leave `validated_at` and `valid
 
 Also refresh `paths.project_home` using [../../../templates/project-home-template.md](../../../templates/project-home-template.md) so non-technical BAs can resume without understanding slug/date/module internals.
 
-Project Home refresh must summarize scope lock, artifact gates, next safe step, and runtime quick prompts. It is a dashboard only; do not duplicate full requirements or replace `backbone.md`.
+Project Home refresh must summarize phạm vi đã chốt, điều kiện tiến hành từng tài liệu, bước tiếp theo an toàn, and runtime quick prompts. Apply the wording-layer policy from `core/contract-behavior.md`: replace internal terms (`source of truth`, `decision ledger`, `artifact gate`, `canon`, `compile receipt`, `index`) with the approved Vietnamese labels. It is a dashboard only; do not duplicate full requirements or replace `backbone.md`.
 
 The project memory must persist only the reusable anti-hallucination layer:
 

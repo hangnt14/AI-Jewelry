@@ -7,7 +7,7 @@
 | report_type | figma-sync |
 | project_slug | [slug] |
 | module_slug | [module-slug] |
-| source_index | `./srs-index.md` |
+| source_index | `./ascii-screen/index.md` |
 | shared_shell_contract | `../../02_backbone/shared-shell-contract.md` |
 | design_doc | `designs/{slug}/DESIGN.md` |
 | generated_at | [YYYY-MM-DDTHH:mm:ssZ] |
@@ -24,7 +24,7 @@
 
 | input_type | path | source_hash |
 | --- | --- | --- |
-| screen | `./screens/scr-xxx-01.md` | [sha256] |
+| screen | `./ascii-screen/scr-xxx-01.md` | [sha256] |
 | shared_shell | `../../02_backbone/shared-shell-contract.md` | [sha256] |
 | design_doc | `designs/{slug}/DESIGN.md` | [sha256] |
 

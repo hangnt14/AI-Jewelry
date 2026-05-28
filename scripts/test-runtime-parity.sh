@@ -200,7 +200,7 @@ check_golden_contract() {
             require_table_field "$path" "actual_reads_excludes" "golden $id guardrail audit" || golden_failed=1
             ;;
         f18)
-            for field in "indexes.backbone_index.state" "indexes.stories_index.state" "indexes.srs_index.state" deny_reads_includes; do
+            for field in "indexes.backbone_index.state" "indexes.userstories_index.state" "indexes.usecases_index.state" "indexes.ascii_screen_index.state" deny_reads_includes; do
                 require_table_field "$path" "$field" "golden $id guardrail section" || golden_failed=1
             done
             require_table_field "$path" "warnings.types_includes" "golden $id guardrail audit" || golden_failed=1

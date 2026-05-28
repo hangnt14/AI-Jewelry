@@ -176,6 +176,10 @@ Artifact profile controls format and length:
 - `agent_facing`: navigator, packet, memory shard, or state summary; write compact tables/lists with IDs, paths, freshness, ownership, and route hints only.
 - `machine_facing`: deterministic state or manifest; prefer JSON/YAML/NDJSON and avoid prose beyond stable labels.
 
+### Wording-Layer Policy For User-Facing Artifacts
+
+When generating `user_facing` artifacts, use reader-friendly Vietnamese labels for internal terms: source of truth -> tài liệu gốc, gate -> điều kiện tiến hành, canon -> tài liệu nguồn chuẩn, compile receipt -> biên bản tổng hợp, index -> chỉ mục điều hướng, backbone -> khung yêu cầu đã chốt, intake -> tiếp nhận yêu cầu, package snapshot -> gói bàn giao tại thời điểm, project memory -> bộ nhớ dự án, shared shell -> khung giao diện dùng chung, screen field contract -> đặc tả trường màn hình, qc-review -> kiểm tra chất lượng, scope lock -> chốt phạm vi. Keep raw state values, IDs, file paths, receipt filenames, option IDs, command names, and QC verdict fields literal. Do not apply to `agent_facing` or `machine_facing`.
+
 Generated internal artifacts must not duplicate requirement prose from intake, backbone, stories, or SRS. Keep excerpts short, include stale/unknown status instead of guessing, and move substantial prose into the source-of-truth artifact.
 
 When a command writes or refreshes an index artifact, the producer-side contract is:

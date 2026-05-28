@@ -47,7 +47,7 @@ Use these exact paths from the shared contract:
   - `plans/{slug}-{date}/02_backbone/backbone.md`
 - module scope:
   - `plans/{slug}-{date}/03_modules/{module_slug}/frd.md`
-  - `plans/{slug}-{date}/03_modules/{module_slug}/user-stories.md`
+  - `plans/{slug}-{date}/03_modules/{module_slug}/userstories/index.md`
   - `plans/{slug}-{date}/03_modules/{module_slug}/srs.md`
 
 ## Publish Modes

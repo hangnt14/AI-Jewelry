@@ -1,6 +1,10 @@
 # Đặc tả yêu cầu phần mềm (Software Requirements Specification)
 
-> **Compiled deliverable:** Tài liệu này là bản SRS đọc/handoff cho stakeholder. Nguồn chỉnh sửa chính nằm ở `usecases/*.md`, `ascii-screen/*.md`, `srs/spec.md`, `srs/flows.md`, `srs/states.md`, `srs/erd.md`; sau đó compile lại vào `srs.md` qua `ba-start srs`. ASCII wireframe bắt buộc nằm trong từng `ascii-screen/*.md`. Không chỉnh trực tiếp `srs.md` như source of truth.
+> **Tài liệu tổng hợp:** Tài liệu này là bản SRS đọc/handoff cho stakeholder. Khi dự án dùng tài liệu nguồn chuẩn, nguồn chỉnh sửa chính nằm ở `usecases/*.md`, `ascii-screen/*.md`, `srs/spec.md`, `srs/flows.md`, `srs/states.md`, và `srs/erd.md`; sau đó tổng hợp lại vào `srs.md`. ASCII wireframe bắt buộc nằm trong từng `ascii-screen/*.md` và được tổng hợp vào đây. Không chỉnh trực tiếp `srs.md` trừ khi có manual override và backport vào tài liệu nguồn chuẩn.
+
+## Tóm tắt dành cho BA và stakeholder
+
+> Phần này được tổng hợp tự động khi chạy `ba-start srs`. Không chỉnh sửa trực tiếp vì nội dung được lấy từ tài liệu nguồn chuẩn.
 
 **Dự án (Project):** [Tên dự án]
 **Phiên bản (Version):** [v1.0]

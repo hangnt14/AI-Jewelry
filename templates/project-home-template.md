@@ -17,7 +17,7 @@
 | --- | --- | --- |
 | Tiếp nhận yêu cầu | [recommended | in-progress | completed] | Đã gom và chuẩn hóa thông tin đầu vào chưa |
 | Phương án giải pháp | [recommended | in-progress | completed | skipped | not-needed] | Đã cần brainstorm và chốt hướng solution trước backbone chưa |
-| Khung yêu cầu đã chốt | [recommended | in-progress | completed] | Đã có source of truth để sinh tài liệu chưa |
+| Khung yêu cầu đã chốt | [recommended | in-progress | completed] | Đã có tài liệu gốc để sinh tài liệu chưa |
 | User stories | [recommended | in-progress | completed | skipped | not-needed] | Có cần bàn giao cho team Agile không |
 | FRD | [recommended | in-progress | completed | skipped | not-needed] | Có cần tài liệu yêu cầu chức năng chi tiết không |
 | SRS | [recommended | in-progress | completed | skipped | not-needed] | Có cần đặc tả hệ thống/use case/screen không |
@@ -46,9 +46,9 @@
 | --- | --- | --- |
 | Trang điều phối dự án | `PROJECT-HOME.md` | Xem trạng thái, bước tiếp theo, câu hỏi cần chốt |
 | Phiếu tiếp nhận yêu cầu | `01_intake/intake.md` | Lưu input đã chuẩn hóa và gap |
-| Kế hoạch xử lý | `01_intake/plan.md` | Decision ledger cho optioning status, khuyến nghị bước tiếp theo, và artifact cần sinh |
+| Kế hoạch xử lý | `01_intake/plan.md` | Decision ledger cho optioning status, khuyến nghị bước tiếp theo, và tài liệu cần sinh |
 | Bộ phương án giải pháp | `01_intake/options/*` | Xem các option solution và bảng so sánh trước khi chốt backbone |
-| Khung yêu cầu đã chốt | `02_backbone/backbone.md` | Source of truth sau scope lock |
+| Khung yêu cầu đã chốt | `02_backbone/backbone.md` | Tài liệu gốc sau khi chốt phạm vi |
 | Bộ nhớ dự án | `02_backbone/project-memory.md` | Thuật ngữ, quyết định, giả định đã chốt |
 | Tài liệu module | `03_modules/{module}/...` | FRD, stories, SRS, UI handoff theo phân hệ |
 | Trang cộng tác | `COLLAB-HOME.md` | Ai làm module nào, review status, blocker |
@@ -92,4 +92,4 @@ Use AGENTS.md. Read PROJECT-HOME.md for the BA-facing state, then use the BA-kit
 
 - Nếu yêu cầu thay đổi trong lúc đang viết FRD/SRS/UI, agent phải đánh giá ảnh hưởng trước khi sửa.
 - Nếu có nhiều phiên bản artifact hoặc nhiều module, agent phải hỏi lại thay vì tự chọn.
-- File này là dashboard. Khi có mâu thuẫn, source of truth vẫn là `backbone.md`, sau đó là `intake.md`.
+- File này là trang điều phối. Khi có mâu thuẫn, tài liệu gốc vẫn là `backbone.md`, sau đó là `intake.md`.

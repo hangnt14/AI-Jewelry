@@ -35,9 +35,9 @@
 | Artifact | Path | Status |
 | --- | --- | --- |
 | FRD | `03_modules/[module-slug]/frd.md` | [exists/missing] |
-| User Stories | `03_modules/[module-slug]/user-stories.md` | [exists/missing] |
+| User Stories | `03_modules/[module-slug]/userstories/index.md` | [exists/missing] |
 | SRS | `03_modules/[module-slug]/srs.md` | [exists/missing] |
-| Screen Canon ASCII | `03_modules/[module-slug]/screens/*.md` | [current/missing/stale] |
+| Screen Canon ASCII | `03_modules/[module-slug]/ascii-screen/*.md` | [current/missing/stale] |
 
 ## Open Issues
 

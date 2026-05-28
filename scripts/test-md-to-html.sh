@@ -207,9 +207,9 @@ for html, doc_type in (
     assert "document-chrome" in probe.classes, f"Missing shared document chrome for {doc_type}"
     assert "doc-meta-grid" in probe.classes, f"Missing shared document metadata grid for {doc_type}"
     assert f'data-doc-type="{doc_type}"' in html, f"Missing doc type marker for {doc_type}"
-    assert "BA-kit Unified HTML Deliverable" in html, f"Missing shared shell label for {doc_type}"
-    assert "Source Markdown" in html, f"Missing source metadata row for {doc_type}"
-    assert "Generated" in html, f"Missing generated metadata row for {doc_type}"
+    assert "BA-kit — Tài liệu bàn giao" in html, f"Missing shared shell label for {doc_type}"
+    assert "Tệp markdown gốc" in html, f"Missing source metadata row for {doc_type}"
+    assert "Thời điểm tạo" in html, f"Missing generated metadata row for {doc_type}"
 
 assert "Demo Portal" in frd_html, "Missing FRD project metadata"
 probe = Probe()

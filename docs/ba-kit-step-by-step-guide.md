@@ -78,7 +78,7 @@ plans/{slug}-{date}/01_intake/intake.md
 plans/{slug}-{date}/01_intake/plan.md
 ```
 
-`PROJECT-HOME.md` là dashboard để người đọc biết dự án đang ở đâu. Nhưng source of truth vẫn là các artifact trong `01_intake`, `02_backbone`, `03_modules`.
+`PROJECT-HOME.md` là trang điều phối để người đọc biết dự án đang ở đâu. Tài liệu gốc vẫn là các artifact trong `01_intake`, `02_backbone`, `03_modules`.
 
 ## 3. Luôn biết bước tiếp theo
 
@@ -187,7 +187,7 @@ Không nên sang backbone khi options còn lửng.
 
 ### Bước 3: Backbone
 
-Mục tiêu: khóa source of truth cấp dự án.
+Mục tiêu: chốt phạm vi và tạo tài liệu gốc cấp dự án.
 
 Chạy:
 
@@ -321,7 +321,7 @@ Quy tắc sửa:
 Sửa canon trước -> compile lại srs.md sau
 ```
 
-Không sửa `srs.md` như source chính nếu đã có `screens/` và `usecases/`.
+Không sửa `srs.md` như tài liệu nguồn chuẩn nếu đã có `screens/` và `usecases/`.
 
 ### Bước 8: UI, ASCII wireframe, state màn hình
 
@@ -373,13 +373,15 @@ Nó chuẩn bị screen canon với ASCII bắt buộc:
 screens/*.md
 ```
 
-Trong flow mới, đừng coi các file này là source of truth. Source of truth là:
+Trong flow mới, đừng coi các file này là tài liệu nguồn chuẩn. Tài liệu nguồn chuẩn là:
 
 ```text
-screens/*.md
+ascii-screen/*.md
 usecases/*.md
-srs-index.md
-srs.md compiled
+srs/spec.md, srs/flows.md, srs/states.md, srs/erd.md
+usecases/index.md
+ascii-screen/index.md
+srs.md (bản tổng hợp)
 ```
 
 ### Bước 10: Figma sync
@@ -789,7 +791,7 @@ ba-kit check-write-scope --command figma-sync <path>
 
 ### Lỗi 1: Sửa thẳng `srs.md`
 
-Nếu đã có `screens/` và `usecases/`, đừng sửa `srs.md` như source chính.
+Nếu đã có `screens/` và `usecases/`, đừng sửa `srs.md` như tài liệu nguồn chuẩn.
 
 Làm đúng:
 

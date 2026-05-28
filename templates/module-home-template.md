@@ -16,9 +16,9 @@
 | Được sửa | Không được sửa nếu chưa escalate |
 | --- | --- |
 | `03_modules/{module_slug}/frd.md` | `02_backbone/backbone.md` |
-| `03_modules/{module_slug}/user-stories.md` | `designs/{slug}/DESIGN.md` |
+| `03_modules/{module_slug}/userstories/index.md` | `designs/{slug}/DESIGN.md` |
 | `03_modules/{module_slug}/srs.md` | module khác trong `03_modules/` |
-| `03_modules/{module_slug}/screens/*.md` | hot/global memory shards |
+| `03_modules/{module_slug}/ascii-screen/*.md` | hot/global memory shards |
 | `03_modules/{module_slug}/usecases/*.md` | compiled output khi chưa assemble |
 
 ## 2. Checklist Trước Khi Gửi Review
