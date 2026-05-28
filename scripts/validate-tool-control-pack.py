@@ -16,6 +16,14 @@ REQUIRED_PROMPT_LINES = {
     "If a rule is missing, omit instead of inventing",
 }
 
+REQUIRED_UC_PROMPT_LINES = {
+    "Do not add fields not listed",
+    "Do not add screens not listed",
+    "Do not change top-level navigation",
+    "If a rule is missing, omit instead of inventing",
+    "Do not modify any other element",
+}
+
 
 def render_path(template: str, *, slug: str, date: str, module: str) -> str:
     return (
@@ -116,6 +124,18 @@ def main() -> int:
             for line in REQUIRED_PROMPT_LINES:
                 if line not in prompt_text:
                     result["issues"].append(issue("error", "make_prompt_pack_missing_negative", f"Missing prompt constraint: {line}"))
+
+            uc_prompt_refs = re.findall(r"uc-[a-z0-9-]+-make-prompt\.md", prompt_text)
+            uc_prompts_dir = prompt_pack_path.parent / "usecases"
+            for ref in sorted(set(uc_prompt_refs)):
+                uc_prompt_path = uc_prompts_dir / ref
+                if not uc_prompt_path.is_file():
+                    result["issues"].append(issue("error", "uc_prompt_referenced_missing", f"Referenced UC prompt not found: {uc_prompt_path.relative_to(repo).as_posix()}"))
+                    continue
+                uc_text = uc_prompt_path.read_text(encoding="utf-8")
+                for line in REQUIRED_UC_PROMPT_LINES:
+                    if line not in uc_text:
+                        result["issues"].append(issue("error", "uc_prompt_missing_negative", f"UC prompt {ref} missing constraint: {line}"))
 
         checklist_path = required_files["prototype_conformance_checklist"]
         if checklist_path.is_file():

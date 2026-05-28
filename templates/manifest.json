@@ -183,6 +183,24 @@
       }
     }
   },
+  "figma-make-uc-prompt-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Figma Make UC Prompt"
+        ]
+      }
+    }
+  },
+  "figma-make-uc-change-log-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Figma Make UC Change Log"
+        ]
+      }
+    }
+  },
   "prototype-conformance-checklist-template.md": {
     "groups": {
       "all": {
