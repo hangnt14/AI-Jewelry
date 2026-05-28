@@ -1,6 +1,6 @@
 # Đặc tả yêu cầu phần mềm (Software Requirements Specification)
 
-> **Compiled deliverable:** Tài liệu này là bản SRS đọc/handoff cho stakeholder. Khi dự án dùng canon-first SRS, nguồn chỉnh sửa chính nằm ở `usecases/*.md`, `screens/*.md`, `data/erd.md`, `flows/*.md`, và `srs-index.md`; sau đó compile lại vào `srs.md`. ASCII wireframe bắt buộc nằm trong từng `screens/*.md` và được compile vào đây. Không chỉnh trực tiếp `srs.md` như source of truth trừ khi có manual override và backport vào canon.
+> **Compiled deliverable:** Tài liệu này là bản SRS đọc/handoff cho stakeholder. Nguồn chỉnh sửa chính nằm ở `usecases/*.md`, `ascii-screen/*.md`, `srs/spec.md`, `srs/flows.md`, `srs/states.md`, `srs/erd.md`; sau đó compile lại vào `srs.md` qua `ba-start srs`. ASCII wireframe bắt buộc nằm trong từng `ascii-screen/*.md`. Không chỉnh trực tiếp `srs.md` như source of truth.
 
 **Dự án (Project):** [Tên dự án]
 **Phiên bản (Version):** [v1.0]
@@ -130,7 +130,7 @@ Viết mục chi tiết màn hình đầy đủ từ use case canon, screen cano
 **Tham chiếu mockup ngoài (External Mockup Reference):** [Link / file path / ghi chú]
 **Phạm vi artifact (Artifact Scope):** [Single screen / multi-screen flow / module pack]
 **Frame hỗ trợ (Supporting Frames):** [SCR-01-EMPTY - Trạng thái rỗng, SCR-01-ERROR - Lỗi inline, SCR-01-TOAST-SUCCESS - Toast thành công]
-**Nguồn canon (Canon Source):** [`screens/scr-xx.md`]
+**Nguồn canon (Canon Source):** [`ascii-screen/scr-xx.md`]
 **Tóm tắt bố cục (Layout Summary):** [Các vùng, panel, hoặc section chính]
 **Quy tắc điều hướng (Navigation Rules):** [Menu, breadcrumbs, modal, hành vi back/next]
 **UC liên kết (Linked Use Cases):** [UC-01, UC-02]
@@ -177,7 +177,7 @@ Các rule/message dùng chung không được định nghĩa lại trong SRS mod
 - [MSG-SUC-01]
 
 ## ASCII Wireframes
-ASCII wireframe là bắt buộc cho mọi UI-backed screen và phải được compile từ screen canon. User có thể dán thêm ảnh/mockup/link sau đó, nhưng mockup ngoài không thay thế ASCII trong `screens/*.md`.
+ASCII wireframe là bắt buộc cho mọi UI-backed screen và phải được compile từ screen canon. User có thể dán thêm ảnh/mockup/link sau đó, nhưng mockup ngoài không thay thế ASCII trong `ascii-screen/*.md`.
 
 ```text
 +--------------------------------------------------+
@@ -284,5 +284,5 @@ erDiagram
 
 ## Tài liệu liên quan (Related Templates)
 - [FRD Template](./frd-template.md)
-- [User Story Template](./user-story-template.md)
+- [User Story Template](./userstory-item-template.md)
 - [Intake Form Template](./intake-form-template.md)

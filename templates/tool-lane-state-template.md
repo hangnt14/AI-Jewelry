@@ -7,7 +7,7 @@
 - Lane state: `ready`
 - Approval source: [explicit user choice / lifecycle default / reverse carveout]
 - Source screen field contract: `plans/{slug}-{date}/03_modules/{module_slug}/screen-field-contract.yaml`
-- Source screen canon ASCII: `plans/{slug}-{date}/03_modules/{module_slug}/screens/*.md`
+- Source screen canon ASCII: `plans/{slug}-{date}/03_modules/{module_slug}/ascii-screen/*.md`
 - Source design doc: `designs/{slug}/DESIGN.md`
 - Stale triggers: [impact on screens, field rules, states, navigation, lane switch]
 

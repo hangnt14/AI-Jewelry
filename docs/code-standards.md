@@ -175,8 +175,8 @@ scripts/
 **Examples:**
 - `intake-form-template.md`
 - `frd-template.md`
-- `user-story-template.md`
-- `srs-group-a-template.md`
+- `userstory-item-template.md`
+- `ascii-screen-template.md`
 - `project-home-template.md`
 
 **Structure:**

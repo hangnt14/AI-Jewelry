@@ -23,7 +23,7 @@ Before any artifact reads, check for a current package snapshot manifest at
 
 - **Must read:** `core/contract.yaml`, `core/contract-behavior.md`
 - **Snapshot path (preferred):** `plans/{slug}-{date}/02_backbone/package-snapshot.md` when current
-- **Index fallback:** `paths.backbone_index`, `paths.stories_index`, `paths.srs_index` when snapshot absent or degraded
+- **Index fallback:** `paths.backbone_index`, `paths.userstories_index`, `paths.usecases_index`, `paths.ascii_screen_index` when snapshot absent or degraded
 - **May read:** `paths.project_memory` (compact only, consistency check), `paths.memory_index` (health overview and activation state)
 - **Must NOT read:** raw source, full intake, `log.md`, `cold/`, `warm/` shards, or full source-of-truth artifacts for cross-reference discovery when snapshot or indexes are current
 
@@ -37,7 +37,7 @@ Run Step 12 only.
 - Require at least one emitted downstream artifact for the selected mode.
 - If the engagement emitted any module SRS, require at least one module `paths.srs`.
 - If a module SRS exists in canon-first form, require `paths.srs_compile_receipt` and treat missing/stale receipt as a package blocker.
-- If a module has UI-backed screen canon, require current ASCII coverage in `screens/*.md`.
+- If a module has UI-backed screen canon, require current ASCII coverage in `ascii-screen/*.md`.
 
 ## Outputs
 
@@ -56,7 +56,7 @@ Run a final packaging and quality pass:
 - When snapshot is current, use its `artifacts` list for existence checks and its `indexes`
   list for cross-reference routing — no additional index reads required.
 - When snapshot is absent or degraded, fall back to `paths.backbone_index`,
-  `paths.stories_index`, and `paths.srs_index` for cross-reference discovery.
+  `paths.userstories_index`, `paths.usecases_index`, and `paths.ascii_screen_index` for cross-reference discovery.
 - Read full markdown only for the artifact currently being converted to HTML, or emit
   `READ_ESCALATION` when an index is missing, stale, or contradictory.
 - Verify all deliverables follow their templates.

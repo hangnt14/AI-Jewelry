@@ -31,7 +31,7 @@
 3. Criterion: Does the tester have enough info to write a test case?
 4. Do NOT deduct points for gaps found at Edge Case Checklist (bonus coverage).
 5. Uncertain Clear↔Partial → choose **Partial**. Uncertain Partial↔Missing → choose **Missing**.
-6. Each sub-item MUST record evidence (`UC §X.Y` / `SCR §X.Y` / `SRS Index §X.Y` / `Rule-ID`) + 1-sentence reason.
+6. Each sub-item MUST record evidence (`UC §X.Y` / `ascii-screen/SCR-NN §X.Y` / `userstories/US-NNN` / `srs/spec.md §X.Y` / `Rule-ID`) + 1-sentence reason. Evidence from compiled `srs.md` only scores as Partial, not Clear.
 
 ---
 

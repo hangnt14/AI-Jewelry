@@ -7,7 +7,7 @@
 | report_type | figma-mismatch |
 | project_slug | [slug] |
 | module_slug | [module-slug] |
-| source_index | `./srs-index.md` |
+| source_index | `./ascii-screen/index.md` |
 | generated_at | [YYYY-MM-DDTHH:mm:ssZ] |
 | generated_by_command | `ba-figma-sync` |
 | mismatch_status | [open / resolved / accepted] |

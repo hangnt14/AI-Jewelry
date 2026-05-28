@@ -51,8 +51,11 @@ def make_refresh_command(index_key: str, *, slug: str, date: str, module: str, i
         "backbone_index": f"ba-start backbone --slug {slug}",
         "stories_index": f"ba-start stories --slug {slug} --module {module}",
         "srs_index": f"ba-start srs --slug {slug} --module {module}",
+        "userstories_index": f"ba-start stories --slug {slug} --module {module}",
+        "usecases_index": f"ba-start srs --slug {slug} --module {module}",
+        "ascii_screen_index": f"ba-start srs --slug {slug} --module {module}",
     }
-    return refresh_map[index_key]
+    return refresh_map.get(index_key, f"ba-start status --slug {slug}")
 
 
 def _load_snapshot(repo: Path, contract: dict, *, slug: str, date: str) -> dict | None:

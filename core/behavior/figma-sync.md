@@ -7,8 +7,8 @@
 ## Read Scope
 
 - Must read `core/contract.yaml` and `core/contract-behavior.md`.
-- Must read `paths.srs_index` before individual screen files.
-- May read `paths.screen_root`, `paths.design_doc`, `paths.shared_shell_contract`, `paths.shared_shell_index`, and `paths.shared_rule_message_index`.
+- Must read `paths.ascii_screen_index` before individual screen files.
+- May read `paths.ascii_screen_root`, `paths.design_doc`, `paths.shared_shell_contract`, `paths.shared_shell_index`, `paths.shared_definitions`, `paths.shared_traceability`, and `paths.shared_rule_message_index`.
 - May read `paths.srs_compile_receipt` to confirm compiled SRS freshness.
 - Must not read or use legacy wireframe pack artifacts as the visual source when canon screen files exist.
 
@@ -16,7 +16,7 @@
 
 - May write only `paths.figma_sync_report` and `paths.figma_mismatch_report`.
 - May mutate Figma only through the configured Figma MCP tool after the user has explicitly asked for sync.
-- Must not write `paths.srs`, `paths.srs_index`, `paths.screen_root`, `paths.usecase_root`, `paths.shared_shell_contract`, or `paths.design_doc`.
+- Must not write `paths.srs`, `paths.ascii_screen_root`, `paths.usecases_root`, `paths.userstories_root`, `paths.shared_shell_contract`, or `paths.design_doc`.
 
 ## Guardrails
 

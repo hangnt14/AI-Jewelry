@@ -77,9 +77,8 @@ BA-kit/
 │   ├── collab-home-template.md
 │   ├── module-home-template.md
 │   ├── design-md-template.md
-│   ├── screen-canon-template.md
-│   ├── srs-group-a-template.md    # SRS groups A-F
-│   ├── user-story-template.md
+│   ├── ascii-screen-template.md
+│   ├── userstory-item-template.md
 │   ├── impact-receipt-template.md
 │   ├── options-receipt-template.md
 │   ├── index-validation-receipt-template.md
@@ -262,8 +261,16 @@ BA-kit/
 - `intake-form-template.md`: Intake normalization
 - `backbone-index-template.md`: Backbone index
 - `frd-template.md`: Functional requirements
-- `user-story-template.md`: User story format
-- `srs-group-a-template.md` through `srs-group-f-template.md`: SRS groups
+- `userstory-item-template.md`: User story item
+- `userstories-index-template.md`: User stories folder index
+- `usecase-item-template.md`: Use case item
+- `usecases-index-template.md`: Use cases folder index
+- `ascii-screen-template.md`: ASCII screen canon with mandatory wireframe
+- `ascii-screen-index-template.md`: ASCII screen folder index
+- `srs-spec-template.md`: SRS spec source
+- `srs-flows-template.md`: SRS flows source
+- `srs-states-template.md`: SRS states source
+- `srs-erd-template.md`: SRS ERD source
 
 **Dashboards**
 - `project-home-template.md`: BA-facing resume dashboard

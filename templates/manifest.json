@@ -2,52 +2,12 @@
   "srs-template.md": {
     "routing": {
       "artifact": "srs",
-      "group_path_key": "srs_group",
-      "selector": "group",
-      "load_policy": "load requested group headings for grouped generation; load the full template only for final assembly"
+      "load_policy": "load full template for compiled SRS assembly only; source authoring uses srs-spec-template.md, usecase-item-template.md, ascii-screen-template.md"
     },
     "groups": {
-      "A": {
+      "all": {
         "headings": [
-          "## Mục đích và phạm vi (Purpose and Scope)",
-          "## Mô tả tổng quan (Overall Description)",
-          "## Yêu cầu chức năng (Functional Requirements)"
-        ]
-      },
-      "B": {
-        "headings": [
-          "## Đặc tả Use Case (Use Case Specifications)"
-        ]
-      },
-      "C": {
-        "headings": [
-          "## Hợp đồng màn hình tiền wireframe (Screen Contract Plus)",
-          "## Danh mục màn hình (Screen Inventory)"
-        ]
-      },
-      "D": {
-        "headings": [
-          "## Yêu cầu phi chức năng (Non-Functional Requirements)",
-          "## Sơ đồ luồng dữ liệu (Data Flow Diagrams)",
-          "## Sơ đồ thực thể quan hệ (Entity Relationship Diagram)",
-          "## Đặc tả API (API Specifications)",
-          "## Ràng buộc (Constraints)"
-        ]
-      },
-      "E": {
-        "headings": [
-          "## Mô tả màn hình (Screen Descriptions)",
-          "## Tham chiếu Wireframe / Mockup thủ công (Manual Wireframe / Mockup Reference)",
-          "## Ý đồ thiết kế màn hình (Screen Design Intent)",
-          "## Vùng màn hình (Screen Regions)",
-          "## ASCII Wireframes"
-        ]
-      },
-      "F": {
-        "headings": [
-          "## Tham chiếu quy tắc/thông điệp dùng chung (Shared Rule/Message References)",
-          "## Kịch bản kiểm thử (Test Cases)",
-          "## Bảng thuật ngữ (Glossary)"
+          "# Đặc tả yêu cầu phần mềm (Software Requirements Specification)"
         ]
       }
     }
@@ -156,15 +116,6 @@
       "all": {
         "headings": [
           "# Gói gửi review module (Module Review Packet)"
-        ]
-      }
-    }
-  },
-  "user-story-template.md": {
-    "groups": {
-      "all": {
-        "headings": [
-          "# Mẫu User Story (User Story Template)"
         ]
       }
     }
@@ -367,38 +318,164 @@
       }
     }
   },
-  "user-stories-index-template.md": {
+  "userstories-index-template.md": {
     "groups": {
       "all": {
         "headings": [
-          "# Chỉ mục user stories (User Stories Index)"
+          "# User Stories Index — {module_slug}"
         ]
       }
     }
   },
-  "srs-index-template.md": {
+  "userstory-item-template.md": {
     "groups": {
       "all": {
         "headings": [
-          "# SRS Index"
+          "# US-{NNN}: {story title}"
         ]
       }
     }
   },
-  "screen-canon-template.md": {
+  "brainstorms-index-template.md": {
     "groups": {
       "all": {
         "headings": [
-          "# Screen Canon Template"
+          "# Brainstorm Index — {module_slug}"
         ]
       }
     }
   },
-  "usecase-canon-template.md": {
+  "brainstorm-module-item-template.md": {
     "groups": {
       "all": {
         "headings": [
-          "# Use Case Canon Template"
+          "# Brainstorm: {topic}"
+        ]
+      }
+    }
+  },
+  "usecases-index-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Use Cases Index — {module_slug}"
+        ]
+      }
+    }
+  },
+  "usecase-item-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# UC-{slug}: {use case title}"
+        ]
+      }
+    }
+  },
+  "usecase-diagrams-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Use Case Diagrams — {module_slug}"
+        ]
+      }
+    }
+  },
+  "ascii-screen-index-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# ASCII Screen Index — {module_slug}"
+        ]
+      }
+    }
+  },
+  "ascii-screen-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# SCR-{NN}: {screen title}"
+        ]
+      }
+    }
+  },
+  "srs-spec-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# SRS Spec — {module_slug}"
+        ]
+      }
+    }
+  },
+  "srs-flows-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# SRS Flows — {module_slug}"
+        ]
+      }
+    }
+  },
+  "srs-states-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# SRS States — {module_slug}"
+        ]
+      }
+    }
+  },
+  "srs-erd-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# SRS ERD — {module_slug}"
+        ]
+      }
+    }
+  },
+  "change-request-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# CR-{YYYYMMDD}-{NNN}: {change title}"
+        ]
+      }
+    }
+  },
+  "impact-report-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Impact Report — CR-{YYYYMMDD}-{NNN}"
+        ]
+      }
+    }
+  },
+  "shared-traceability-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Shared Traceability — {slug}"
+        ]
+      }
+    }
+  },
+  "shared-staleness-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Shared Staleness — {slug}"
+        ]
+      }
+    }
+  },
+  "shared-definitions-template.md": {
+    "groups": {
+      "all": {
+        "headings": [
+          "# Shared Definitions — {slug}"
         ]
       }
     }

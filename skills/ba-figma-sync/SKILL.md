@@ -24,22 +24,25 @@ Use this skill when the user asks to create, update, or synchronize Figma wirefr
 4. Resolve slug, date, and module exactly.
 5. Run or follow the equivalent of:
    - `ba-kit check-prereq figma-sync --slug <slug> --module <module_slug>`
-   - `ba-kit doctor-srs plans/{slug}-{date}/03_modules/{module_slug}`
-6. Read `srs-index.md` before individual screen files.
+   - `python3 scripts/check-ascii-screen-index.py --repo . --slug <slug> --date <date> --module <module_slug> --require-ascii-current`
+6. Read `ascii-screen/index.md` before individual screen files.
 
 ## Source Inputs
 
 Required:
 
-- `plans/{slug}-{date}/03_modules/{module_slug}/srs-index.md`
+- `plans/{slug}-{date}/03_modules/{module_slug}/ascii-screen/index.md`
 - `plans/{slug}-{date}/03_modules/{module_slug}/srs-compile-receipt.json`
-- `plans/{slug}-{date}/03_modules/{module_slug}/screens/*.md`
+- `plans/{slug}-{date}/03_modules/{module_slug}/ascii-screen/*.md`
 - `designs/{slug}/DESIGN.md`
 - `plans/{slug}-{date}/02_backbone/shared-shell-contract.md`
 
 Optional:
 
 - `plans/{slug}-{date}/02_backbone/shared-shell-index.md`
+- `plans/{slug}-{date}/shared/definitions.md`
+- `plans/{slug}-{date}/shared/traceability.md`
+- `plans/{slug}-{date}/03_modules/{module_slug}/screen-field-contract.yaml`
 - `plans/{slug}-{date}/03_modules/{module_slug}/figma-sync/figma-sync-report.md`
 - `plans/{slug}-{date}/03_modules/{module_slug}/figma-sync/figma-mismatch-report.md`
 
@@ -53,9 +56,10 @@ Allowed repo writes:
 Forbidden repo writes:
 
 - `srs.md`
-- `srs-index.md`
-- `screens/*.md`
+- `ascii-screen/*.md`
 - `usecases/*.md`
+- `userstories/*.md`
+- `srs/spec.md`
 - `DESIGN.md`
 - `shared-shell-contract.md`
 - `shared-shell-index.md`
@@ -88,7 +92,7 @@ After the run, report:
 ## Stop Conditions
 
 - Missing or stale `srs-compile-receipt.json`
-- Missing `srs-index.md`
+- Missing `ascii-screen/index.md`
 - Missing `DESIGN.md`
 - Missing `shared-shell-contract.md`
 - `doctor-srs` blocks the module

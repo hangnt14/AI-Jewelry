@@ -9,17 +9,22 @@ This step requires:
 
 - **Must read:** `core/contract.yaml`, `core/contract-behavior.md`, `paths.backbone_index`
 - **May read:** targeted `paths.backbone` sections, `paths.plan`, `paths.frd` (when exists), `paths.project_memory` or (`paths.memory_hot_vocabulary` + `paths.memory_hot_decisions`) when shard mode is active
-- **Must NOT read:** `log.md`, `cold/`, `warm/` shards, unrelated module shards
+- **Must NOT read:** `log.md`, `cold/`, `warm/` shards, unrelated module shards, `user-stories.md`, `user-stories-index.md`
+
+## Backbone Authority Gate
+
+Before writing any story file, validate backbone alignment:
+- Story actor, goal, feature, and priority must trace to backbone module scope.
+- If alignment fails: emit `BACKBONE_ALIGNMENT_FAIL: story_scope` and stop.
+- Recovery: run `ba-start impact --slug <slug>` or refresh backbone, then rerun.
 
 ## Governance Gate
 
 Before mutating this artifact:
-1. **Skip this gate for first-pass creation** (when `paths.stories` does not yet exist).
-2. For reruns (artifact already exists): verify write authority and locate the active impact receipt at `paths.impact_receipt`. If no active receipt exists and `change_class` is not `wording-only`, emit `GOVERNANCE_BLOCK: impact_receipt missing or invalidated` and stop.
+1. **Skip this gate for first-pass creation** (when `paths.userstories_root` does not yet exist).
+2. For reruns (artifacts already exist): verify write authority and locate the active impact receipt at `paths.impact_receipt`. If no active receipt exists and `change_class` is not `wording-only`, emit `GOVERNANCE_BLOCK: impact_receipt missing or invalidated` and stop.
 3. If either check fails on a rerun: emit `GOVERNANCE_BLOCK: {reason}` and stop.
 4. After mutation completes: offer to file the change into canonical memory using `templates/project-memory-fileback-record-template.md`.
-
-Receipt reference: `templates/impact-receipt-template.md`
 
 ## Scope
 
@@ -40,25 +45,50 @@ Run Step 7 only.
 
 ## Output
 
-- `paths.stories`
-- `paths.stories_index`
+- `paths.userstories_index` — folder index navigator
+- `paths.userstory_item` — one file per story (`userstories/us-{slug}.md`)
+
+Do NOT create `user-stories.md` or `user-stories-index.md`.
 
 ## Step 7 - Produce user stories
 
-Generate Agile user stories from the backbone feature map and FR draft using [../../../templates/user-story-template.md](../../../templates/user-story-template.md):
+Generate Agile user stories from the backbone feature map and FR draft.
 
-- Epic and feature breakdown
-- User stories with acceptance criteria (Given/When/Then)
-- INVEST validation
-- Story-to-screen alignment when UI exists
+Use templates:
+- `templates/userstory-item-template.md` for each story file
+- `templates/userstories-index-template.md` for the index
+
+Generation rules:
+- Derive one story per coherent user intent — not per acceptance criterion.
+- One acceptance criteria set per story.
+- Stable slug from normalized story title (kebab-case, ASCII, max 40 chars).
+- No bundled behaviors — one intent per story statement.
+- Story actor, goal, feature, and priority must trace to backbone module scope.
+
+Story item fields:
+- `story_id`: `US-{NNN}` (zero-padded, sequential within module)
+- `slug`: stable kebab-case from story title
+- `actor`: from backbone actor registry
+- `priority`: P0 / P1 / P2 from backbone feature priority
+- `source_backbone_ids`: backbone feature/scope IDs this story traces to
+- `linked_usecases`: populated by SRS step
+- `linked_screens`: populated by SRS step
+
+Index row fields:
+- `story_id`, `file`, `actor`, `feature_or_fr`, `acceptance_criteria_count`, `linked_usecases`, `linked_screens`, `source_backbone_ids`, `stale_status`
 
 Execution rules:
-
 - Start from `paths.backbone_index`, then the exact targeted backbone sections, plus the exact plan path when genuinely needed.
 - Pull the FRD only when it already exists or the current mode requires it.
 - If the user already confirmed that story generation should proceed, continue from the resolved backbone instead of reopening discovery.
-- Treat generated index/state/memory artifacts as `agent_facing` or `machine_facing`; keep them compact and do not duplicate source-of-truth requirement text.
+- Treat generated index artifacts as `agent_facing`; keep them compact and do not duplicate source-of-truth requirement text.
 
-Save to `paths.stories`.
-After generation, create or refresh `paths.stories_index` using [../../../templates/user-stories-index-template.md](../../../templates/user-stories-index-template.md). Keep it as a navigator over epics, stories, acceptance-criteria counts, screen IDs, and source headings.
-Generate `paths.stories_index` with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run `python3 scripts/validate-index-quality.py --repo . --index-key stories_index --slug <slug> --date <date> --module <module> --writeback` before any downstream routing trusts the index as `current`.
+After generating all story item files, create or refresh `paths.userstories_index` using `templates/userstories-index-template.md`. Keep it as a navigator over stories, acceptance-criteria counts, screen IDs, and source headings.
+
+Generate `paths.userstories_index` with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run:
+
+```bash
+python3 scripts/validate-index-quality.py --repo . --index-key userstories_index --slug <slug> --date <date> --module <module> --writeback
+```
+
+before any downstream routing trusts the index as `current`.

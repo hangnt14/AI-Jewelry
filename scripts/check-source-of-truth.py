@@ -22,10 +22,16 @@ def validate(module_root: Path) -> dict[str, object]:
 
     srs = module_root / "srs.md"
     receipt = module_root / "srs-compile-receipt.json"
-    screens = module_root / "screens"
+    # New architecture: ascii-screen/ and usecases/ as folder-based canon
+    ascii_screen = module_root / "ascii-screen"
     usecases = module_root / "usecases"
+    srs_spec = module_root / "srs" / "spec.md"
 
-    has_canon = (screens.exists() and any(screens.glob("*.md"))) or (usecases.exists() and any(usecases.glob("*.md")))
+    has_canon = (
+        (ascii_screen.exists() and any(ascii_screen.glob("*.md")))
+        or (usecases.exists() and any(usecases.glob("*.md")))
+        or srs_spec.exists()
+    )
 
     if srs.exists() and has_canon and not receipt.exists():
         errors.append("compiled srs.md exists with canon sources but srs-compile-receipt.json is missing")

@@ -64,5 +64,5 @@ stop
 ## Tài liệu liên quan (Related Templates)
 - [FRD Template](./frd-template.md)
 - [SRS Template](./srs-template.md)
-- [User Story Template](./user-story-template.md)
+- [User Story Template](./userstory-item-template.md)
 - [Intake Form Template](./intake-form-template.md)

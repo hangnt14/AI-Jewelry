@@ -12,9 +12,14 @@
 | Must read | `core/contract.yaml`, `core/contract-behavior.md`, `skills/qc-uc-review/SKILL.md` |
 | Must read | `skills/qc-uc-review/profiles/{platform}.md` |
 | Must read | `skills/qc-uc-review/references/scoring-rubric.md` |
-| Must read | Current module canon root resolved from `paths.module_root` |
-| May read | `paths.srs_index`, `paths.usecase_root`, `paths.screen_root`, `paths.screen_field_contract`, `paths.srs`, `paths.srs_compile_receipt` |
-| May read | `paths.design_doc`, `paths.shared_shell_contract`, and legacy wireframe artifacts only as supporting evidence when they already exist |
+| Must read | `paths.backbone_index` (backbone alignment gate) |
+| Must read | `paths.shared_definitions`, `paths.shared_traceability` when present |
+| Must read | `paths.userstories_index` + targeted `userstory_item` files |
+| Must read | `paths.usecases_index` + targeted `usecase_item` files + `paths.usecase_diagrams` |
+| Must read | `paths.ascii_screen_index` + targeted `ascii_screen_item` files |
+| May read | `paths.srs_spec`, `paths.srs_flows`, `paths.srs_states`, `paths.srs_erd` |
+| May read | `paths.screen_field_contract`, `paths.srs`, `paths.srs_compile_receipt` as supporting evidence only |
+| May read | `paths.design_doc`, `paths.shared_shell_contract` as supporting evidence |
 | May read | `skills/qc-uc-review/references/first-audit-workflow.md` or `re-audit-workflow.md` |
 | Must not read | Module artifacts outside the current audit scope |
 | Must not read | Other modules' warm shards unless assembling compiled output |
@@ -28,12 +33,26 @@ After a mutable command completes, check `quality_gates` in `contract.yaml` for 
 If found:
 1. Resolve platform: use `--platform` flag if present, else `defaults.platform`.
 2. Load profile from `skills/qc-uc-review/profiles/{platform}.md`.
-3. Resolve the current module root and prefer canon artifacts in this order: `paths.srs_index` -> `paths.usecase_root` -> `paths.screen_root` -> `paths.screen_field_contract` -> `paths.srs` -> optional supporting artifacts.
-4. Execute audit per `skills/qc-uc-review/references/first-audit-workflow.md`.
-5. Produce verdict signal: `{ verdict, score, platform, blockers, report_path }`.
-6. Evaluate `block_on` condition from gate config.
-7. If `block_on` is false: log gate pass, proceed.
-8. If `block_on` is true: enter Remediation Loop below.
+3. Run Backbone Alignment Gate first:
+   - If module not in backbone → `NOT_READY`
+   - If actor/portal/feature/rule/term unknown → `NOT_READY` or critical gap
+   - If module contradicts backbone → `BACKBONE_ALIGNMENT_FAIL`
+4. Resolve the current module root and read evidence in this order:
+   - `paths.backbone_index` / `paths.backbone` (targeted sections)
+   - `paths.shared_definitions`, `paths.shared_traceability`
+   - `paths.userstories_index` + `userstory_item` files
+   - `paths.usecases_index` + `usecase_item` files + `paths.usecase_diagrams`
+   - `paths.ascii_screen_index` + `ascii_screen_item` files
+   - `paths.srs_spec`, `paths.srs_flows`, `paths.srs_states`, `paths.srs_erd`
+   - `paths.screen_field_contract` if retained
+   - `paths.srs` + `paths.srs_compile_receipt` as supporting evidence only
+5. Execute audit per `skills/qc-uc-review/references/first-audit-workflow.md`.
+6. Produce verdict signal: `{ verdict, score, platform, blockers, report_path }`.
+7. Evaluate `block_on` condition from gate config.
+8. If `block_on` is false: log gate pass, proceed.
+9. If `block_on` is true: enter Remediation Loop below.
+
+Note: compiled `srs.md` is supporting evidence only. Facts present only in `srs.md` and not in source files cannot score as Clear — they represent source-of-truth drift.
 
 ---
 

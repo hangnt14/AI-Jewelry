@@ -20,6 +20,7 @@
 1. Locate the highest version of the module QC report file.
 2. Locate and read the `question-backlog` file — `Answered Questions` section and `Deferred Questions` section.
 3. If there are remaining Open questions (user chose Option B), note them as unresolved — do NOT attempt to answer them or infer answers.
+4. Re-read backbone alignment: check `backbone-index.md` for any scope changes since last audit. If backbone changed, re-run backbone alignment gate before scoring.
 
 ### Step 2 — Apply Answers & Resolve Gaps
 

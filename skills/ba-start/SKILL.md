@@ -36,7 +36,7 @@ Use this skill when the BA lifecycle step is explicit. Treat `ba-do` as the free
 /ba-start reverse --slug <slug> [--focus <area>] [--commit <hash>]
 ```
 
-Figma MCP sync is intentionally outside `ba-start`. Use `ba-figma-sync` only after `ba-start srs` has produced current canon sources, `srs-index.md`, `srs.md`, and `srs-compile-receipt.json`.
+Figma MCP sync is intentionally outside `ba-start`. Use `ba-figma-sync` only after `ba-start srs` has produced current canon sources, `ascii-screen/index.md`, `srs.md`, and `srs-compile-receipt.json`.
 
 ## Step Dispatch
 
@@ -49,8 +49,8 @@ Figma MCP sync is intentionally outside `ba-start`. Use `ba-figma-sync` only aft
 | `backbone` | `steps/backbone.md` | Step 5 |
 | `frd` | `steps/frd.md` | Step 6 |
 | `stories` | `steps/stories.md` | Step 7 |
-| `srs` | `steps/srs.md` | Canon-first SRS router; owns `screens/`, `usecases/`, `srs-index.md`, compiled `srs.md`, and compile receipt |
-| `wireframes` | `steps/wireframes.md` | Deprecated compatibility validation; ASCII belongs in `screens/*.md` |
+| `srs` | `steps/srs.md` | Canon-first SRS router; owns `userstories/`, `usecases/`, `ascii-screen/`, `srs/`, compiled `srs.md`, and compile receipt |
+| `wireframes` | `steps/wireframes.md` | Deprecated compatibility validation; ASCII belongs in `ascii-screen/*.md` |
 | `package` | `steps/package.md` | Step 12 |
 | `status` | `steps/status.md` | inspection only |
 | `next` | `../../core/workflows/next.md` | next-step recommendation; no mutation |

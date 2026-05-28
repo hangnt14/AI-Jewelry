@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run lightweight SRS canon guardrails for a module directory."""
+"""Run lightweight SRS canon guardrails for a module directory (new architecture)."""
 
 from __future__ import annotations
 
@@ -20,37 +20,94 @@ def run_check(cmd: list[str]) -> dict[str, object]:
     }
 
 
+import re
+
+DATE_TOKEN_RE = re.compile(r"^(.+)-(\d{6}-\d{4})$")
+
+
+def derive_slug_date_module(module_root: Path) -> tuple[str, str, str]:
+    """Derive slug, date, module from module_root path convention.
+
+    Expected: plans/{slug}-{date}/03_modules/{module}
+    Date token format: YYMMDD-HHmm (e.g. 260528-1000)
+    """
+    module = module_root.name
+    project_dir = module_root.parent.parent  # skip 03_modules
+    m = DATE_TOKEN_RE.match(project_dir.name)
+    if m:
+        slug, date = m.group(1), m.group(2)
+    else:
+        # fallback: no date token found
+        slug, date = project_dir.name, ""
+    return slug, date, module
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("module_root", type=Path)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--repo", default=".", help="Repo root path")
     args = parser.parse_args()
 
-    module_root = args.module_root
+    module_root = args.module_root.resolve()
+    repo = Path(args.repo).resolve()
     script_dir = Path(__file__).resolve().parent
-    project_root = module_root.parent.parent if module_root.parent.name == "03_modules" else module_root.parent
-    shared_index = project_root / "02_backbone" / "shared-rule-message-index.md"
     checks: list[dict[str, object]] = []
 
-    index_path = module_root / "srs-index.md"
-    if index_path.exists():
-        checks.append(run_check([sys.executable, str(script_dir / "check-srs-index-consistency.py"), str(index_path)]))
-    else:
-        checks.append({"cmd": "check-srs-index-consistency", "returncode": 1, "stdout": "", "stderr": "missing srs-index.md"})
+    slug, date, module = derive_slug_date_module(module_root)
 
-    for screen in sorted((module_root / "screens").glob("*.md")):
-        cmd = [sys.executable, str(script_dir / "check-screen-canon-schema.py"), str(screen)]
-        if shared_index.exists():
-            cmd.extend(["--shared-index", str(shared_index)])
-        checks.append(run_check(cmd))
+    # Check userstories index
+    checks.append(run_check([
+        sys.executable, str(script_dir / "check-userstories-index.py"),
+        "--repo", str(repo), "--slug", slug, "--date", date, "--module", module,
+    ]))
+
+    # Check usecases index
+    checks.append(run_check([
+        sys.executable, str(script_dir / "check-usecases-index.py"),
+        "--repo", str(repo), "--slug", slug, "--date", date, "--module", module,
+    ]))
+
+    # Check ascii-screen index (with ASCII coverage)
+    checks.append(run_check([
+        sys.executable, str(script_dir / "check-ascii-screen-index.py"),
+        "--repo", str(repo), "--slug", slug, "--date", date, "--module", module,
+        "--require-ascii-current",
+    ]))
+
+    # Check srs source set
+    checks.append(run_check([
+        sys.executable, str(script_dir / "check-srs-source-set.py"),
+        "--repo", str(repo), "--slug", slug, "--date", date, "--module", module,
+    ]))
+
+    # Check partial compile receipt
+    checks.append(run_check([
+        sys.executable, str(script_dir / "check-partial-srs-compile-receipt.py"),
+        "--repo", str(repo), "--slug", slug, "--date", date, "--module", module,
+    ]))
+
+    # Check source of truth
+    checks.append(run_check([sys.executable, str(script_dir / "check-source-of-truth.py"), str(module_root)]))
+
+    # Check backbone-module alignment
+    checks.append(run_check([
+        sys.executable, str(script_dir / "check-backbone-module-alignment.py"),
+        "--repo", str(repo), "--slug", slug, "--date", date, "--module", module,
+        "--scope", "general",
+    ]))
+
+    # Check shared traceability (warn-only)
+    checks.append(run_check([
+        sys.executable, str(script_dir / "check-shared-traceability.py"),
+        "--repo", str(repo), "--slug", slug, "--date", date,
+    ]))
+
+    # Check shared rule/message registry
+    checks.append(run_check([sys.executable, str(script_dir / "validate-shared-rule-message-registry.py"), "--module-root", str(module_root)]))
 
     compile_receipt = module_root / "srs-compile-receipt.json"
-    compiled_srs = module_root / "srs.md"
     receipt_status = "present" if compile_receipt.exists() else "missing"
-    if compiled_srs.exists() and not compile_receipt.exists():
-        checks.append({"cmd": "compile receipt", "returncode": 1, "stdout": "", "stderr": "compiled srs.md exists but srs-compile-receipt.json is missing"})
-    checks.append(run_check([sys.executable, str(script_dir / "check-source-of-truth.py"), str(module_root)]))
-    checks.append(run_check([sys.executable, str(script_dir / "validate-shared-rule-message-registry.py"), "--module-root", str(module_root)]))
 
     ok = all(int(check["returncode"]) == 0 for check in checks)
     result = {"module_root": str(module_root), "ok": ok, "compile_receipt": receipt_status, "checks": checks}

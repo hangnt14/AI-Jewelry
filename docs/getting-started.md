@@ -299,12 +299,15 @@ A full `/ba-start` engagement produces final BA deliverables plus runtime artifa
 | FRD | `frd-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/frd.md` |
 | FRD HTML | `scripts/md-to-html.py` | `plans/{slug}-{date}/04_compiled/compiled-frd.html` with rendered Mermaid and safely handled PlantUML diagrams |
 | SRS | `srs-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/srs.md` |
-| User stories | `user-story-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/user-stories.md` |
+| User stories | `userstory-item-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/userstories/us-{slug}.md` |
+| User stories index | `userstories-index-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/userstories/index.md` |
 | Project runtime DESIGN.md (bán thành phẩm) | `design-md-template.md` | `designs/{slug}/DESIGN.md` |
 | Shared shell contract | `shared-shell-contract-template.md` | `plans/{slug}-{date}/02_backbone/shared-shell-contract.md` |
-| Screen canon | `screen-canon-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/screens/*.md` |
-| Use case canon | `usecase-canon-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/usecases/*.md` |
-| SRS index | `srs-index-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/srs-index.md` |
+| Screen canon | `ascii-screen-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/ascii-screen/{screen}.md` |
+| Screen index | `ascii-screen-index-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/ascii-screen/index.md` |
+| Use case canon | `usecase-item-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/usecases/uc-{slug}.md` |
+| Use case index | `usecases-index-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/usecases/index.md` |
+| SRS spec | `srs-spec-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/srs/spec.md` |
 | SRS compile receipt | `srs-compile-receipt-template.md` | `plans/{slug}-{date}/03_modules/{module_slug}/srs-compile-receipt.json` |
 | SRS HTML | `scripts/md-to-html.py` | `plans/{slug}-{date}/04_compiled/compiled-srs.html` as the primary browser-editable stakeholder copy |
 

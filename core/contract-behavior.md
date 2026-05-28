@@ -97,7 +97,7 @@ Use the resolution order from `resolution.*`.
 
 - Use `commands.<name>.requires` plus `paths.*` to resolve exact prerequisite files.
 - If any required artifact is missing, print the exact missing path, the prior command to run, and stop.
-- For `package`, require current canon sources and compile receipt. UI-backed modules must have ASCII coverage in screen canon; external mockup state is not a package gate.
+- For `package`, require current canon sources and compile receipt. UI-backed modules must have ASCII coverage in `ascii-screen/` canon; external mockup state is not a package gate.
 
 ## Options Decision-Ledger Gate
 
@@ -127,7 +127,7 @@ Shared read-scope reminder for the gate:
 
 ## Overwrite Behavior
 
-Before mutating `backbone`, `frd`, `stories`, `srs`, or `package`:
+Before mutating `backbone`, `frd`, `stories`, `srs`, `package`, or any module artifact under `userstories/`, `usecases/`, `ascii-screen/`, or `srs/`:
 
 1. Check whether the target output path already exists.
 2. If it exists, print the exact path and ask whether to overwrite.
@@ -165,7 +165,7 @@ After the user explicitly approves a mutating rerun step:
 - Use `templates/manifest.json` or CLI extraction helpers instead of loading full templates when only one group is needed.
 - Reuse summaries and excerpts instead of rereading large raw sources when normalized artifacts already exist.
 - For large source inputs, read `paths.source_summary` and `paths.source_chunk_index` before selecting chunk files.
-- After `paths.backbone_index`, `paths.stories_index`, or `paths.srs_index` exists, read the index first and open only targeted sections from the source artifact.
+- After `paths.backbone_index`, `paths.userstories_index`, or `paths.ascii_screen_index` exists, read the index first and open only targeted sections from the source artifact.
 - Treat index files as navigators only; they do not replace source-of-truth artifacts.
 
 ### Internal Artifact Compactness
@@ -200,6 +200,18 @@ BA-kit is a playbook, not a UI product. Human-in-the-loop behavior is enforced t
 
 - Core guarantees must stay identical across Claude Code, Codex, and Antigravity.
 - A runtime adapter may translate command syntax or prompts, but it must preserve the same resolution, stop conditions, approval gates, and rerun rules.
+
+## Backbone Authority Rule
+
+Module artifacts are downstream from backbone. They must trace to backbone scope, actors, features, portals, rules, and terminology.
+
+- If a module artifact conflicts with backbone, the module artifact is stale or wrong.
+- New scope, actors, portals, or rules must route through `impact` and backbone refresh before module artifacts are updated.
+- Every module-mutating command (`stories`, `srs`, impact approved writeback, `package`, `qc-review` remediation) must run backbone alignment validation before writing.
+- Backbone alignment failure produces `BACKBONE_ALIGNMENT_FAIL: {scope}` and stops execution.
+- Recovery: run `ba-start impact --slug <slug>` or refresh backbone, then rerun the blocked command.
+
+Compiled deliverables never override source truth. Module source never overrides backbone. Backbone changes require impact/backbone route.
 
 ## Granular Artifact Intervention
 

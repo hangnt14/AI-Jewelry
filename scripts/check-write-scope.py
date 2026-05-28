@@ -11,12 +11,9 @@ from pathlib import Path
 
 ALLOWED_SUFFIXES = {
     "srs": (
-        "/screens/",
         "/usecases/",
-        "/data/",
-        "/flows/",
-        "/srs-groups/",
-        "/srs-index.md",
+        "/ascii-screen/",
+        "/srs/",
         "/srs.md",
         "/srs-compile-receipt.json",
         "/screen-field-contract.yaml",
@@ -35,14 +32,20 @@ ALLOWED_SUFFIXES = {
 FORBIDDEN_BY_COMMAND = {
     "figma-sync": (
         "/srs.md",
-        "/screens/",
+        "/ascii-screen/",
         "/usecases/",
+        "/userstories/",
         "/shared-shell-contract.md",
     ),
     "package": (
-        "/screens/",
+        "/ascii-screen/",
         "/usecases/",
+        "/userstories/",
+        "/srs/",
         "/shared-shell-contract.md",
+    ),
+    "srs": (
+        "/userstories/",
     ),
 }
 

@@ -9,13 +9,29 @@
 ### Step 1: Read all artefacts
 
 **Reading order:**
-1. `srs-index.md` — module inventory and routing map
-2. `usecases/*.md` — primary functional flows
-3. `screens/*.md` — primary screen behavior and ASCII evidence
-4. `screen-field-contract.yaml` — shared rules, states, validations, navigation
-5. Current compiled `srs.md` — supporting cross-check only
-6. `srs-compile-receipt.json` — proof compiled output matches canon
-7. `DESIGN.md`, shared shell contract, wireframe artifacts, or API spec (if available) — supporting evidence only
+1. `backbone-index.md` / targeted `backbone.md` sections — backbone alignment gate first
+2. `shared/definitions.md` — canonical terminology
+3. `shared/traceability.md` — coverage map
+4. `userstories/index.md` + targeted `userstories/us-*.md` — story intent and AC
+5. `usecases/index.md` + `usecases/uc-*.md` — primary functional flows
+6. `usecases/diagrams.md` — UC-level diagrams
+7. `ascii-screen/index.md` + `ascii-screen/*.md` — primary screen behavior and ASCII evidence
+8. `srs/spec.md` — FR/NFR/business rules
+9. `srs/flows.md` — module/system flows
+10. `srs/states.md` — state registry
+11. `srs/erd.md` — data model (if present)
+12. `screen-field-contract.yaml` — shared rules, states, validations, navigation
+13. Current compiled `srs.md` + `srs-compile-receipt.json` — supporting cross-check only
+14. `DESIGN.md`, shared shell contract, or API spec (if available) — supporting evidence only
+
+**Backbone Alignment Gate (before scoring):**
+- If module not in backbone → `NOT_READY`
+- If actor/portal/feature/rule/term unknown in backbone → `NOT_READY` or critical gap
+- If module contradicts backbone → `BACKBONE_ALIGNMENT_FAIL`
+
+**Source-of-truth drift rule:**
+- Facts present only in compiled `srs.md` and not in source files score as **Partial** at best, not Clear.
+- Compiled-only facts represent source-of-truth drift and must be flagged.
 
 Input-type routing:
 | Input Type | Action |

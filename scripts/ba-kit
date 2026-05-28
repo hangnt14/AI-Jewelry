@@ -41,8 +41,8 @@ Commands:
   check-prereq    Validate the exact prerequisite artifacts for a BA command.
   doctor-srs      Run canon-first SRS guardrails for one module directory.
   check-write-scope  Block writes outside the command-owned artifact scope.
-  check-srs-index Validate SRS index registry paths and required sections.
-  check-screen-canon Validate one screen canon markdown file.
+  check-srs-index [LEGACY] Validate old srs-index.md registry (deprecated; use doctor-srs for new architecture).
+  check-screen-canon [LEGACY] Validate old screens/*.md canon file (deprecated; use check-ascii-screen-index for new architecture).
   check-source-of-truth Validate compiled SRS/receipt canon invariants.
   template-section  Print only the requested template group from templates/manifest.json.
   source-extract  Extract a source file into staged cache and optionally promote it into 00_source.
@@ -509,7 +509,7 @@ canon_source_count() {
   local count=0
   local dir
 
-  for dir in screens usecases data flows; do
+  for dir in userstories usecases ascii-screen srs; do
     if [[ -d "${module_root}/${dir}" ]]; then
       count="$((count + $(find "${module_root}/${dir}" -maxdepth 1 -type f -name '*.md' | wc -l | tr -d ' ')))"
     fi
@@ -527,7 +527,7 @@ newest_canon_mtime() {
     if [[ "${mtime}" -gt "${newest}" ]]; then
       newest="${mtime}"
     fi
-  done < <(find "${module_root}/screens" "${module_root}/usecases" "${module_root}/data" "${module_root}/flows" -maxdepth 1 -type f -name '*.md' -print0 2>/dev/null || true)
+  done < <(find "${module_root}/userstories" "${module_root}/usecases" "${module_root}/ascii-screen" "${module_root}/srs" -maxdepth 1 -type f -name '*.md' -print0 2>/dev/null || true)
 
   printf '%s\n' "${newest}"
 }
@@ -1273,19 +1273,27 @@ status_command() {
       module_root_abs="${repo}/$(render_contract_path "${repo}" "module_root" "${slug}" "${date_token}" "${module_name}")"
       printf '\n[Module: %s]\n' "${module_name}"
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "frd" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/frd.md"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "stories" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/user-stories.md"
-      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "srs_index" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/srs-index.md"
-      print_dir_status_line "${repo}/$(render_contract_path "${repo}" "screen_root" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/screens/*.md"
-      print_dir_status_line "${repo}/$(render_contract_path "${repo}" "usecase_root" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/usecases/*.md"
-      print_dir_status_line "${repo}/$(render_contract_path "${repo}" "module_data_root" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/data/*.md"
-      print_dir_status_line "${repo}/$(render_contract_path "${repo}" "flow_root" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/flows/*.md"
+      print_dir_status_line "${repo}/$(render_contract_path "${repo}" "userstories_root" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/userstories/*.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "userstories_index" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/userstories/index.md"
+      print_dir_status_line "${repo}/$(render_contract_path "${repo}" "usecases_root" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/usecases/*.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "usecases_index" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/usecases/index.md"
+      print_dir_status_line "${repo}/$(render_contract_path "${repo}" "ascii_screen_root" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/ascii-screen/*.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "ascii_screen_index" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/ascii-screen/index.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "srs_spec" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/srs/spec.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "srs_flows" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/srs/flows.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "srs_states" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/srs/states.md"
+      print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "srs_erd" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/srs/erd.md"
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "srs" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/srs.md"
       print_srs_receipt_status_line "${module_root_abs}"
       print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "screen_field_contract" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/screen-field-contract.yaml"
       local tool_lane_path tool_lane
       tool_lane_path="${repo}/$(render_contract_path "${repo}" "tool_lane_state" "${slug}" "${date_token}" "${module_name}")"
       print_tool_lane_status "${tool_lane_path}"
-      tool_lane="$(read_md_field "${tool_lane_path}" "Selected lane")"
+      if [[ -f "${tool_lane_path}" ]]; then
+        tool_lane="$(read_md_field "${tool_lane_path}" "Selected lane")"
+      else
+        tool_lane=""
+      fi
       if [[ "${tool_lane}" == *"figma-make"* ]]; then
         print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "make_guidelines" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/tool-lanes/figma-make/make-guidelines.md"
         print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "make_prompt_pack" "${slug}" "${date_token}" "${module_name}")" "03_modules/${module_name}/tool-lanes/figma-make/make-prompt-pack.md"
@@ -1406,8 +1414,10 @@ check_prereq_command() {
       case "${requirement}" in
         intake) printf 'Run first: ba-start intake\n' ;;
         backbone) printf 'Run first: ba-start backbone --slug %s\n' "${slug}" ;;
+        userstories_index) printf 'Run first: ba-start stories --slug %s --module %s\n' "${slug}" "${module}" ;;
         stories) printf 'Run first: ba-start stories --slug %s --module %s\n' "${slug}" "${module}" ;;
-        srs_index|srs_compile_receipt) printf 'Run first: ba-start srs --slug %s --module %s\n' "${slug}" "${module}" ;;
+        srs_compile_receipt|ascii_screen_index|usecases_index|srs_spec) printf 'Run first: ba-start srs --slug %s --module %s\n' "${slug}" "${module}" ;;
+        srs_index) printf 'Run first: ba-start srs --slug %s --module %s\n' "${slug}" "${module}" ;;
         design_doc|shared_shell_contract) printf 'Run first: ba-start srs --slug %s --module %s\n' "${slug}" "${module}" ;;
         wireframe_input) printf 'Run first: ba-start srs --slug %s --module %s\n' "${slug}" "${module}" ;;
       esac
@@ -1453,7 +1463,7 @@ check_source_of_truth_command() {
 }
 
 next_command() {
-  local slug="" date_token="" module="" repo story_path srs_path srs_index_path wireframe_input_path wireframe_state_path compiled_frd compiled_srs project_home_path module_root_abs receipt_state source_count
+  local slug="" date_token="" module="" repo userstories_index_path srs_path srs_spec_path compiled_frd compiled_srs project_home_path module_root_abs receipt_state source_count
 
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
@@ -1507,21 +1517,19 @@ next_command() {
   module="$(resolve_module_name "${repo}" "${slug}" "${date_token}" "${module}")"
   [[ -n "${module}" ]] || fail "Next-step detection needs --module when more than one module exists."
 
-  story_path="${repo}/$(render_contract_path "${repo}" "stories" "${slug}" "${date_token}" "${module}")"
+  userstories_index_path="${repo}/$(render_contract_path "${repo}" "userstories_index" "${slug}" "${date_token}" "${module}")"
   srs_path="${repo}/$(render_contract_path "${repo}" "srs" "${slug}" "${date_token}" "${module}")"
-  srs_index_path="${repo}/$(render_contract_path "${repo}" "srs_index" "${slug}" "${date_token}" "${module}")"
+  srs_spec_path="${repo}/$(render_contract_path "${repo}" "srs_spec" "${slug}" "${date_token}" "${module}")"
   module_root_abs="${repo}/$(render_contract_path "${repo}" "module_root" "${slug}" "${date_token}" "${module}")"
-  wireframe_input_path="${repo}/$(render_contract_path "${repo}" "wireframe_input" "${slug}" "${date_token}" "${module}")"
-  wireframe_state_path="${repo}/$(render_contract_path "${repo}" "wireframe_state" "${slug}" "${date_token}" "${module}")"
   compiled_frd="${repo}/$(render_contract_path "${repo}" "compiled_frd" "${slug}" "${date_token}")"
   compiled_srs="${repo}/$(render_contract_path "${repo}" "compiled_srs" "${slug}" "${date_token}")"
   receipt_state="$(srs_receipt_state "${module_root_abs}")"
   source_count="$(canon_source_count "${module_root_abs}")"
 
-  if [[ ! -f "${story_path}" ]]; then
+  if [[ ! -f "${userstories_index_path}" ]]; then
     printf 'BA-facing next step: Viết user stories cho module %s.\n' "${module}"
     printf 'Next command: ba-start stories --slug %s --module %s\n' "${slug}" "${module}"
-    printf 'Reason: user stories are missing.\n'
+    printf 'Reason: userstories/index.md is missing.\n'
     return 0
   fi
   if [[ ! -f "${srs_path}" ]]; then
@@ -1530,10 +1538,10 @@ next_command() {
     printf 'Reason: SRS is missing for the resolved module.\n'
     return 0
   fi
-  if [[ ! -f "${srs_index_path}" ]]; then
-    printf 'BA-facing next step: Tạo routing index cho SRS canon module %s.\n' "${module}"
+  if [[ ! -f "${srs_spec_path}" ]]; then
+    printf 'BA-facing next step: Tạo SRS source set cho module %s.\n' "${module}"
     printf 'Next command: ba-start srs --slug %s --module %s\n' "${slug}" "${module}"
-    printf 'Reason: srs-index.md is missing, so agents cannot route to the right canon files safely.\n'
+    printf 'Reason: srs/spec.md is missing; source set not yet generated.\n'
     return 0
   fi
   case "${receipt_state}" in

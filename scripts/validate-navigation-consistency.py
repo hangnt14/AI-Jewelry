@@ -163,6 +163,47 @@ def load_nav_schemas(path: Path) -> dict[tuple[str, str], NavSchema]:
     return schemas
 
 
+def load_screen_nav_from_field_value(path: Path) -> ScreenNav | None:
+    """Parse a Field | Value overview table from an ascii-screen/*.md file."""
+    fields: dict[str, str] = {}
+    for _, headers, rows in iter_markdown_tables(path):
+        # Detect Field | Value table
+        field_index = find_column(headers, "Field")
+        value_index = find_column(headers, "Value")
+        if field_index is None or value_index is None:
+            continue
+        for _, row in rows:
+            field_name = cell(row, field_index)
+            field_value = cell(row, value_index)
+            if field_name:
+                fields[key(field_name)] = field_value
+
+    portal_id = fields.get("portal id", "")
+    nav_schema_id = fields.get("nav schema id", "")
+    active_item = fields.get("expected active menu item", "")
+    nav_visible = fields.get("navigation region visible", "")
+
+    if not portal_id or not nav_schema_id:
+        return None
+
+    # Derive screen_id from frontmatter or filename
+    screen_id = path.stem.upper()
+    text = path.read_text(encoding="utf-8")
+    fm_match = re.search(r"^screen_id:\s*[\"']?([^\"'\n]+)[\"']?", text, re.MULTILINE)
+    if fm_match:
+        screen_id = fm_match.group(1).strip()
+
+    return ScreenNav(
+        source=path,
+        line=1,
+        screen_id=screen_id,
+        portal_id=portal_id,
+        nav_schema_id=nav_schema_id,
+        expected_active_item=active_item,
+        nav_visible=nav_visible,
+    )
+
+
 def load_screen_nav(path: Path) -> list[ScreenNav]:
     screens: list[ScreenNav] = []
     for _, headers, rows in iter_markdown_tables(path):
@@ -190,6 +231,13 @@ def load_screen_nav(path: Path) -> list[ScreenNav]:
                     nav_visible=cell(row, visible_index),
                 )
             )
+
+    # Fallback: try Field | Value overview table (ascii-screen/*.md format)
+    if not screens:
+        fv = load_screen_nav_from_field_value(path)
+        if fv is not None:
+            screens.append(fv)
+
     return screens
 
 

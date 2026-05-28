@@ -78,10 +78,10 @@ Apply the first matching rule:
 4. intake exists, `paths.plan` says options are `not-needed`, and no backbone -> `ba-start backbone --slug <slug>`
 5. intake exists, `paths.plan` says options are `skipped`, or `completed` with `selected option` recorded in `paths.plan`, and no backbone -> `ba-start backbone --slug <slug>`
 6. backbone exists and FRD is explicitly required but missing -> `ba-start frd --slug <slug> --module <module_slug>`
-7. backbone exists but user stories are missing -> `ba-start stories --slug <slug> --module <module_slug>`
+7. backbone exists but `userstories/index.md` is missing -> `ba-start stories --slug <slug> --module <module_slug>`
 8. SRS is required and missing -> `ba-start srs --slug <slug> --module <module_slug>`
-9. SRS exists but `srs-index.md` is missing -> `ba-start srs --slug <slug> --module <module_slug>`
-10. SRS exists but canon sources (`screens/`, `usecases/`, optional `data/`, optional `flows/`) are absent for a UI-backed module -> `ba-start srs --slug <slug> --module <module_slug>`
+9. SRS exists but `usecases/index.md` or `ascii-screen/index.md` is missing -> `ba-start srs --slug <slug> --module <module_slug>`
+10. SRS exists but canon sources (`ascii-screen/`, `usecases/`, optional `srs/flows.md`, optional `srs/erd.md`) are absent for a UI-backed module -> `ba-start srs --slug <slug> --module <module_slug>`
 11. canon sources exist but `srs-compile-receipt.json` is missing or older than canon source files -> `ba-start srs --slug <slug> --module <module_slug>`
 12. final markdown exists but required packaged HTML is missing -> `ba-start package --slug <slug>`
 13. everything required already exists -> `ba-start status --slug <slug>`

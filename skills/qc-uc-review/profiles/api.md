@@ -24,8 +24,8 @@ Mọi phát biểu trong output PHẢI đặt **chủ ngữ là Client SDK/Consu
 ## Input Contract
 
 - Module root: `plans/{slug}-{date}/03_modules/{module_slug}/`
-- Primary evidence order: `srs-index.md` -> `usecases/*.md` -> `screens/*.md` -> `screen-field-contract.yaml`
-- Supporting evidence: current `srs.md`, `srs-compile-receipt.json`, `DESIGN.md`, shared shell contract, legacy wireframe files (if they already exist)
+- Primary evidence order: `backbone-index.md` -> `userstories/index.md` -> `usecases/index.md` + `usecases/uc-*.md` -> `srs/spec.md` -> `screen-field-contract.yaml`
+- Supporting evidence: current `srs.md`, `srs-compile-receipt.json`, `shared/definitions.md`, `shared/traceability.md`
 - Question Backlog: `plans/{slug}-{date}/03_modules/{module_slug}/qc-review/*-qc-review-question-backlog.md` (if exists)
 - Important: Check the QC output directory for existing versions and read the highest report version.
 

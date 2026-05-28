@@ -43,7 +43,7 @@ Xác định module root hiện tại từ BA-kit contract context, rồi kiểm
 | Có `*-qc-review-report-*` + backlog có Answered (all Open resolved) | → **Re-audit** workflow |
 | Có `*-qc-review-report-*` + backlog còn Open chưa trả lời | → **CẢNH BÁO** + **HỎI** user (xem bên dưới) |
 | Có `*-qc-review-report-*` + không có backlog | → **HỎI** user: muốn xem version hiện tại hay re-audit? |
-| Module root hoặc canon source bắt buộc không tồn tại | → **STOP** — yêu cầu user kiểm tra `module_root`, `srs-index.md`, `usecases/`, `screens/`, `screen-field-contract.yaml`, `srs-compile-receipt.json` |
+| Module root hoặc canon source bắt buộc không tồn tại | → **STOP** — yêu cầu user kiểm tra `module_root`, `userstories/index.md`, `usecases/index.md`, `ascii-screen/index.md`, `screen-field-contract.yaml`, `srs-compile-receipt.json` |
 | Output folder chưa tồn tại (nhưng module root hợp lệ) | → Tự tạo folder + tiếp tục first-audit |
 
 ### Xử lý khi backlog còn Open
@@ -117,7 +117,7 @@ Resolved per platform profile. See `profiles/{platform}.md` for:
 - Do NOT fabricate or assume requirements that are not in the document.
 - When uncertain, explicitly state uncertainty and ask the user — never guess.
 - Do NOT opine on implementation approach.
-- Treat `usecases/*.md`, `screens/*.md`, `srs-index.md`, and `screen-field-contract.yaml` as primary evidence. Treat compiled `srs.md` as supporting evidence unless the canon set is incomplete.
+- Treat `usecases/index.md` + `usecases/uc-*.md`, `ascii-screen/index.md` + `ascii-screen/*.md`, `userstories/index.md` + `userstories/us-*.md`, `srs/spec.md`, `srs/flows.md`, `srs/states.md`, `srs/erd.md`, and `screen-field-contract.yaml` as primary evidence. Treat compiled `srs.md` as supporting evidence only — facts present only in `srs.md` score as Partial, not Clear.
 - Platform-specific scope boundaries are defined in the loaded profile.
 
 ## Ownership & Versioning
