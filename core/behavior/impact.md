@@ -21,26 +21,36 @@
 
 ## Cross-Function Propagation
 
-When a changed artifact is a UC with `## Cross-Function Impact` declarations, extend the impact report with dependency propagation:
+When a changed artifact is a UC, extend the impact report with dependency propagation.
+Reverse inbound scanning runs for **any changed UC** (even without its own `## Cross-Function Impact` section).
+Outbound tracing runs only when the changed UC declares dependencies.
 
-1. Read `## Cross-Function Impact` from the affected UC.
-2. Build **downstream impact** list from "Produces for" entries (Within Module + Across Modules):
-   - Intra-module: list specific UCs that consume this UC's output, with data/state items
-   - Inter-module: flag target modules and backbone feature IDs — consumer may not exist yet
-3. Scan **other UC files** for reverse inbound edges — UCs that declare "Depends on" or "Consumes from" this UC:
+### Reverse Inbound Scan (always runs for changed UC)
+
+1. Scan **other UC files** for reverse inbound edges — UCs that declare "Depends on" or "Consumes from" this UC:
    - **Intra-module**: Read `## Cross-Function Impact` from each sibling UC in the same module
    - **Cross-module**: When Modular/Program activation detected, scan other module UC files for `Consumes from` entries targeting this module
    - Collect entries where Direction = "Depends on" and UC = this UC's ID
-   - Collect entries where Direction = "Consumes from" and Target Module = this UC's module
-   - Add to **downstream impact** list (these are consumers discovered from their side)
-4. Build **upstream impact** list from "Depends on" / "Consumes from" entries in the affected UC:
+   - For `Consumes from` cross-module matches, require at least one of:
+     - Backbone ref matches a feature ID this UC's module is known to satisfy
+     - Data/State overlaps with this UC's known outputs (from SRS or backbone)
+   - Module-only match (Target Module matches but no backbone/data overlap confirmed) → classify as **possible**, not confirmed downstream impact
+2. Add confirmed matches to **downstream impact** list. Module-only matches go to **cross-module warnings**.
+
+### Outbound Tracing (only when changed UC has ## Cross-Function Impact)
+
+3. Read `## Cross-Function Impact` from the affected UC.
+4. Build **downstream impact** from "Produces for" entries (Within Module + Across Modules):
+   - Intra-module: list specific UCs that consume this UC's output, with data/state items
+   - Inter-module: flag target modules and backbone feature IDs — consumer may not exist yet
+5. Build **upstream impact** from "Depends on" / "Consumes from" entries:
    - Intra-module: list specific UCs this UC depends on, with data/state items
    - Inter-module: flag source modules — upstream change may break this UC's assumptions
-5. Classify each impact edge:
+6. Classify each impact edge:
    - **Intra-module**: full traceability — affected UCs listed with specific data/state items
    - **Inter-module "produces for"**: warning-level — consumer may not exist yet
    - **Inter-module "consumes from"**: warning if producer UC changes
-6. Add to impact report output:
+7. Add to impact report output:
 
 ```markdown
 ### Cross-Function Propagation
@@ -57,7 +67,6 @@ When a changed artifact is a UC with `## Cross-Function Impact` declarations, ex
 - {uc_id} produces {data} for module {module} ({backbone_ref}) — module not yet authored
 ```
 
-7. UCs without `## Cross-Function Impact` → skip cross-function section in impact report.
 8. Impact remains read-only — cross-function data is read, never mutated.
 
 ## Governance And File-Back

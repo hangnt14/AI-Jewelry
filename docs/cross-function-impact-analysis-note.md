@@ -12,7 +12,7 @@ BA-kit UCs capture trace links (UC → screens → stories) but don't model cros
 - Impact propagation when Function A changes
 - Shared data entities with conflicting read/write access across UCs
 
-QC-kit's KA #8 (Functional Integration Analysis, 20pts) evaluates this. BA-kit has `srs/spec.md` `## API / Integration Constraints` but that's for external integrations, not internal cross-function analysis.
+QC-kit's KA #8 (Functional Integration Analysis) evaluates this. (Note: QC-kit scores KA #8 at 20pts in its own rubric; BA-kit's `qc-uc-review` scores the equivalent area at 9pts — the point scales are independent.) BA-kit has `srs/spec.md` `## API / Integration Constraints` but that's for external integrations, not internal cross-function analysis.
 
 ## Additional Complexity: Cross-Module Dependencies
 
