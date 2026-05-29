@@ -28,7 +28,7 @@ ALLOWED_SUFFIXES = {
         "/package-snapshot.md",
     ),
     "qc-export": (
-        "/04_compiled/qc-kit/",
+        "/04_compiled/qc-kit",
     ),
 }
 
@@ -64,6 +64,12 @@ def normalized(path: Path) -> str:
     return "/" + path.as_posix().lstrip("./")
 
 
+def _token_matches(token: str, value: str) -> bool:
+    """Boundary-aware path match: token /04_compiled/qc-kit matches
+    /plans/.../04_compiled/qc-kit but not /plans/.../04_compiled/qc-kit-backup."""
+    return (token.rstrip("/") + "/") in (value + "/")
+
+
 def validate(command: str, paths: list[Path]) -> dict[str, object]:
     errors: list[str] = []
     warnings: list[str] = []
@@ -76,10 +82,10 @@ def validate(command: str, paths: list[Path]) -> dict[str, object]:
 
     for path in paths:
         value = normalized(path)
-        if any(token in value for token in forbidden):
+        if any(_token_matches(t, value) for t in forbidden):
             errors.append(f"{path}: forbidden write for command {command}")
             continue
-        if allowed and not any(token in value for token in allowed):
+        if allowed and not any(_token_matches(t, value) for t in allowed):
             errors.append(f"{path}: outside allowed write scope for command {command}")
 
     return {"command": command, "errors": errors, "warnings": warnings, "ok": not errors}

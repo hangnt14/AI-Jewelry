@@ -11,10 +11,32 @@ import argparse
 import json
 import re
 import shutil
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+
+# ---------------------------------------------------------------------------
+# Write-scope guard (defence-in-depth — wrapper also runs this)
+# ---------------------------------------------------------------------------
+
+def _run_guard(output_root: Path) -> None:
+    """Validate external-output against write-scope rules.
+
+    Resolves guard from this exporter's own directory — always available,
+    regardless of what --repo points to.  Fails closed: if output is inside
+    the repo the guard MUST run and pass.
+    """
+    guard_script = Path(__file__).resolve().parent / "check-write-scope.py"
+    result = subprocess.run(
+        [sys.executable, str(guard_script), "--command", "qc-export", str(output_root)],
+        capture_output=True, text=True,
+    )
+    if result.returncode != 0:
+        detail = "\n".join(filter(None, [result.stdout.strip(), result.stderr.strip()]))
+        sys.exit(f"qc-export write-scope blocked: {output_root} outside allowed scope\n{detail}")
 
 # ---------------------------------------------------------------------------
 # YAML frontmatter (conservative subset — enough for BA-kit canon files)
@@ -328,7 +350,7 @@ def render_source_links(uc_slug: str, uc_path: Path, linked_stories: list[str],
                         repo_root: Path) -> str:
     """Render the BA-kit Source Links table."""
     lines = [
-        "## BA-kit Source Links",
+        "**BA-kit Source Links**",
         "",
         "| Artifact | Source Path |",
         "|----------|-------------|",
@@ -397,20 +419,22 @@ def render_section_2(linked_screens: list[str], screen_index: dict[str, Path],
 
         parts.append(f"### {scr_slug}")
         parts.append("")
-        # Read screen content
+        # Read screen content, demoting ## → #### so screen headings don't leak
+        # as top-level sections in the exported document.
         scr_text = scr_path.read_text(encoding="utf-8")
         _, scr_body = split_frontmatter(scr_text)
+        # Demote any remaining ## headings to #### (preserve ### as-is for subsection)
+        scr_body = re.sub(r"^## ", "#### ", scr_body, flags=re.MULTILINE)
         parts.append(scr_body)
         parts.append("")
 
-        # List PNGs
+        # List PNGs — link to the exported screens/ bundle, not the BA source path
         pngs = find_pngs(scr_path, screens_dir)
         if pngs:
             parts.append("#### Design Assets")
             parts.append("")
             for p in pngs:
-                rel = _try_rel(p, repo_root)
-                parts.append(f"- ![ {p.name} ]({rel})")
+                parts.append(f"- ![ {p.name} ](screens/{p.name})")
             parts.append("")
             all_pngs.extend(pngs)
 
@@ -455,15 +479,18 @@ def render_section_3(linked_screens: list[str], screen_index: dict[str, Path],
 
 def render_section_4(uc_sections: dict[str, str], rule_registry: dict[str, str],
                      message_registry: dict[str, str], uc_body: str,
-                     unresolved_input: list[str]) -> tuple[str, list[str]]:
+                     unresolved_input: list[str],
+                     screen_codes: set[str] | None = None) -> tuple[str, list[str]]:
     """Section 4: Cross-References with Functional Integration."""
     parts = ["## 4. Cross-References", ""]
     all_unresolved = list(unresolved_input)
 
-    # Collect all code references from the UC body
+    # Collect all code references from UC body + screen bodies
     codes = set(CODE_RE.findall(uc_body))
     for content in uc_sections.values():
         codes.update(CODE_RE.findall(content))
+    if screen_codes:
+        codes.update(screen_codes)
 
     # Merge registries
     full_registry = {**rule_registry, **message_registry}
@@ -576,6 +603,51 @@ def render_section_6(uc_fm: dict[str, Any], linked_stories: list[str],
 
 
 # ---------------------------------------------------------------------------
+# Post-export validation
+# ---------------------------------------------------------------------------
+
+EXPECTED_HEADINGS = [
+    "## 1. Use Case Description",
+    "## 2. Screen Description",
+    "## 3. Validation Summary",
+    "## 4. Cross-References",
+    "## 5. Open Questions",
+    "## 6. Changelog",
+]
+
+
+def validate_exported_uc(content: str, uc_slug: str) -> list[str]:
+    """Validate exported UC has exactly the 6 expected ## headings and no extras."""
+    errors: list[str] = []
+    found: list[str] = []
+    for line in content.splitlines():
+        if line.startswith("## "):
+            found.append(line)
+
+    expected_full = [h for h in EXPECTED_HEADINGS]
+
+    if len(found) != len(expected_full):
+        errors.append(
+            f"{uc_slug}: expected {len(expected_full)} top-level ## headings, "
+            f"found {len(found)}: {found}"
+        )
+
+    for i, exp in enumerate(expected_full):
+        if i < len(found) and found[i] != exp:
+            errors.append(
+                f"{uc_slug}: heading {i + 1} expected '{exp}', got '{found[i]}'"
+            )
+        elif i >= len(found):
+            errors.append(f"{uc_slug}: missing heading '{exp}'")
+
+    for h in found:
+        if h not in expected_full:
+            errors.append(f"{uc_slug}: unexpected heading '{h}'")
+
+    return errors
+
+
+# ---------------------------------------------------------------------------
 # Main export logic
 # ---------------------------------------------------------------------------
 
@@ -598,6 +670,10 @@ def run_export(args: argparse.Namespace) -> int:
     output_root = repo / render_path(paths["qc_export_root"], slug=slug, date=date_token)
     if args.external_output:
         output_root = Path(args.external_output).resolve()
+        # Write-scope guard for direct invocations (wrapper also runs this).
+        # Only outside-repo paths bypass; inside-repo must pass the guard.
+        if output_root.is_relative_to(repo):
+            _run_guard(output_root)
 
     # Validate inputs
     if not module_root.exists():
@@ -619,8 +695,14 @@ def run_export(args: argparse.Namespace) -> int:
         print("No use case files found.", file=sys.stderr)
         return 1
 
-    # Output directories
+    # Output directories — clean stale UC folders and usecase-list from prior exports
     docs_ba = output_root / "docs" / "BA"
+    for stale_dir in docs_ba.glob("UC-*"):
+        if stale_dir.is_dir():
+            shutil.rmtree(stale_dir)
+    stale_list = docs_ba / "usecase-list.md"
+    if stale_list.exists():
+        stale_list.unlink()
     common_dir = docs_ba / "Common rule"
     common_dir.mkdir(parents=True, exist_ok=True)
 
@@ -641,6 +723,7 @@ def run_export(args: argparse.Namespace) -> int:
         uc_result = process_use_case(
             uc_path=uc_path,
             docs_ba=docs_ba,
+            output_root=output_root,
             module_root=module_root,
             repo_root=repo,
             story_index=story_index,
@@ -650,6 +733,9 @@ def run_export(args: argparse.Namespace) -> int:
             message_registry=message_registry,
             common_rules_path=common_rules_path,
             message_list_path=message_list_path,
+            contract_paths=paths,
+            slug=slug,
+            date_token=date_token,
         )
         summary["usecases"].append(uc_result)
 
@@ -668,15 +754,25 @@ def run_export(args: argparse.Namespace) -> int:
     print(f"  Resolved: {resolved}/{len(uc_files)}")
     if total_unresolved:
         print(f"  Unresolved references: {total_unresolved}")
+    # Check validation errors
+    total_val_errors = sum(len(u.get("validation_errors", [])) for u in summary["usecases"])
+    if total_val_errors:
+        print(f"  Validation errors: {total_val_errors}", file=sys.stderr)
+        print(f"  Summary: {summary_path}")
+        return 1
     print(f"  Summary: {summary_path}")
     return 0
 
 
-def process_use_case(*, uc_path: Path, docs_ba: Path, module_root: Path, repo_root: Path,
+def process_use_case(*, uc_path: Path, docs_ba: Path, output_root: Path,
+                     module_root: Path, repo_root: Path,
                      story_index: dict[str, Path], screen_index: dict[str, Path],
                      screens_dir: Path, rule_registry: dict[str, str],
                      message_registry: dict[str, str], common_rules_path: Path | None,
-                     message_list_path: Path | None) -> dict[str, Any]:
+                     message_list_path: Path | None,
+                     contract_paths: dict[str, Any] | None = None,
+                     slug: str = "", date_token: str = "") -> dict[str, Any]:
+    # noqa: PLR0913 — contract resolution, validation, external-output support
     """Process one UC file and write its QC export."""
     uc_text = uc_path.read_text(encoding="utf-8")
     uc_fm, uc_body = split_frontmatter(uc_text)
@@ -685,12 +781,32 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, module_root: Path, repo_ro
     uc_slug = uc_fm.get("usecase_id", uc_fm.get("slug", uc_path.stem))
     # Sanitize: keep only safe chars for directory name
     uc_slug_safe = re.sub(r"[^A-Za-z0-9_.-]", "_", str(uc_slug))
+    # Raw slug without UC- prefix for contract path templates (e.g. "checkout" not "UC-checkout")
+    uc_slug_raw = uc_fm.get("slug", "")
+    if uc_slug_raw.startswith("UC-"):
+        uc_slug_raw = uc_slug_raw[3:]
+    if not uc_slug_raw and str(uc_slug).startswith("UC-"):
+        uc_slug_raw = str(uc_slug)[3:]
+    if not uc_slug_raw:
+        uc_slug_raw = uc_slug_safe
     linked_stories = _resolve_linked(uc_fm.get("linked_stories", []))
     linked_screens = _resolve_linked(uc_fm.get("linked_screens", []))
 
     # Resolve codes in UC body
     full_registry = {**rule_registry, **message_registry}
     _, unresolved_from_uc = resolve_codes_in_text(uc_body, full_registry)
+
+    # Collect codes from linked screen bodies for §4 Cross-References
+    screen_body_codes: set[str] = set()
+    for scr_slug in linked_screens:
+        scr_path = screen_index.get(scr_slug)
+        if scr_path:
+            scr_text = scr_path.read_text(encoding="utf-8")
+            _, scr_body = split_frontmatter(scr_text)
+            screen_body_codes.update(CODE_RE.findall(scr_body))
+
+    # Set source path for header metadata
+    uc_fm["_source_path"] = str(_try_rel(uc_path, repo_root))
 
     # Render sections
     header = render_header(uc_fm, uc_slug)
@@ -700,7 +816,8 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, module_root: Path, repo_ro
     sec2, png_paths = render_section_2(linked_screens, screen_index, screens_dir, repo_root)
     sec3, unresolved_val = render_section_3(linked_screens, screen_index, message_registry, rule_registry)
     sec4, unresolved_cr = render_section_4(uc_sections, rule_registry, message_registry,
-                                           uc_body, unresolved_from_uc + unresolved_val)
+                                           uc_body, unresolved_from_uc + unresolved_val,
+                                           screen_body_codes)
     sec5 = render_section_5(uc_sections, story_index, linked_stories)
     sec6 = render_section_6(uc_fm, linked_stories, story_index)
 
@@ -717,26 +834,58 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, module_root: Path, repo_ro
         header, disclaimer, source_links, sec1, sec2, sec3, sec4, sec5, sec6
     ])
 
-    # Write output
-    uc_dir = docs_ba / uc_slug_safe
-    uc_dir.mkdir(parents=True, exist_ok=True)
-    out_path = uc_dir / f"{uc_slug_safe}.md"
-    out_path.write_text(full_doc + "\n", encoding="utf-8")
+    # Resolve output path from contract when available, fallback to docs_ba layout.
+    # Contract resolution uses output_root as base (handles both repo-default and --external-output).
+    if contract_paths and slug and date_token:
+        usecase_file_template = contract_paths.get(
+            "qc_export_usecase_file",
+            "plans/{slug}-{date}/04_compiled/qc-kit/docs/BA/UC-{usecase_slug}/UC-{usecase_slug}.md",
+        )
+        # Rebase contract path under output_root:
+        # strip the qc_export_root prefix so result is output_root / relative-path-under-qc-kit
+        qc_root_template = contract_paths.get(
+            "qc_export_root",
+            "plans/{slug}-{date}/04_compiled/qc-kit",
+        )
+        rendered_root = render_path(qc_root_template, slug=slug, date=date_token)
+        rendered_full = render_path(
+            usecase_file_template, slug=slug, date=date_token, usecase_slug=uc_slug_raw,
+        )
+        if rendered_full.startswith(rendered_root + "/"):
+            rel = rendered_full[len(rendered_root) + 1:]
+        else:
+            rel = rendered_full
+        out_path = output_root / rel
+    else:
+        uc_dir = docs_ba / uc_slug_safe
+        out_path = uc_dir / f"{uc_slug_safe}.md"
 
-    # Copy PNGs
-    screens_out = uc_dir / "screens"
-    for png_src in png_paths:
-        screens_out.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(png_src, screens_out / Path(png_src).name)
+    # Validate before writing — invalid handoff must not be emitted
+    validation_errors = validate_exported_uc(full_doc, str(uc_slug))
+    generated_path = str(_try_rel(out_path, repo_root))
+    if validation_errors:
+        for err in validation_errors:
+            print(f"  VALIDATION: {err}", file=sys.stderr)
+        generated_path = "(not written — validation failed)"
+    else:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(full_doc + "\n", encoding="utf-8")
+
+        # Copy PNGs
+        screens_out = out_path.parent / "screens"
+        for png_src in png_paths:
+            screens_out.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(png_src, screens_out / Path(png_src).name)
 
     return {
         "uc_slug": uc_slug,
         "source_path": str(_try_rel(uc_path, repo_root)),
-        "generated_path": str(_try_rel(out_path, repo_root)),
+        "generated_path": generated_path,
         "linked_stories": linked_stories,
         "linked_screens": linked_screens,
         "unresolved_refs": all_unresolved,
-        "png_count": len(png_paths),
+        "validation_errors": validation_errors,
+        "png_count": len(png_paths) if not validation_errors else 0,
     }
 
 

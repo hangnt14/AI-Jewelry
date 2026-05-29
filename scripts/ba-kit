@@ -1888,6 +1888,19 @@ qc_export_command() {
   local repo
   repo="$(resolve_registered_repo)"
 
+  # Resolve relative --external-output against repo root, not caller CWD.
+  local resolved_external=""
+  if [[ -n "${external_output}" ]]; then
+    resolved_external="$(python3 -c '
+import os, sys
+p = sys.argv[1]
+p = os.path.expanduser(p)
+if not os.path.isabs(p):
+    p = os.path.join(sys.argv[2], p)
+print(os.path.normpath(p))
+' "${external_output}" "${repo}")"
+  fi
+
   local cmd=(python3 "${repo}/scripts/qc-export.py"
     --slug "${slug}"
     --date "${date_token}"
@@ -1895,10 +1908,34 @@ qc_export_command() {
     --repo "${repo}"
   )
   if [[ -n "${external_output}" ]]; then
-    cmd+=(--external-output "${external_output}")
+    cmd+=(--external-output "${resolved_external}")
   fi
   if [[ -n "${usecase_list}" ]]; then
     cmd+=(--usecase-list)
+  fi
+
+  # Write-scope guard: output must stay within 04_compiled/qc-kit/
+  local default_out="plans/${slug}-${date_token}/04_compiled/qc-kit"
+  if [[ -z "${external_output}" ]]; then
+    python3 "${repo}/scripts/check-write-scope.py" --command qc-export "${default_out}" >/dev/null 2>&1 \
+      || fail "qc-export write-scope blocked: ${default_out} outside allowed scope"
+  else
+    # external-output must be outside the repo or pass the same write-scope check.
+    # Use python so resolution works even when parent dirs don't exist yet.
+    local ext_real repo_real
+    ext_real="$(python3 -c '
+import os, sys
+print(os.path.abspath(os.path.expanduser(sys.argv[1])))
+' "${resolved_external}")"
+    repo_real="$(python3 -c '
+import os, sys
+print(os.path.abspath(os.path.expanduser(sys.argv[1])))
+' "${repo}")"
+    if [[ "${ext_real}" == "${repo_real}" || "${ext_real}" == "${repo_real}"/* ]]; then
+      # external-output points inside the repo — validate against write-scope
+      python3 "${repo}/scripts/check-write-scope.py" --command qc-export "${resolved_external}" >/dev/null 2>&1 \
+        || fail "qc-export write-scope blocked: ${external_output} inside repo but outside allowed scope"
+    fi
   fi
 
   "${cmd[@]}"
