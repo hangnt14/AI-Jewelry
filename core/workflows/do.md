@@ -23,6 +23,7 @@ Match intent using the first rule that fits:
 | --- | --- | --- |
 | publishing to Notion | `ba-notion` | publish workflow |
 | syncing approved screen canon to Figma, creating Figma frames, updating Figma wireframes, or "đồng bộ Figma" | `ba-figma-sync` | downstream Figma MCP sync from canon |
+| exporting BA artifacts for QC handoff, preparing QC-kit input, "xuất cho QC", "export QC", "qc handoff", or generating per-UC QC format | `ba-qc-export` | one-way export bridge to QC-kit |
 | claiming/assigning a module, sending review, checking module conflict, approving/integrating module work, or GitHub PR/commit/merge handoff | `ba-collab` | BA collaboration workflow |
 | checking status, completion, or missing artifacts | `ba-start status` | inspection path |
 | asking to continue a project, resume work, or "toi nen lam gi tiep" | `ba-next` | BA-facing continuation path |
@@ -66,6 +67,7 @@ Rules:
 - `ba-collab` for module collaboration and approval-gated GitHub handoff
 - `ba-notion` for publishing
 - `ba-figma-sync` for downstream Figma MCP sync from approved SRS canon
+- `ba-qc-export` for one-way BA-to-QC artifact export bridge
 
 Reverse routing rules:
 - Route to `ba-start reverse` only when the user explicitly signals source-code-first reconstruction, missing docs from existing code, or reverse lane commands.

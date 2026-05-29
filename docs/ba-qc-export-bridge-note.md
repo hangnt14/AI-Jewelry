@@ -16,25 +16,31 @@ Export BA-kit canon artifacts into QC-kit's expected input format (`docs/BA/<UC-
 ## What the Bridge Does
 
 ### Input
-- Module compiled SRS from `plans/{slug}-{date}/03_modules/{module_slug}/srs.md`
-- Or direct canon sources: `usecases/uc-*.md`, `ascii-screen/*.md`, `srs/spec.md`, `userstories/us-*.md`
+- Direct canon sources: `usecases/uc-*.md`, `ascii-screen/*.md`, `srs/spec.md`, `userstories/us-*.md`
+- Module compiled SRS from `plans/{slug}-{date}/03_modules/{module_slug}/srs.md` as fallback/supporting evidence only
 - `common-rules.md` and `message-list.md` from `02_backbone/`
 - Any PNG design assets placed in screen folders
 
-### Output
+### Output (default: plan-scoped)
+
 ```
-docs/BA/
-  Common rule/
-    common-rules.md         ← resolved codes to text
-    message-list.md         ← resolved message codes to text
-  UC-{slug}/
-    UC-{slug}.md             ← 6-section monolithic UC doc
-    screens/*.png             ← design images (if placed by BA)
+plans/{slug}-{date}/04_compiled/qc-kit/
+  qc-export-summary.json     ← export manifest
+  docs/BA/
+    Common rule/
+      common-rules.md         ← resolved codes to text
+      message-list.md         ← resolved message codes to text
+    UC-{slug}/
+      UC-{slug}.md             ← 6-section monolithic UC doc
+      screens/*.png             ← design images (if placed by BA)
+    usecase-list.md             ← optional, with --usecase-list
+
+External mirror only via explicit --external-output <dir>.
 ```
 
 ### Transformation Steps
 
-1. **Disaggregate** compiled SRS into per-UC units (each UC → its own file)
+1. **Read UC canon** — iterate `usecases/uc-*.md` per module; compiled `srs.md` is fallback/supporting evidence only
 2. **Map sections** from BA-kit structure to QC-kit's 6-section format
 3. **Resolve codes** — replace CR-VAL-NN, MSG-ERR-NN, BR-xxx with exact text from common files
 4. **Embed linked screens** — only screens referenced in UC trace, with field tables and states
@@ -46,7 +52,7 @@ docs/BA/
 
 | QC-kit section | BA-kit source |
 |---------------|---------------|
-| Header block | UC frontmatter + compiled SRS context |
+| Header block | UC frontmatter + source path metadata |
 | §1 Use Case Description | UC: actors, preconditions, trigger, main/alternate/error flows, postconditions, business rules |
 | §2 Screen Description | Screens linked to UC: field tables, user actions, states, ASCII wireframes, PNG assets |
 | §3 Validation Summary | Screen field validation rules + message codes resolved to text |
@@ -97,12 +103,16 @@ BA-kit UC `## Cross-Function Impact` section maps to a `### Functional Integrati
 | Partial cross-function dependency resolution (§4) | KA #8 may score Partial when inter-module edges are pending | Export includes cross-function data from `## Cross-Function Impact`; resolved edges appear fully, pending dependencies appear as "Expected: TBD" — QC-kit treats as known limitation |
 | AC not categorized by Interface/Function/Integration | AC synthesis less granular | QC-kit's agent categorizes from existing AC text |
 
+## Decisions
+
+- Export is manual/on-demand; it does not auto-run after `package`.
+- Default output is one folder per UC under plan-scoped `04_compiled/qc-kit/docs/BA/`.
+- `usecase-list.md` is optional via `--usecase-list`.
+- External mirror is explicit via `--external-output <dir>`; the exporter appends `docs/BA/` below that root.
+
 ## Open Questions
 
-- Should the bridge auto-run after `package` command, or be manual?
-- Should the bridge generate one folder per module or one folder per UC?
 - Does the bridge need to handle incremental updates (re-export single UC), or always full module?
-- Should the bridge also generate a QC-kit compatible `usecase-list.md` (the master index of all UCs)?
 - Does QC-kit's `input-files-format.md` need updating for BA-kit's section naming conventions?
 
 ## Related
