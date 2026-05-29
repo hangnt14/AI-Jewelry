@@ -87,7 +87,7 @@ BA-kit UC `## Cross-Function Impact` section maps to a `### Functional Integrati
 - Build QC-kit's project config or context master (QC's job)
 - Create QC-kit's site map or dashboard (QC's job)
 - Cross-function dependencies are exported from `## Cross-Function Impact` UC declarations; pending inter-module edges appear as "Expected: TBD" — full resolution requires both modules to be authored
-- Enumrate atomic UI elements (QC-kit's agent does this from screen descriptions + PNGs)
+- Enumerate atomic UI elements (QC-kit's agent does this from screen descriptions + PNGs)
 
 ## Known Gaps in Export
 

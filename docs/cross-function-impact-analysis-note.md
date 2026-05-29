@@ -60,12 +60,12 @@ Backbone (`02_backbone/backbone.md`) already defines cross-module boundaries, sh
 
 Module B not finished yet → Module A's external table has TBD entries. That's fine. The analysis is partial by design, not broken.
 
-## Open Questions
+## Decisions (formerly Open Questions — resolved by implementation)
 
-- Does this aggregate into compiled SRS as a dependency matrix or per-UC section?
-- Should `ba-impact` consume this for automated change impact analysis?
-- Does `qc-uc-review` need a KA #8 scoring adjustment to leverage this?
-- Should the compile step produce a module-level dependency graph from the per-UC declarations?
+- **SRS aggregation**: Per-UC inline (not standalone matrix section). Implemented in `skills/ba-start/steps/srs-assembly.md` Step 10.5.
+- **ba-impact consumption**: Full propagation with downstream/upstream tracing + reverse inbound scan. Implemented in `core/behavior/impact.md`.
+- **QC scoring adjustment**: KA #8 now references `## Cross-Function Impact` section; UCs without it score Partial. Updated in `skills/qc-uc-review/references/scoring-rubric.md`.
+- **Module-level dependency graph**: Not produced as standalone artifact — per-UC inline is sufficient.
 
 ## Related
 
