@@ -52,6 +52,24 @@ changelog:
 
 - {postcondition 1}
 
+## Cross-Function Impact
+
+### Within Module
+
+| Direction | UC | Data / State | Type |
+|-----------|-----|--------------|------|
+| Depends on | UC-{slug} | {data_or_state} | Input |
+| Produces for | UC-{slug} | {data_or_state} | Output |
+
+### Across Modules
+
+| Direction | Target Module | Expected UC / Backbone Ref | Data / State | Type |
+|-----------|---------------|---------------------------|--------------|------|
+| Produces for | {module_slug} | {backbone_feature_id} | {data_or_state} | Output |
+| Consumes from | {module_slug} | {backbone_feature_id} | {data_or_state} | Input |
+
+**Dependency Types:** `Input` (this UC needs data from another), `Output` (this UC produces data another needs), `Shared State` (both read/write same entity).
+
 ## Diagram
 
 ```mermaid

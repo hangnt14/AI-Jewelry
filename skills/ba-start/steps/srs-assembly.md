@@ -13,6 +13,24 @@ Outputs:
 - `paths.shared_traceability` — backbone → userstories → usecases → screens/SRS source map
 - `paths.shared_definitions` — canonical term definitions used across module artifacts
 
+## Step 10.5 - Cross-Function Impact Inlining
+
+During UC compilation (Step 11, substep 4 — usecases), for each UC that declares `## Cross-Function Impact`:
+
+1. Read `### Within Module` table → inline as-is into the UC's compiled entry.
+2. Read `### Across Modules` table → cross-reference with other modules' declarations:
+   - "produces for" entries → check if target module UC declares matching "consumes from"
+   - "consumes from" entries → check if source module UC declares matching "produces for"
+3. Mark each inter-module edge:
+   - Match found on backbone feature ID + matching data/state → **Resolved**
+   - No matching declaration in target/source module → **Pending** (other module may not be authored yet)
+   - Declarations exist but data/type conflicts → **Mismatch**
+4. Add `Status` column to Across Modules table in compiled output.
+5. Inline the cross-function subsection into the UC's compiled entry (after UC flow content, before next UC).
+6. UCs without `## Cross-Function Impact` → no subsection added (no noise).
+
+Pending edges are NOT errors — partial data is valid when other modules haven't been authored yet.
+
 ## Step 11 - Partial Compile And Receipt
 
 The orchestrator compiles `paths.srs` from the source set inline. Do not delegate assembly. `paths.srs` is a compiled deliverable only — never a source of truth.
@@ -53,7 +71,7 @@ Execution order:
 
 ```text
 srs/spec.md
-  -> usecases/ + usecases/diagrams.md
+  -> usecases/ + usecases/diagrams.md  (with cross-function impact inlining per Step 10.5)
   -> ascii-screen/ (with ASCII coverage verified)
   -> srs/flows.md (when justified)
   -> srs/states.md (when justified)

@@ -138,9 +138,16 @@ Edge case groups are defined in the platform profile.
 
 | Sub-item | Clear | Partial | Tiêu chí Clear |
 |---|:---:|:---:|---|
-| 8.1 Impact Analysis | 3 | 1 | Change in one function affects other functions |
-| 8.2 Data Consistency | 3 | 1 | Data source → consumer; sync rules |
-| 8.3 Section-level error isolation | 3 | 1 | One section failing does not block other sections |
+| 8.1 Impact Analysis | 3 | 1 | UC declares within-module dependencies in `## Cross-Function Impact` → Within Module table with specific data/state items; dependency type matches direction |
+| 8.2 Data Consistency | 3 | 1 | UC declares across-module dependencies in `## Cross-Function Impact` → Across Modules table with backbone feature IDs; data source→consumer chain traceable |
+| 8.3 Section-level error isolation | 3 | 1 | UC declares Shared State entities where applicable; conflicting read/write access identifiable from declarations |
+
+**Cross-function evidence rules:**
+- UC has `## Cross-Function Impact` section with at least one table → evidence source is the section
+- Within Module table has ≥1 entry OR explicit "None" marker → 8.1 eligible for Clear
+- Across Modules table present (even if empty) with backbone refs → 8.2 eligible for Clear
+- Shared State entries declare which entity and which UCs share access → 8.3 eligible for Clear
+- UC missing `## Cross-Function Impact` entirely → all KA #8 sub-items score **Partial** (reviewer infers from UC text)
 
 ### KA #9 — Acceptance Criteria (10đ, Critical)
 
@@ -292,3 +299,5 @@ Bullet 1 line / 1 point. Credit all ✅ Complete items.
 | Partial API failure | Only full-screen error | "When [A] fails + [B] OK, how does UI handle it?" |
 | No debounce | Nav without interaction guard | "Trigger twice quickly, navigate twice?" |
 | i18n no persistence | Language switch, no storage rule | "Where is language stored? Persists after logout?" |
+| No cross-function declarations | UC missing `## Cross-Function Impact` section | "Which UCs does this depend on? What does this UC produce for others?" |
+| Vague cross-function data | "order data" instead of specific items | "Exactly which data/state items flow between these UCs?" |

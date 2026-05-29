@@ -118,6 +118,7 @@ Resolved per platform profile. See `profiles/{platform}.md` for:
 - When uncertain, explicitly state uncertainty and ask the user — never guess.
 - Do NOT opine on implementation approach.
 - Treat `usecases/index.md` + `usecases/uc-*.md`, `ascii-screen/index.md` + `ascii-screen/*.md`, `userstories/index.md` + `userstories/us-*.md`, `srs/spec.md`, `srs/flows.md`, `srs/states.md`, `srs/erd.md`, and `screen-field-contract.yaml` as primary evidence. Treat compiled `srs.md` as supporting evidence only — facts present only in `srs.md` score as Partial, not Clear.
+- For KA #8 (Functional Integration Analysis), scan `## Cross-Function Impact` section from each UC file. UCs without this section score Partial on all KA #8 sub-items (reviewer infers from UC text).
 - Platform-specific scope boundaries are defined in the loaded profile.
 
 ## Ownership & Versioning

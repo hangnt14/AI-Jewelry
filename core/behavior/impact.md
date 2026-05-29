@@ -19,6 +19,41 @@
 
 `impact` is the only command that may read across warm module shards by default when Modular or Program activation is detected. Use `paths.memory_index` first and read only routed shards.
 
+## Cross-Function Propagation
+
+When a changed artifact is a UC with `## Cross-Function Impact` declarations, extend the impact report with dependency propagation:
+
+1. Read `## Cross-Function Impact` from the affected UC.
+2. Build **downstream impact** list from "Produces for" entries (Within Module + Across Modules):
+   - Intra-module: list specific UCs that consume this UC's output, with data/state items
+   - Inter-module: flag target modules and backbone feature IDs — consumer may not exist yet
+3. Build **upstream impact** list from "Depends on" / "Consumes from" entries:
+   - Intra-module: list specific UCs this UC depends on, with data/state items
+   - Inter-module: flag source modules — upstream change may break this UC's assumptions
+4. Classify each impact edge:
+   - **Intra-module**: full traceability — affected UCs listed with specific data/state items
+   - **Inter-module "produces for"**: warning-level — consumer may not exist yet
+   - **Inter-module "consumes from"**: warning if producer UC changes
+5. Add to impact report output:
+
+```markdown
+### Cross-Function Propagation
+
+**Downstream impact** (UCs that consume this UC's output):
+| UC | Module | Data / State | Impact |
+|----|--------|--------------|--------|
+
+**Upstream impact** (UCs this UC depends on):
+| UC | Module | Data / State | Impact |
+|----|--------|--------------|--------|
+
+**Cross-module warnings:**
+- {uc_id} produces {data} for module {module} ({backbone_ref}) — module not yet authored
+```
+
+6. UCs without `## Cross-Function Impact` → skip cross-function section in impact report.
+7. Impact remains read-only — cross-function data is read, never mutated.
+
 ## Governance And File-Back
 
 - Verify write authority before recommending mutation.
