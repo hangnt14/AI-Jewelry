@@ -48,7 +48,8 @@
 | field | value |
 | --- | --- |
 | ucs_scanned | [N] |
-| ucs_with_declarations | [N] |
+| ucs_with_section | [N] |
+| ucs_with_edges | [N] |
 | intra_module_resolved | [N] |
 | inter_module_resolved | [N] |
 | inter_module_pending | [N] |

@@ -27,10 +27,11 @@ When a changed artifact is a UC with `## Cross-Function Impact` declarations, ex
 2. Build **downstream impact** list from "Produces for" entries (Within Module + Across Modules):
    - Intra-module: list specific UCs that consume this UC's output, with data/state items
    - Inter-module: flag target modules and backbone feature IDs — consumer may not exist yet
-3. Scan **other UC files** in the same module for reverse inbound edges — UCs that declare "Depends on" or "Consumes from" this UC:
-   - Read `## Cross-Function Impact` from each sibling UC in the module
+3. Scan **other UC files** for reverse inbound edges — UCs that declare "Depends on" or "Consumes from" this UC:
+   - **Intra-module**: Read `## Cross-Function Impact` from each sibling UC in the same module
+   - **Cross-module**: When Modular/Program activation detected, scan other module UC files for `Consumes from` entries targeting this module
    - Collect entries where Direction = "Depends on" and UC = this UC's ID
-   - Collect entries where Direction = "Consumes from" and data matches this UC's output
+   - Collect entries where Direction = "Consumes from" and Target Module = this UC's module
    - Add to **downstream impact** list (these are consumers discovered from their side)
 4. Build **upstream impact** list from "Depends on" / "Consumes from" entries in the affected UC:
    - Intra-module: list specific UCs this UC depends on, with data/state items
@@ -56,8 +57,8 @@ When a changed artifact is a UC with `## Cross-Function Impact` declarations, ex
 - {uc_id} produces {data} for module {module} ({backbone_ref}) — module not yet authored
 ```
 
-6. UCs without `## Cross-Function Impact` → skip cross-function section in impact report.
-7. Impact remains read-only — cross-function data is read, never mutated.
+7. UCs without `## Cross-Function Impact` → skip cross-function section in impact report.
+8. Impact remains read-only — cross-function data is read, never mutated.
 
 ## Governance And File-Back
 

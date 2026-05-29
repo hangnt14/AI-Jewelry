@@ -54,8 +54,9 @@ Assembly procedure:
    - `excluded_sources`
    - `source_hashes` for each included source
    - `cross_function` — counts and status from Step 10.5 inlining:
-     - `ucs_scanned`: number of UCs checked for `## Cross-Function Impact`
-     - `ucs_with_declarations`: number of UCs that declared dependencies
+     - `ucs_scanned`: number of UCs checked for `## Cross-Function Impact` section
+     - `ucs_with_section`: number of UCs that have the section (including those with only "None" rows)
+     - `ucs_with_edges`: number of UCs with at least one non-None dependency row
      - `intra_module_resolved`: count of within-module edges inlined
      - `inter_module_resolved`: count of inter-module edges resolved (both sides declared)
      - `inter_module_pending`: count of inter-module edges pending (consumer/producer not yet authored)
