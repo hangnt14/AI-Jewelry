@@ -27,6 +27,9 @@ ALLOWED_SUFFIXES = {
         "/04_compiled/",
         "/package-snapshot.md",
     ),
+    "qc-export": (
+        "/04_compiled/qc-kit/",
+    ),
 }
 
 FORBIDDEN_BY_COMMAND = {
@@ -46,6 +49,13 @@ FORBIDDEN_BY_COMMAND = {
     ),
     "srs": (
         "/userstories/",
+    ),
+    "qc-export": (
+        "/usecases/",
+        "/ascii-screen/",
+        "/userstories/",
+        "/srs/",
+        "/02_backbone/",
     ),
 }
 

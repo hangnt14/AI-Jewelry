@@ -31,6 +31,7 @@ Usage:
   ba-kit chunk-write --file <target_file>
   ba-kit status [--slug <slug>] [--date <YYMMDD-HHmm>] [--module <module_slug>]
   ba-kit collab status [--slug <slug>] [--date <YYMMDD-HHmm>] [--module <module_slug>]
+  ba-kit qc-export --slug <slug> --date <YYMMDD-HHmm> --module <module_slug> [--external-output <dir>] [--usecase-list]
 
 Commands:
   doctor          Check BA-kit runtime readiness, installed manifests, and optional MCP/tool dependencies.
@@ -1845,6 +1846,63 @@ stitch_state_command() {
       ;;
   esac
 }
+qc_export_command() {
+  local slug="" date_token="" module="" external_output="" usecase_list=""
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --slug)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --slug"
+        slug="$2"
+        shift 2
+        ;;
+      --date)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --date"
+        date_token="$2"
+        shift 2
+        ;;
+      --module)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --module"
+        module="$2"
+        shift 2
+        ;;
+      --external-output)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --external-output"
+        external_output="$2"
+        shift 2
+        ;;
+      --usecase-list)
+        usecase_list="1"
+        shift
+        ;;
+      *)
+        fail "Unknown argument: $1"
+        ;;
+    esac
+  done
+
+  [[ -n "${slug}" ]] || fail "Missing required argument: --slug"
+  [[ -n "${date_token}" ]] || fail "Missing required argument: --date"
+  [[ -n "${module}" ]] || fail "Missing required argument: --module"
+
+  local repo
+  repo="$(resolve_registered_repo)"
+
+  local cmd=(python3 "${repo}/scripts/qc-export.py"
+    --slug "${slug}"
+    --date "${date_token}"
+    --module "${module}"
+    --repo "${repo}"
+  )
+  if [[ -n "${external_output}" ]]; then
+    cmd+=(--external-output "${external_output}")
+  fi
+  if [[ -n "${usecase_list}" ]]; then
+    cmd+=(--usecase-list)
+  fi
+
+  "${cmd[@]}"
+}
 chunk_write_command() {
   local target_file=""
 
@@ -1943,6 +2001,9 @@ main() {
       ;;
     collab)
       collab_command "$@"
+      ;;
+    qc-export)
+      qc_export_command "$@"
       ;;
     status)
       status_command "$@"

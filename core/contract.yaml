@@ -126,7 +126,15 @@
     "qc_output_root": "plans/{slug}-{date}/03_modules/{module_slug}/qc-review",
     "qc_report": "plans/{slug}-{date}/03_modules/{module_slug}/qc-review/{module_slug}-qc-review-report-v{N}.md",
     "qc_backlog": "plans/{slug}-{date}/03_modules/{module_slug}/qc-review/{module_slug}-qc-review-question-backlog.md",
-    "behavior_qc_review": "core/behavior/qc-review.md"
+    "behavior_qc_review": "core/behavior/qc-review.md",
+    "qc_export_root": "plans/{slug}-{date}/04_compiled/qc-kit",
+    "qc_export_docs_ba": "plans/{slug}-{date}/04_compiled/qc-kit/docs/BA",
+    "qc_export_common_rules": "plans/{slug}-{date}/04_compiled/qc-kit/docs/BA/Common rule/common-rules.md",
+    "qc_export_message_list": "plans/{slug}-{date}/04_compiled/qc-kit/docs/BA/Common rule/message-list.md",
+    "qc_export_usecase_dir": "plans/{slug}-{date}/04_compiled/qc-kit/docs/BA/UC-{usecase_slug}",
+    "qc_export_usecase_file": "plans/{slug}-{date}/04_compiled/qc-kit/docs/BA/UC-{usecase_slug}/UC-{usecase_slug}.md",
+    "qc_export_summary": "plans/{slug}-{date}/04_compiled/qc-kit/qc-export-summary.json",
+    "qc_export_usecase_list": "plans/{slug}-{date}/04_compiled/qc-kit/docs/BA/usecase-list.md"
   },
   "artifact_profiles": {
     "source_manifest": "machine_facing",
