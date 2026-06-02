@@ -6,8 +6,21 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET_HOME="${HOME}/.gemini/antigravity"
 KI_BASE="${TARGET_HOME}/knowledge"
 BA_KIT_KI="${KI_BASE}/ba-kit-workflow"
+GUARDRAIL_TARGET="${TARGET_HOME}/ba-kit"
+GUARDRAIL_SCRIPT_TARGET="${GUARDRAIL_TARGET}/scripts"
+GUARDRAIL_DOC_TARGET="${GUARDRAIL_TARGET}/docs"
 LOCAL_BIN_TARGET="${HOME}/.local/bin"
 STATE_TARGET="${HOME}/.local/share/ba-kit/installations"
+
+GUARDRAIL_SCRIPTS=(
+  "guardrail-preflight.py"
+  "guardrail-build-excerpts.py"
+  "guardrail-audit.py"
+  "guardrail_common.py"
+  "validate-index-quality.py"
+  "check-token-budget.py"
+  "check-write-scope.py"
+)
 
 ensure_dir() {
   mkdir -p "$1"
@@ -22,6 +35,24 @@ install_cli() {
   mv "${temp_target}" "${LOCAL_BIN_TARGET}/ba-kit"
 }
 
+install_guardrail_assets() {
+  local script_name
+
+  mkdir -p "${GUARDRAIL_SCRIPT_TARGET}" "${GUARDRAIL_DOC_TARGET}"
+  for script_name in "${GUARDRAIL_SCRIPTS[@]}"; do
+    if [[ ! -f "${ROOT_DIR}/scripts/${script_name}" ]]; then
+      echo "Guardrail script missing: ${ROOT_DIR}/scripts/${script_name}" >&2
+      exit 1
+    fi
+    cp "${ROOT_DIR}/scripts/${script_name}" "${GUARDRAIL_SCRIPT_TARGET}/${script_name}"
+  done
+
+  cp "${ROOT_DIR}/docs/runtime-hard-guardrails.md" "${GUARDRAIL_DOC_TARGET}/runtime-hard-guardrails.md"
+  if [[ -f "${ROOT_DIR}/core/token-budget.md" ]]; then
+    cp "${ROOT_DIR}/core/token-budget.md" "${GUARDRAIL_DOC_TARGET}/token-budget.md"
+  fi
+}
+
 write_manifest() {
   mkdir -p "${STATE_TARGET}"
   cat > "${STATE_TARGET}/antigravity.env" <<EOF
@@ -29,6 +60,14 @@ BA_KIT_RUNTIME=antigravity
 BA_KIT_SOURCE_REPO=${ROOT_DIR}
 BA_KIT_INSTALLED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 BA_KIT_INSTALLER=scripts/install-antigravity-ba-kit.sh
+BA_KIT_GUARDRAIL_ROOT=${GUARDRAIL_TARGET}
+BA_KIT_GUARDRAIL_PREFLIGHT=${GUARDRAIL_SCRIPT_TARGET}/guardrail-preflight.py
+BA_KIT_GUARDRAIL_EXCERPTS=${GUARDRAIL_SCRIPT_TARGET}/guardrail-build-excerpts.py
+BA_KIT_GUARDRAIL_AUDIT=${GUARDRAIL_SCRIPT_TARGET}/guardrail-audit.py
+BA_KIT_INDEX_VALIDATOR=${GUARDRAIL_SCRIPT_TARGET}/validate-index-quality.py
+BA_KIT_CHECK_TOKEN_BUDGET=${GUARDRAIL_SCRIPT_TARGET}/check-token-budget.py
+BA_KIT_CHECK_WRITE_SCOPE=${GUARDRAIL_SCRIPT_TARGET}/check-write-scope.py
+BA_KIT_GUARDRAIL_DOC=${GUARDRAIL_DOC_TARGET}/runtime-hard-guardrails.md
 EOF
 }
 
@@ -162,6 +201,22 @@ COLLAB-HOME.md and MODULE-HOME.md are BA-facing collaboration dashboards. GitHub
 - Canonical contract: core/contract.yaml + core/contract-behavior.md
 - Memory: compact `project-memory.md` by default; shard mode navigates via `project-memory/index.md` first
 - Delegation: pass bounded packets, not full memory trees or merged artifacts
+
+## Guardrail Enforcement
+
+Before running guarded commands (FRD, stories, SRS, package), run:
+  `ba-kit guardrail --command <cmd> --slug <s> --date <d> [--module <m>]`
+
+If blocked: surface the block message and run the refresh command.
+If ok: use ALLOW_READS paths for file discovery.
+
+After writing artifacts, validate indexes:
+  `ba-kit validate-index --index-key <key> --slug <s> --date <d> [--module <m>] --writeback`
+
+Before packaging, check token budgets:
+  `ba-kit check-token-budget`
+
+Guardrail scripts are installed at `~/.gemini/antigravity/ba-kit/scripts/`.
 KIEOF
 }
 
@@ -171,10 +226,12 @@ ensure_dir "${TARGET_HOME}"
 ensure_dir "${KI_BASE}"
 
 create_workflow_ki
+install_guardrail_assets
 install_cli
 write_manifest
 
 echo "Created BA-kit KI at ${BA_KIT_KI}"
+echo "Installed guardrail assets to ${GUARDRAIL_TARGET} (7 scripts + docs)"
 echo "Installed update CLI to ${LOCAL_BIN_TARGET}/ba-kit"
 echo "BA-kit Antigravity installation complete."
 echo ""

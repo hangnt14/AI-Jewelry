@@ -13,7 +13,10 @@ Before any artifact reads, check for a current package snapshot manifest at
 - If the snapshot exists and `snapshot_state: current`, use it as the authoritative
   artifact inventory.  Do not re-run broad index discovery.
 - If the snapshot is absent or `snapshot_state: degraded`, run the guardrail preflight
-  to classify indexes, then proceed with index-first discovery.
+  to classify indexes, then proceed with index-first discovery:
+  ```bash
+  ba-kit guardrail --command package --slug {slug} --date {date}
+  ```
 - Regenerate the snapshot after any compile step by running:
   ```bash
   python3 scripts/package-snapshot.py --repo . --slug {slug} --date {date} --output plans/{slug}-{date}/02_backbone/package-snapshot.md
@@ -68,6 +71,10 @@ Run a final packaging and quality pass:
 - Flag broken links or missing sections.
 - Produce a delivery summary.
 - After compile, refresh the snapshot manifest.
+- Before final output, validate token budgets:
+  ```bash
+  ba-kit check-token-budget
+  ```
 
 ## Step 12.1 - Generate packaged HTML
 

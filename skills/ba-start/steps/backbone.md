@@ -71,7 +71,13 @@ The backbone must contain:
 
 After writing the backbone, initialize or refresh `paths.project_memory` using [../../../templates/project-memory-template.md](../../../templates/project-memory-template.md).
 Also create or refresh `paths.backbone_index` using [../../../templates/backbone-index-template.md](../../../templates/backbone-index-template.md).
-Generate the index with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run `python3 scripts/validate-index-quality.py --repo . --index-key backbone_index --slug <slug> --date <date> --writeback` before any downstream action treats the index as `current`.
+Generate the index with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run:
+
+```bash
+ba-kit validate-index --index-key backbone_index --slug <slug> --date <date> --writeback
+```
+
+before any downstream action treats the index as `current`.
 
 Also refresh `paths.project_home` using [../../../templates/project-home-template.md](../../../templates/project-home-template.md) so non-technical BAs can resume without understanding slug/date/module internals.
 

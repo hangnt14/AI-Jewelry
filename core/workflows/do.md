@@ -59,6 +59,8 @@ Reason: {one-line reason}
 <step name="dispatch">
 Hand off to the chosen command and stop.
 
+Before dispatching to a guarded command (`ba-start frd`, `ba-start stories`, `ba-start srs`, `ba-start package`), instruct the runtime to run `ba-kit guardrail --command <cmd> --slug <slug> --date <date> [--module <module>]` first. If blocked, surface the message and the refresh command instead of proceeding.
+
 Rules:
 - `ba-impact` for requirement changes or correction statements
 - `ba-next` for "what should I do next"

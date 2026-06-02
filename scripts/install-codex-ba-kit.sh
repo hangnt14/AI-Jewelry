@@ -25,6 +25,8 @@ GUARDRAIL_SCRIPTS=(
   "guardrail-audit.py"
   "guardrail_common.py"
   "validate-index-quality.py"
+  "check-token-budget.py"
+  "check-write-scope.py"
 )
 STALE_TEMPLATE_FILES=(
   "wireframe-input-template.md"
@@ -129,6 +131,8 @@ BA_KIT_GUARDRAIL_PREFLIGHT=${GUARDRAIL_SCRIPT_TARGET}/guardrail-preflight.py
 BA_KIT_GUARDRAIL_EXCERPTS=${GUARDRAIL_SCRIPT_TARGET}/guardrail-build-excerpts.py
 BA_KIT_GUARDRAIL_AUDIT=${GUARDRAIL_SCRIPT_TARGET}/guardrail-audit.py
 BA_KIT_INDEX_VALIDATOR=${GUARDRAIL_SCRIPT_TARGET}/validate-index-quality.py
+BA_KIT_CHECK_TOKEN_BUDGET=${GUARDRAIL_SCRIPT_TARGET}/check-token-budget.py
+BA_KIT_CHECK_WRITE_SCOPE=${GUARDRAIL_SCRIPT_TARGET}/check-write-scope.py
 BA_KIT_GUARDRAIL_DOC=${GUARDRAIL_DOC_TARGET}/runtime-hard-guardrails.md
 EOF
 }
@@ -359,6 +363,6 @@ if [[ -d "${CORE_SOURCE}" ]]; then
 fi
 remove_stale_templates "${TARGET_TEMPLATES}"
 install_guardrail_runtime_assets
-echo "Installed guardrail runtime assets to ${CORE_TARGET}"
+echo "Installed guardrail runtime assets to ${CORE_TARGET} (7 scripts)"
 write_manifest
 echo "Installed update CLI to ${LOCAL_BIN_TARGET}/ba-kit"

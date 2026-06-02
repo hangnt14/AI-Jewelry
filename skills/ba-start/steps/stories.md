@@ -37,6 +37,8 @@ Run Step 7 only.
 - Prefer `paths.backbone_index` for routing. If it is missing and the backbone is large, stop and ask to refresh the index.
 - If backbone is missing, print the exact missing path and stop.
 - Run a narrow stories preflight:
+  - If `ba-kit guardrail --command stories --slug <slug> --date <date> --module <module>` returns `status=block`, surface the block message and stop
+  - Otherwise use `ALLOW_READS` for file discovery
   - read `paths.backbone_index` first
   - read only targeted `paths.backbone` sections
   - read `paths.plan` only when it adds needed scope context
@@ -88,7 +90,7 @@ After generating all story item files, create or refresh `paths.userstories_inde
 Generate `paths.userstories_index` with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run:
 
 ```bash
-python3 scripts/validate-index-quality.py --repo . --index-key userstories_index --slug <slug> --date <date> --module <module> --writeback
+ba-kit validate-index --index-key userstories_index --slug <slug> --date <date> --module <module> --writeback
 ```
 
 before any downstream routing trusts the index as `current`.

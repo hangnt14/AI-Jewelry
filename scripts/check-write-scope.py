@@ -10,6 +10,15 @@ from pathlib import Path
 
 
 ALLOWED_SUFFIXES = {
+    "frd": (
+        "/frd.md",
+    ),
+    "stories": (
+        "/userstories/",
+    ),
+    "backbone": (
+        "/02_backbone/",
+    ),
     "srs": (
         "/usecases/",
         "/ascii-screen/",

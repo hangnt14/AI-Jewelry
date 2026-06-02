@@ -34,7 +34,10 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the in
 - Resolve slug, date, and module using the shared contract.
 - Require `paths.backbone`, `paths.backbone_index`, and `paths.userstories_index`.
 - If a required artifact is missing, print the exact missing path, tell the user which subcommand to run first, and stop.
-- Run preflight from indexes first; read only targeted backbone/story sections, optional module FRD, and `paths.plan` when it exists.
+- Run preflight from indexes first:
+  - If `ba-kit guardrail --command srs --slug <slug> --date <date> --module <module>` returns `status=block`, surface the block message and stop
+  - Otherwise use `ALLOW_READS` for file discovery
+- read only targeted backbone/story sections, optional module FRD, and `paths.plan` when it exists.
 - In reverse mode, gate on a valid reverse baseline, current drift state, and traceable reverse evidence; do not require `paths.design_doc`.
 
 ## Outputs
@@ -57,8 +60,8 @@ Treat generated index artifacts as `agent_facing`; keep them compact.
 When `paths.usecases_index` or `paths.ascii_screen_index` is written or refreshed, keep `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run:
 
 ```bash
-python3 scripts/validate-index-quality.py --repo . --index-key usecases_index --slug <slug> --date <date> --module <module> --writeback
-python3 scripts/validate-index-quality.py --repo . --index-key ascii_screen_index --slug <slug> --date <date> --module <module> --writeback
+ba-kit validate-index --index-key usecases_index --slug <slug> --date <date> --module <module> --writeback
+ba-kit validate-index --index-key ascii_screen_index --slug <slug> --date <date> --module <module> --writeback
 ```
 
 before downstream work treats the indexes as `current`.

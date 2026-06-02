@@ -23,6 +23,9 @@ Usage:
   ba-kit check-srs-index <srs-index.md> [--json]
   ba-kit check-screen-canon <screen.md> [--json]
   ba-kit check-source-of-truth <module_root> [--json]
+  ba-kit guardrail --command <command> --slug <slug> --date <YYMMDD-HHmm> [--module <module_slug>]
+  ba-kit check-token-budget [--repo <path>]
+  ba-kit validate-index --index-key <key> --slug <slug> --date <YYMMDD-HHmm> [--module <module_slug>] [--writeback]
   ba-kit template-section <template> <group>
   ba-kit source-extract <file> [--slug <slug>] [--date <YYMMDD-HHmm>] [--chunk-chars <n>] [--copy-raw] [--promote]
   ba-kit context-budget [--command <command>] [--slug <slug>] [--date <YYMMDD-HHmm>] [--module <module_slug>]
@@ -45,6 +48,9 @@ Commands:
   check-srs-index [LEGACY] Validate old srs-index.md registry (deprecated; use doctor-srs for new architecture).
   check-screen-canon [LEGACY] Validate old screens/*.md canon file (deprecated; use check-ascii-screen-index for new architecture).
   check-source-of-truth Validate compiled SRS/receipt canon invariants.
+  guardrail       Run preflight guardrail verdict for a guarded BA command.
+  check-token-budget  Validate file sizes against core/token-budget.md budgets.
+  validate-index  Run producer-side index quality validation with optional writeback.
   template-section  Print only the requested template group from templates/manifest.json.
   source-extract  Extract a source file into staged cache and optionally promote it into 00_source.
   context-budget  Estimate runtime read-context bytes for a BA command.
@@ -1463,6 +1469,125 @@ check_source_of_truth_command() {
   python_guardrail_command "check-source-of-truth.py" "$@"
 }
 
+guardrail_command() {
+  local command_name="" slug="" date_token="" module_slug="" repo
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --command)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --command"
+        command_name="$2"
+        shift 2
+        ;;
+      --slug)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --slug"
+        slug="$2"
+        shift 2
+        ;;
+      --date)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --date"
+        date_token="$2"
+        shift 2
+        ;;
+      --module)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --module"
+        module_slug="$2"
+        shift 2
+        ;;
+      *)
+        fail "Unsupported argument for 'guardrail': $1"
+        ;;
+    esac
+  done
+
+  [[ -n "${command_name}" ]] || fail "guardrail requires --command"
+  [[ -n "${slug}" ]] || fail "guardrail requires --slug"
+  [[ -n "${date_token}" ]] || fail "guardrail requires --date"
+
+  repo="$(resolve_registered_repo)"
+  local args=(
+    --command "${command_name}"
+    --slug "${slug}"
+    --date "${date_token}"
+    --repo "${repo}"
+  )
+  [[ -n "${module_slug}" ]] && args+=(--module "${module_slug}")
+
+  python3 "${repo}/scripts/guardrail-preflight.py" "${args[@]}"
+}
+
+check_token_budget_command() {
+  local repo=""
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --repo)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --repo"
+        repo="$2"
+        shift 2
+        ;;
+      *)
+        fail "Unsupported argument for 'check-token-budget': $1"
+        ;;
+    esac
+  done
+
+  [[ -z "${repo}" ]] && repo="$(resolve_registered_repo)"
+  python3 "${repo}/scripts/check-token-budget.py" "${repo}"
+}
+
+validate_index_command() {
+  local index_key="" slug="" date_token="" module_slug="" writeback="" repo
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --index-key)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --index-key"
+        index_key="$2"
+        shift 2
+        ;;
+      --slug)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --slug"
+        slug="$2"
+        shift 2
+        ;;
+      --date)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --date"
+        date_token="$2"
+        shift 2
+        ;;
+      --module)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --module"
+        module_slug="$2"
+        shift 2
+        ;;
+      --writeback)
+        writeback="1"
+        shift
+        ;;
+      *)
+        fail "Unsupported argument for 'validate-index': $1"
+        ;;
+    esac
+  done
+
+  [[ -n "${index_key}" ]] || fail "validate-index requires --index-key"
+  [[ -n "${slug}" ]] || fail "validate-index requires --slug"
+  [[ -n "${date_token}" ]] || fail "validate-index requires --date"
+
+  repo="$(resolve_registered_repo)"
+  local args=(
+    --repo "${repo}"
+    --index-key "${index_key}"
+    --slug "${slug}"
+    --date "${date_token}"
+  )
+  [[ -n "${module_slug}" ]] && args+=(--module "${module_slug}")
+  [[ -n "${writeback}" ]] && args+=(--writeback)
+
+  python3 "${repo}/scripts/validate-index-quality.py" "${args[@]}"
+}
+
 next_command() {
   local slug="" date_token="" module="" repo userstories_index_path srs_path srs_spec_path compiled_frd compiled_srs project_home_path module_root_abs receipt_state source_count
 
@@ -2017,6 +2142,15 @@ main() {
       ;;
     check-source-of-truth)
       check_source_of_truth_command "$@"
+      ;;
+    guardrail)
+      guardrail_command "$@"
+      ;;
+    check-token-budget)
+      check_token_budget_command "$@"
+      ;;
+    validate-index)
+      validate_index_command "$@"
       ;;
     template-section)
       template_section_command "$@"

@@ -33,6 +33,8 @@ Run Step 6 only.
 - If backbone is missing, print the exact missing path and stop.
 - Trust accepted user intent. Do not reopen scope discovery after FRD execution is accepted.
 - Run a narrow FRD preflight:
+  - If `ba-kit guardrail --command frd --slug <slug> --date <date> --module <module>` returns `status=block`, surface the block message and stop
+  - Otherwise use `ALLOW_READS` for file discovery
   - read `paths.backbone_index` first
   - read only targeted `paths.backbone` sections and `paths.plan` when it exists
   - do not scan unrelated module folders once slug, date, and module are resolved

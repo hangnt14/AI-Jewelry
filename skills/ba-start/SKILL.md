@@ -13,9 +13,10 @@ Use this skill when the BA lifecycle step is explicit. Treat `ba-do` as the free
 1. Read [../../core/contract.yaml](../../core/contract.yaml) for exact paths, prerequisites, defaults, states, command metadata, and `behavior_shards`.
 2. Read [../../core/contract-behavior.md](../../core/contract-behavior.md) for shared runtime-neutral policy.
 3. Parse arguments and resolve the selected subcommand.
-4. Read only the behavior shard(s) listed in `behavior_shards.<command>`.
-5. Read only the matching file under `steps/`.
-6. Read templates and upstream artifacts only when the active step actually needs them.
+4. For guarded commands (`frd`, `stories`, `srs`, `package`, `status`, `next`): run `ba-kit guardrail --command <cmd> --slug <slug> --date <date> [--module <module>]`. If `status=block`, surface the block message and stop. Otherwise use `ALLOW_READS` for file discovery.
+5. Read only the behavior shard(s) listed in `behavior_shards.<command>`.
+6. Read only the matching file under `steps/`.
+7. Read templates and upstream artifacts only when the active step actually needs them.
 
 ## Invocation
 
