@@ -133,7 +133,6 @@ remove_stale_templates "${TEMPLATES_TARGET}"
 copy_tree "${CORE_SOURCE}" "${CORE_TARGET}"
 remove_stale_core_paths "${CORE_TARGET}"
 install_cli
-write_manifest
 
 mkdir -p "${ROOT_DIR}/docs" "${ROOT_DIR}/templates" "${ROOT_DIR}/designs"
 
@@ -143,4 +142,26 @@ echo "Installed agents to ${AGENTS_TARGET}"
 echo "Installed templates to ${TEMPLATES_TARGET}"
 echo "Installed BA core to ${CORE_TARGET}"
 echo "Installed update CLI to ${LOCAL_BIN_TARGET}/ba-kit"
-echo "BA-kit installation complete."
+
+if [[ -f "${ROOT_DIR}/scripts/install-claude-code-ba-kit.sh" ]]; then
+  echo ""
+  echo "Executing Claude Code guardrail installation..."
+  if bash "${ROOT_DIR}/scripts/install-claude-code-ba-kit.sh"; then
+    echo ""
+    echo "BA-kit installation complete (core + guardrails)."
+  else
+    rc=$?
+    echo "" >&2
+    echo "WARNING: Guardrail installation failed (exit code ${rc})." >&2
+    echo "BA-kit core installed successfully, but guardrail hooks may be incomplete." >&2
+    echo "Re-run ./install.sh or check scripts/install-claude-code-ba-kit.sh for errors." >&2
+    write_manifest
+    echo ""
+    echo "BA-kit installation complete (core only, guardrails failed)."
+  fi
+else
+  write_manifest
+  echo ""
+  echo "BA-kit installation complete."
+fi
+
