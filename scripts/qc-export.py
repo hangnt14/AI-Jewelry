@@ -700,12 +700,18 @@ def run_export(args: argparse.Namespace) -> int:
         print("No use case files found.", file=sys.stderr)
         return 1
 
-    # Output directories — clean stale UC folders and usecase-list from prior exports
+    # Output directories — clean stale UC files and usecase-list from prior exports for this module
     docs_ba = output_root / "docs" / "BA"
-    for stale_dir in docs_ba.glob("UC-*"):
+    module_docs_ba = docs_ba / module
+    # Clean stale per-UC screen dirs from previous export
+    for stale_dir in module_docs_ba.glob("UC-*-screens"):
         if stale_dir.is_dir():
             shutil.rmtree(stale_dir)
-    stale_list = docs_ba / "usecase-list.md"
+    # Clean stale UC markdown files from previous export (e.g. UC removed from canon)
+    for stale_uc in module_docs_ba.glob("UC-*.md"):
+        if stale_uc.is_file():
+            stale_uc.unlink()
+    stale_list = module_docs_ba / "usecase-list.md"
     if stale_list.exists():
         stale_list.unlink()
     common_dir = docs_ba / "Common rule"
@@ -741,6 +747,7 @@ def run_export(args: argparse.Namespace) -> int:
             contract_paths=paths,
             slug=slug,
             date_token=date_token,
+            module=module,
         )
         summary["usecases"].append(uc_result)
 
@@ -752,7 +759,7 @@ def run_export(args: argparse.Namespace) -> int:
 
     # Optional usecase list
     if args.usecase_list:
-        write_usecase_list(docs_ba, summary, uc_files, repo)
+        write_usecase_list(module_docs_ba, summary, uc_files, repo)
 
 
     # Print summary
@@ -779,7 +786,8 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, output_root: Path,
                      message_registry: dict[str, str], common_rules_path: Path | None,
                      message_list_path: Path | None,
                      contract_paths: dict[str, Any] | None = None,
-                     slug: str = "", date_token: str = "") -> dict[str, Any]:
+                     slug: str = "", date_token: str = "",
+                     module: str = "") -> dict[str, Any]:
     # noqa: PLR0913 — contract resolution, validation, external-output support
     """Process one UC file and write its QC export."""
     uc_text = uc_path.read_text(encoding="utf-8")
@@ -847,7 +855,7 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, output_root: Path,
     if contract_paths and slug and date_token:
         usecase_file_template = contract_paths.get(
             "qc_export_usecase_file",
-            "plans/{slug}-{date}/04_compiled/qc-kit/docs/BA/UC-{usecase_slug}/UC-{usecase_slug}.md",
+            "plans/{slug}-{date}/04_compiled/qc-kit/docs/BA/{module}/UC-{usecase_slug}.md",
         )
         # Rebase contract path under output_root:
         # strip the qc_export_root prefix so result is output_root / relative-path-under-qc-kit
@@ -857,7 +865,7 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, output_root: Path,
         )
         rendered_root = render_path(qc_root_template, slug=slug, date=date_token)
         rendered_full = render_path(
-            usecase_file_template, slug=slug, date=date_token, usecase_slug=uc_slug_raw,
+            usecase_file_template, slug=slug, date=date_token, usecase_slug=uc_slug_raw, module=module,
         )
         if rendered_full.startswith(rendered_root + "/"):
             rel = rendered_full[len(rendered_root) + 1:]
@@ -865,7 +873,7 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, output_root: Path,
             rel = rendered_full
         out_path = output_root / rel
     else:
-        uc_dir = docs_ba / uc_slug_safe
+        uc_dir = docs_ba / module
         out_path = uc_dir / f"{uc_slug_safe}.md"
 
     # Validate before writing — invalid handoff must not be emitted
@@ -881,7 +889,7 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, output_root: Path,
         out_path.write_text(full_doc + "\n", encoding="utf-8")
 
         # Copy PNGs
-        screens_out = out_path.parent / "screens"
+        screens_out = out_path.parent / f"UC-{uc_slug_safe}-screens"
         for png_src in png_paths:
             png_dest = screens_out / Path(png_src).name
             _guard_path(png_dest, repo_root)
@@ -959,7 +967,7 @@ def export_common_rules(common_dir: Path, rule_registry: dict[str, str],
 
 
 
-def write_usecase_list(docs_ba: Path, summary: dict[str, Any], uc_files: list[Path], repo_root: Path) -> None:
+def write_usecase_list(module_dir: Path, summary: dict[str, Any], uc_files: list[Path], repo_root: Path) -> None:
     lines = [
         "# Use Case List",
         "",
@@ -974,7 +982,7 @@ def write_usecase_list(docs_ba: Path, summary: dict[str, Any], uc_files: list[Pa
         refs = ", ".join(u.get("unresolved_refs", [])) or "—"
         lines.append(f"| {slug} | {resolved} | {refs} |")
     lines.append("")
-    list_path = docs_ba / "usecase-list.md"
+    list_path = module_dir / "usecase-list.md"
     _guard_path(list_path, repo_root)
     list_path.write_text("\n".join(lines), encoding="utf-8")
 

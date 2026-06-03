@@ -34,50 +34,50 @@ OUTDIR="${FIXTURE}/plans/test-proj-260529-2100/04_compiled/qc-kit/docs/BA"
 
 [[ -f "${OUTDIR}/Common rule/common-rules.md" ]] && ok "common-rules.md exists" || fail "common-rules.md missing"
 [[ -f "${OUTDIR}/Common rule/message-list.md" ]] && ok "message-list.md exists" || fail "message-list.md missing"
-[[ -f "${OUTDIR}/UC-checkout/UC-checkout.md" ]] && ok "UC-checkout.md exists" || fail "UC-checkout.md missing"
-[[ -f "${OUTDIR}/UC-refund/UC-refund.md" ]] && ok "UC-refund.md exists" || fail "UC-refund.md missing"
+[[ -f "${OUTDIR}/payment/UC-checkout.md" ]] && ok "UC-checkout.md exists" || fail "UC-checkout.md missing"
+[[ -f "${OUTDIR}/payment/UC-refund.md" ]] && ok "UC-refund.md exists" || fail "UC-refund.md missing"
 
 # Test 2: exactly six top-level ## headings in exported UC (no extra ## headings)
 echo ""
 echo "[test 2] Six top-level ## headings"
 for heading in "1. Use Case Description" "2. Screen Description" \
   "3. Validation Summary" "4. Cross-References" "5. Open Questions" "6. Changelog"; do
-  grep -q "^## ${heading}" "${OUTDIR}/UC-checkout/UC-checkout.md" && \
+  grep -q "^## ${heading}" "${OUTDIR}/payment/UC-checkout.md" && \
     ok "heading '${heading}' present" || fail "heading '${heading}' missing"
 done
 # Verify exactly 6 total ## headings (counts all, not just numbered)
-TOTAL_H2=$(grep -c '^## ' "${OUTDIR}/UC-checkout/UC-checkout.md" || true)
+TOTAL_H2=$(grep -c '^## ' "${OUTDIR}/payment/UC-checkout.md" || true)
 [[ "${TOTAL_H2}" -eq 6 ]] && ok "exactly 6 total ## headings (found ${TOTAL_H2})" \
   || fail "expected 6 total ## headings, found ${TOTAL_H2}"
 
 # Test 3: source links present (as bold label, not ## heading)
 echo ""
 echo "[test 3] Source links"
-grep -q "BA-kit Source Links" "${OUTDIR}/UC-checkout/UC-checkout.md" && \
+grep -q "BA-kit Source Links" "${OUTDIR}/payment/UC-checkout.md" && \
   ok "source links present" || fail "source links missing"
 # Must NOT be a ## heading
-grep -q '^## BA-kit Source Links' "${OUTDIR}/UC-checkout/UC-checkout.md" && \
+grep -q '^## BA-kit Source Links' "${OUTDIR}/payment/UC-checkout.md" && \
   fail "source links should not be a ## heading" || ok "source links not a ## heading"
 # Source UC Path must be resolved (not N/A)
-grep -q 'Source UC Path.*N/A' "${OUTDIR}/UC-checkout/UC-checkout.md" && \
+grep -q 'Source UC Path.*N/A' "${OUTDIR}/payment/UC-checkout.md" && \
   fail "source UC path is N/A" || ok "source UC path resolved"
 
 # Test 4: disclaimer present
 echo ""
 echo "[test 4] Disclaimer"
-grep -q "one-way handoff" "${OUTDIR}/UC-checkout/UC-checkout.md" && \
+grep -q "one-way handoff" "${OUTDIR}/payment/UC-checkout.md" && \
   ok "disclaimer present" || fail "disclaimer missing"
 
 # Test 5: functional integration for UC with cross-function table
 echo ""
 echo "[test 5] Functional Integration"
-grep -q "Functional Integration" "${OUTDIR}/UC-checkout/UC-checkout.md" && \
+grep -q "Functional Integration" "${OUTDIR}/payment/UC-checkout.md" && \
   ok "Functional Integration in UC-checkout" || fail "Functional Integration missing in UC-checkout"
 
 # Test 6: UC without cross-function should still include the section
 echo ""
 echo "[test 6] Functional Integration section always present"
-grep -q "Functional Integration" "${OUTDIR}/UC-refund/UC-refund.md" && \
+grep -q "Functional Integration" "${OUTDIR}/payment/UC-refund.md" && \
   ok "Functional Integration section exists" || fail "Functional Integration missing"
 
 # Test 7: summary JSON
@@ -118,7 +118,7 @@ python3 "${EXPORT_SCRIPT}" \
   --module payment \
   --repo "${FIXTURE}" \
   --usecase-list >/dev/null 2>&1
-[[ -f "${OUTDIR}/usecase-list.md" ]] && ok "usecase-list.md created" || fail "usecase-list.md missing"
+[[ -f "${OUTDIR}/payment/usecase-list.md" ]] && ok "usecase-list.md created" || fail "usecase-list.md missing"
 
 # Test 11: external output
 echo ""
@@ -129,7 +129,7 @@ python3 "${EXPORT_SCRIPT}" \
   --module payment \
   --repo "${FIXTURE}" \
   --external-output "${TMPDIR}/qc-out" >/dev/null 2>&1
-[[ -f "${TMPDIR}/qc-out/docs/BA/UC-checkout/UC-checkout.md" ]] && \
+[[ -f "${TMPDIR}/qc-out/docs/BA/payment/UC-checkout.md" ]] && \
   ok "external output works" || fail "external output failed"
 
 # Test 12: check-write-scope boundary-aware matching — allows qc-kit but not sibling
@@ -160,8 +160,8 @@ BA_KIT_SOURCE_REPO="${MINI_REPO}" "${REPO}/scripts/ba-kit" qc-export \
   --slug test-proj --date 260529-2100 --module payment >/dev/null 2>&1 \
   || fail "ba-kit wrapper qc-export failed"
 MINI_OUT="${MINI_REPO}/plans/test-proj-260529-2100/04_compiled/qc-kit/docs/BA"
-[[ -f "${MINI_OUT}/UC-checkout/UC-checkout.md" ]] && ok "wrapper: UC-checkout.md exists" || fail "wrapper: UC-checkout.md missing"
-[[ -f "${MINI_OUT}/UC-refund/UC-refund.md" ]] && ok "wrapper: UC-refund.md exists" || fail "wrapper: UC-refund.md missing"
+[[ -f "${MINI_OUT}/payment/UC-checkout.md" ]] && ok "wrapper: UC-checkout.md exists" || fail "wrapper: UC-checkout.md missing"
+[[ -f "${MINI_OUT}/payment/UC-refund.md" ]] && ok "wrapper: UC-refund.md exists" || fail "wrapper: UC-refund.md missing"
 
 # Test 15: valid wrapper --external-output works and writes to resolved external dir
 echo ""
@@ -171,8 +171,8 @@ BA_KIT_SOURCE_REPO="${MINI_REPO}" "${REPO}/scripts/ba-kit" qc-export \
   --slug test-proj --date 260529-2100 --module payment \
   --external-output "${WRAP_EXT}" >/dev/null 2>&1 \
   || fail "wrapper external-output failed"
-[[ -f "${WRAP_EXT}/docs/BA/UC-checkout/UC-checkout.md" ]] && ok "wrapper external: UC-checkout.md exists" || fail "wrapper external: UC-checkout.md missing"
-[[ -f "${WRAP_EXT}/docs/BA/UC-refund/UC-refund.md" ]] && ok "wrapper external: UC-refund.md exists" || fail "wrapper external: UC-refund.md missing"
+[[ -f "${WRAP_EXT}/docs/BA/payment/UC-checkout.md" ]] && ok "wrapper external: UC-checkout.md exists" || fail "wrapper external: UC-checkout.md missing"
+[[ -f "${WRAP_EXT}/docs/BA/payment/UC-refund.md" ]] && ok "wrapper external: UC-refund.md exists" || fail "wrapper external: UC-refund.md missing"
 
 # Test 16: relative --external-output inside repo is blocked (F#1 regression)
 echo ""

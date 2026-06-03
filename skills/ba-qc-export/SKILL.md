@@ -110,12 +110,12 @@ plans/{slug}-{date}/04_compiled/qc-kit/
     Common rule/
       common-rules.md            <-- Exported common rule registry
       message-list.md            <-- Exported common message list
-    UC-{usecase_slug}/
+    {module_slug}/
       UC-{usecase_slug}.md       <-- Monolithic markdown file containing UC details,
                                      inlined screen specs, ACs, and referenced rules
-      screens/
+      UC-{usecase_slug}-screens/
         *.png                    <-- Supplementary PNG assets (if any)
-    usecase-list.md              <-- Optional UC list index (if --usecase-list is used)
+      usecase-list.md            <-- Optional UC list index (if --usecase-list is used)
 ```
 
 **CRITICAL:** Under no circumstances does `qc-export` generate separate `usecases/`, `screens/`, or `userstories/` folders containing separate markdown files. Screens, user stories, and rules are always compiled and inlined into the single `UC-{usecase_slug}.md` file for that UC.

@@ -30,10 +30,10 @@ plans/{slug}-{date}/04_compiled/qc-kit/
     Common rule/
       common-rules.md         ← resolved codes to text
       message-list.md         ← resolved message codes to text
-    UC-{slug}/
+    {module_slug}/
       UC-{slug}.md             ← 6-section monolithic UC doc
-      screens/*.png             ← design images (if placed by BA)
-    usecase-list.md             ← optional, with --usecase-list
+      UC-{slug}-screens/*.png  ← design images (if placed by BA)
+      usecase-list.md          ← optional, with --usecase-list
 
 External mirror only via explicit --external-output <dir>.
 ```
