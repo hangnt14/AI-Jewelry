@@ -27,8 +27,6 @@ from pathlib import Path
 WARN_THRESHOLD = int(os.environ.get("CONTEXT_GUARD_WARN", 5000))
 CRITICAL_THRESHOLD = int(os.environ.get("CONTEXT_GUARD_CRITICAL", 8000))
 GUARD_TOOLS = frozenset({"Bash", "Read", "Grep"})
-# Patterns that indicate user is already filtering — skip guard
-SAFE_FLAGS = frozenset({"head", "tail", "head_limit", "offset", "limit"})
 
 
 def load_input() -> dict:

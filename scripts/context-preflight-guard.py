@@ -49,9 +49,15 @@ def load_input() -> dict:
         return {}
 
 
-def has_safe_flags(tool_input: dict) -> bool:
-    """Read with offset or limit is intentional and safe."""
-    return "limit" in tool_input or "offset" in tool_input
+def has_safe_flags(tool_input: dict, file_size: int = 0) -> bool:
+    """Read with limit is always safe. offset alone is safe only for small files."""
+    has_limit = "limit" in tool_input
+    has_offset = "offset" in tool_input
+    if has_limit:
+        return True
+    if has_offset and file_size < BLOCK_THRESHOLD:
+        return True
+    return False
 
 
 def file_size_bytes(file_path: str) -> int:
@@ -66,13 +72,15 @@ def read_manifest() -> list:
     """Read the reads manifest (JSONL). Returns list of read entries."""
     if not READS_MANIFEST.exists():
         return []
+    content = READS_MANIFEST.read_text(encoding="utf-8").strip()
+    if not content:
+        return []
     entries = []
-    for line in READS_MANIFEST.read_text(encoding="utf-8").strip().split("\n"):
-        if line:
-            try:
-                entries.append(json.loads(line))
-            except json.JSONDecodeError:
-                pass
+    for line in content.split("\n"):
+        try:
+            entries.append(json.loads(line))
+        except json.JSONDecodeError:
+            pass
     return entries
 
 
@@ -157,7 +165,6 @@ def main() -> int:
         return 0
 
     # Check for safe flags first — if present, allow through but still track
-    safe = has_safe_flags(tool_input)
     size = file_size_bytes(file_path)
 
     if size < 0:
@@ -165,19 +172,20 @@ def main() -> int:
         # Don't block — let the tool handle the error
         return 0
 
-    track_read(file_path, size, safe)
+    safe = has_safe_flags(tool_input, size)
 
-    if safe:
-        # Has offset+limit — always allow
-        return 0
-
-    # Check for re-reads regardless of size
+    # Check for re-reads BEFORE tracking this read
     if os.environ.get("CONTEXT_PREFLIGHT_REREAD_WARN", "1") not in ("0", "false", "no"):
         prior = find_prior_reads(file_path)
         if prior:
             print(build_reread_warning(len(prior), file_path))
-            # Only warn for re-reads, don't block — model may legitimately need
-            # a different section. But combined with large file → block.
+
+    # Track this read AFTER re-read check so first read doesn't self-match
+    track_read(file_path, size, safe)
+
+    if safe:
+        # Has limit (or offset for small files) — always allow
+        return 0
 
     kb_size = size / 1024.0
     token_est = estimate_tokens(size)

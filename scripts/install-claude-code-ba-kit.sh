@@ -19,6 +19,14 @@ LOCAL_BIN_TARGET="${HOME}/.local/bin"
 STATE_TARGET="${HOME}/.local/share/ba-kit/installations"
 SETTINGS_FILE="${TARGET_HOME}/settings.json"
 
+# CodeX targets
+CODEX_HOME="${HOME}/.codex"
+CODEX_BA_KIT="${CODEX_HOME}/ba-kit"
+CODEX_SCRIPTS="${CODEX_BA_KIT}/scripts"
+CODEX_HOOKS="${CODEX_BA_KIT}/hooks"
+CODEX_STATE="${CODEX_BA_KIT}/state"
+CODEX_HOOKS_FILE="${CODEX_HOME}/hooks.json"
+
 GUARDRAIL_SCRIPTS=(
   "guardrail-preflight.py"
   "guardrail-build-excerpts.py"
@@ -512,6 +520,7 @@ PYEOF
 
 # Cleanup after audit
 rm -f "${VIOLATIONS_FILE}"
+rm -f "${STATE_DIR}/context-reads-manifest.jsonl"
 HOOKEOF
   chmod +x "${TARGET_HOOKS}/guardrail-context-audit-hook.sh"
 }
@@ -713,6 +722,203 @@ BA_KIT_GUARDRAIL_DOC=${TARGET_DOCS}/runtime-hard-guardrails.md
 EOF
 }
 
+# ── CodeX installation ───────────────────────────────────────────────
+
+install_codex_scripts() {
+  ensure_dir "${CODEX_SCRIPTS}"
+  ensure_dir "${CODEX_STATE}"
+  cp "${ROOT_DIR}/scripts/context-output-guard.py" "${CODEX_SCRIPTS}/context-output-guard.py"
+  cp "${ROOT_DIR}/scripts/context-preflight-guard.py" "${CODEX_SCRIPTS}/context-preflight-guard.py"
+}
+
+write_codex_context_preflight_guard_hook() {
+  ensure_dir "${CODEX_HOOKS}"
+  cat > "${CODEX_HOOKS}/guardrail-context-preflight-guard-hook.sh" <<'HOOKEOF'
+#!/usr/bin/env bash
+set -euo pipefail
+BA_KIT_HOOK_HOME="${HOME}/.codex/ba-kit"
+STATE_DIR="${BA_KIT_HOOK_HOME}/state"
+mkdir -p "${STATE_DIR}"
+TOOL_DATA="$(cat - 2>/dev/null || echo "{}")"
+if [[ -z "${TOOL_DATA}" ]] || [[ "${TOOL_DATA}" == "{}" ]]; then
+  exit 0
+fi
+python3 "${BA_KIT_HOOK_HOME}/scripts/context-preflight-guard.py" <<< "${TOOL_DATA}" 2>/dev/null
+PREFLIGHT_EXIT=$?
+if [[ ${PREFLIGHT_EXIT} -eq 1 ]]; then
+  exit 1
+fi
+exit 0
+HOOKEOF
+  chmod +x "${CODEX_HOOKS}/guardrail-context-preflight-guard-hook.sh"
+}
+
+write_codex_context_output_guard_hook() {
+  ensure_dir "${CODEX_HOOKS}"
+  cat > "${CODEX_HOOKS}/guardrail-context-output-guard-hook.sh" <<'HOOKEOF'
+#!/usr/bin/env bash
+set -euo pipefail
+BA_KIT_HOOK_HOME="${HOME}/.codex/ba-kit"
+STATE_DIR="${BA_KIT_HOOK_HOME}/state"
+mkdir -p "${STATE_DIR}"
+TOOL_DATA="$(cat - 2>/dev/null || echo "{}")"
+if [[ -z "${TOOL_DATA}" ]] || [[ "${TOOL_DATA}" == "{}" ]]; then
+  exit 0
+fi
+python3 "${BA_KIT_HOOK_HOME}/scripts/context-output-guard.py" <<< "${TOOL_DATA}" 2>/dev/null || true
+HOOKEOF
+  chmod +x "${CODEX_HOOKS}/guardrail-context-output-guard-hook.sh"
+}
+
+write_codex_context_audit_hook() {
+  ensure_dir "${CODEX_HOOKS}"
+  cat > "${CODEX_HOOKS}/guardrail-context-audit-hook.sh" <<'HOOKEOF'
+#!/usr/bin/env bash
+set -euo pipefail
+STATE_DIR="${HOME}/.codex/ba-kit/state"
+VIOLATIONS_FILE="${STATE_DIR}/context-violations.jsonl"
+if [[ ! -f "${VIOLATIONS_FILE}" ]]; then
+  exit 0
+fi
+python3 - "${VIOLATIONS_FILE}" <<'PYEOF'
+import json, sys, pathlib
+vf = pathlib.Path(sys.argv[1])
+lines = [l for l in vf.read_text(encoding="utf-8").strip().split("\n") if l]
+if not lines:
+    sys.exit(0)
+violations = [json.loads(l) for l in lines if l]
+violations = [v for v in violations if isinstance(v, dict)]
+if not violations:
+    sys.exit(0)
+total_bytes = sum(v["size_bytes"] for v in violations)
+total_est_tokens = sum(v["estimated_tokens"] for v in violations)
+warn_count = sum(1 for v in violations if v["level"] == "warn")
+crit_count = sum(1 for v in violations if v["level"] == "critical")
+avg_carry_turns = 30
+cached_token_waste = sum(v["estimated_tokens"] * avg_carry_turns for v in violations)
+tool_counts = {}
+for v in violations:
+    t = v["tool_name"]
+    tool_counts[t] = tool_counts.get(t, 0) + 1
+print("\nCONTEXT_GUARD_AUDIT: CodeX session context waste report")
+print(f"  Violations: {len(violations)} ({warn_count} warn, {crit_count} critical)")
+print(f"  Raw output: {total_bytes / 1024:.1f}kB total ({total_est_tokens} tokens)")
+print(f"  Est. cached waste: ~{cached_token_waste} tokens (avg {avg_carry_turns} turn carry)")
+print(f"  By tool: {', '.join(f'{k}={v}' for k, v in sorted(tool_counts.items()))}")
+print()
+print("  Top 5 largest outputs:")
+by_size = sorted(violations, key=lambda v: v["size_bytes"], reverse=True)[:5]
+for i, v in enumerate(by_size, 1):
+    summary = v["tool_input_summary"][:80]
+    print(f"    {i}. {v['tool_name']}: {v['size_bytes'] / 1024:.1f}kB — {summary}")
+print()
+print("  Remediation:")
+print("    - Use Glob not find. Use Read with offset+limit. Use Grep with head_limit.")
+print("    - Read large files in sections (TOC first, then targeted ranges).")
+print("    - Pipe Bash output through head/tail when uncertain.")
+print()
+PYEOF
+rm -f "${VIOLATIONS_FILE}"
+rm -f "${STATE_DIR}/context-reads-manifest.jsonl"
+HOOKEOF
+  chmod +x "${CODEX_HOOKS}/guardrail-context-audit-hook.sh"
+}
+
+register_codex_hooks() {
+  ensure_dir "${CODEX_HOME}"
+
+  if [[ ! -f "${CODEX_HOOKS_FILE}" ]]; then
+    echo '{"hooks":{}}' > "${CODEX_HOOKS_FILE}"
+  fi
+
+  python3 - "${CODEX_HOOKS_FILE}" "${CODEX_HOOKS}" <<'PYEOF'
+import json, pathlib, sys
+
+hooks_path = pathlib.Path(sys.argv[1])
+hooks_dir = sys.argv[2]
+cfg = json.loads(hooks_path.read_text(encoding="utf-8")) if hooks_path.exists() else {}
+if not isinstance(cfg, dict):
+    cfg = {}
+hooks = cfg.setdefault("hooks", {})
+
+# PreToolUse — context preflight guard (matcher: Read)
+ptu = hooks.setdefault("PreToolUse", [])
+ptu[:] = [h for h in ptu if "guardrail-context-preflight-guard" not in str(h)]
+ptu.append({
+    "matcher": "Read",
+    "hooks": [{
+        "type": "command",
+        "command": f"bash \"{hooks_dir}/guardrail-context-preflight-guard-hook.sh\""
+    }]
+})
+
+# PostToolUse — context output guard (matcher: Bash|Read|Grep)
+post = hooks.setdefault("PostToolUse", [])
+post[:] = [h for h in post if "guardrail-context-output-guard" not in str(h)]
+post.append({
+    "matcher": "Bash|Read|Grep",
+    "hooks": [{
+        "type": "command",
+        "command": f"bash \"{hooks_dir}/guardrail-context-output-guard-hook.sh\""
+    }]
+})
+
+# Stop — context audit
+stop = hooks.setdefault("Stop", [])
+stop[:] = [h for h in stop if "guardrail-context-audit" not in str(h)]
+stop.append({
+    "hooks": [{
+        "type": "command",
+        "command": f"bash \"{hooks_dir}/guardrail-context-audit-hook.sh\""
+    }]
+})
+
+cfg["hooks"] = hooks
+hooks_path.write_text(json.dumps(cfg, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+PYEOF
+}
+
+write_codex_manifest() {
+  mkdir -p "${STATE_TARGET}"
+  cat > "${STATE_TARGET}/codex.env" <<EOF
+BA_KIT_RUNTIME=codex
+BA_KIT_SOURCE_REPO=${ROOT_DIR}
+BA_KIT_INSTALLED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+BA_KIT_INSTALLER=scripts/install-claude-code-ba-kit.sh
+BA_KIT_CONTEXT_PREFLIGHT_GUARD=${CODEX_SCRIPTS}/context-preflight-guard.py
+BA_KIT_CONTEXT_OUTPUT_GUARD=${CODEX_SCRIPTS}/context-output-guard.py
+EOF
+}
+
+install_codex() {
+  echo ""
+  echo "Installing BA-kit context guard hooks for CodeX..."
+
+  ensure_dir "${CODEX_BA_KIT}"
+  ensure_dir "${CODEX_HOOKS}"
+  ensure_dir "${CODEX_STATE}"
+
+  install_codex_scripts
+  echo "  Copied context guard scripts to ${CODEX_SCRIPTS}"
+
+  write_codex_context_preflight_guard_hook
+  write_codex_context_output_guard_hook
+  write_codex_context_audit_hook
+  echo "  Created hook scripts in ${CODEX_HOOKS}"
+
+  register_codex_hooks
+  echo "  Registered hooks in ${CODEX_HOOKS_FILE}"
+
+  write_codex_manifest
+  echo "  Wrote manifest to ${STATE_TARGET}/codex.env"
+
+  echo ""
+  echo "  CodeX context guard hooks active for:"
+  echo "    - PreToolUse (Read): context preflight guard — blocks oversized reads, detects re-reads"
+  echo "    - PostToolUse (Bash|Read|Grep): context output guard — warns on oversized outputs"
+  echo "    - Stop: context audit — post-session waste report"
+}
+
 # ── main ─────────────────────────────────────────────────────────────
 
 echo "Installing BA-kit guardrail system for Claude Code from: ${ROOT_DIR}"
@@ -762,3 +968,8 @@ echo "  - PreToolUse (Read): context preflight guard (blocks oversized reads, de
 echo "  - PostToolUse (Bash|Read|Grep): context output guard (warns on oversized outputs)"
 echo ""
 echo "Hooks silent outside BA-kit plan directories. No overhead for non-BA work."
+
+# Install CodeX context guard hooks if CodeX is detected
+if [[ -d "${CODEX_HOME}" ]]; then
+  install_codex
+fi
