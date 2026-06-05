@@ -14,6 +14,22 @@ Read `contract.yaml`, `contract-behavior.md`, and the relevant `PROJECT-HOME.md`
 Resolve slug/date/module exactly. If the user names a module, prefer that module. If multiple projects or modules match, stop and ask.
 </step>
 
+<step name="preflight">
+After resolving slug/date, run a lightweight index preflight before broad reads:
+
+1. Run: `ba-kit guardrail --command status --slug <slug> --date <date> [--module <module>]`.
+2. If `status=block`:
+   - Print compact advisory (≤150 chars):
+     "BA-kit indexes missing. Run: python3 scripts/context-budget-bootstrap.py --repo . --slug {slug} --date {date} [--module {module}]"
+   - Continue — do NOT block the collab request.
+3. If `status=warn`:
+   - Print: "Some indexes stale. Consider: python3 scripts/validate-index-quality.py --repo . --slug {slug} --date {date} --index-key <key> --writeback"
+   - Continue.
+4. If `status=ok`: proceed silently.
+
+This step is advisory only (warn, don't block). The goal is to prevent accidental broad file reads in legacy projects, not to stop collaboration.
+</step>
+
 <step name="classify_intent">
 Map the user text using the first matching intent:
 
