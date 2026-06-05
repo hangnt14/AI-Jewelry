@@ -26,7 +26,9 @@ from pathlib import Path
 
 WARN_THRESHOLD = int(os.environ.get("CONTEXT_GUARD_WARN", 5000))
 CRITICAL_THRESHOLD = int(os.environ.get("CONTEXT_GUARD_CRITICAL", 8000))
-GUARD_TOOLS = frozenset({"Bash", "Read", "Grep"})
+SESSION_BUDGET_WARN = int(os.environ.get("SESSION_BUDGET_WARN", 50000))
+SESSION_BUDGET_CRITICAL = int(os.environ.get("SESSION_BUDGET_CRITICAL", 100000))
+GUARD_TOOLS = frozenset({"Bash", "Read", "Grep", "Glob"})
 
 
 def load_input() -> dict:
@@ -137,7 +139,52 @@ def get_hint(tool_name: str, tool_input: dict) -> str:
         )
     if tool_name == "Grep":
         return "Use head_limit to cap results. Use output_mode=files_with_matches first, then content with head_limit."
+    if tool_name == "Glob":
+        pattern = tool_input.get("pattern", "")
+        if "**/*" in pattern and "." not in pattern.rsplit("/", 1)[-1]:
+            return (
+                "Broad Glob detected. Use narrower patterns (e.g., *.md, **/index.md) "
+                "or limit to specific subdirectories. For file discovery, prefer rg --files | head."
+            )
+        return "Use exact paths or narrower patterns to keep Glob output small."
     return "Filter output to keep context lean."
+
+
+def read_session_budget(state_dir: Path) -> int:
+    """Read cumulative session budget in bytes."""
+    budget_file = state_dir / "context-session-budget.txt"
+    if not budget_file.exists():
+        return 0
+    try:
+        return int(budget_file.read_text(encoding="utf-8").strip())
+    except (ValueError, OSError):
+        return 0
+
+
+def update_session_budget(state_dir: Path, byte_size: int) -> int:
+    """Add byte_size to the session budget. Returns new total."""
+    state_dir.mkdir(parents=True, exist_ok=True)
+    current = read_session_budget(state_dir)
+    new_total = current + byte_size
+    budget_file = state_dir / "context-session-budget.txt"
+    budget_file.write_text(str(new_total), encoding="utf-8")
+    return new_total
+
+
+def emit_budget_warning(total_bytes: int) -> str:
+    """Build a session budget warning message."""
+    total_kb = total_bytes / 1024.0
+    total_tok = total_bytes // 4
+    if total_bytes > SESSION_BUDGET_CRITICAL:
+        return (
+            f"CONTEXT_GUARD_BUDGET_CRITICAL: session context budget EXCEEDED "
+            f"({total_kb:.0f}KB, ~{total_tok} tok). "
+            f"Use offset+limit or bounded patterns on all remaining tools."
+        )
+    return (
+        f"CONTEXT_GUARD_BUDGET_WARN: session context budget {total_kb:.0f}KB used "
+        f"(~{total_tok} tok). Subsequent unbounded output will be flagged."
+    )
 
 
 def main() -> int:
@@ -164,7 +211,17 @@ def main() -> int:
     tool_response = data.get("tool_response", "")
     size = output_size_bytes(tool_response)
 
-    if size <= WARN_THRESHOLD:
+    # ── Session budget tracking (runs for ALL non-safe tools) ──
+    state_dir = Path(os.environ.get(
+        "CONTEXT_GUARD_STATE_DIR",
+        os.path.join(os.path.expanduser("~"), ".claude", "ba-kit", "state")
+    ))
+    budget_total = update_session_budget(state_dir, size)
+    budget_msg = ""
+    if budget_total > SESSION_BUDGET_WARN:
+        budget_msg = emit_budget_warning(budget_total)
+
+    if size <= WARN_THRESHOLD and not budget_msg:
         return 0
 
     kb_size = size / 1024.0
@@ -172,16 +229,10 @@ def main() -> int:
     hint = get_hint(tool_name, tool_input)
 
     # Determine level
-    if size >= CRITICAL_THRESHOLD:
+    if size > CRITICAL_THRESHOLD:
         level = "critical"
     else:
         level = "warn"
-
-    # Read state dir from env or arg
-    state_dir = Path(os.environ.get(
-        "CONTEXT_GUARD_STATE_DIR",
-        os.path.join(os.path.expanduser("~"), ".claude", "ba-kit", "state")
-    ))
 
     # Track violation
     violation = {
@@ -205,7 +256,14 @@ def main() -> int:
         if v.get("tool_name") == tool_name and v.get("level") == level
     )
 
-    print(emit_warning(level, tool_name, kb_size, token_est, hint, repeat_count))
+    # Emit per-tool warning (only if size exceeds WARN threshold)
+    if size > WARN_THRESHOLD:
+        print(emit_warning(level, tool_name, kb_size, token_est, hint, repeat_count))
+
+    # Emit budget warning if cumulative budget exceeded
+    if budget_msg:
+        print(budget_msg)
+    return 0
     return 0
 
 

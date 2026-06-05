@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from datetime import datetime, timezone
 from pathlib import Path
@@ -14,6 +15,7 @@ from guardrail_common import (
     INDEX_VALIDATION_RULES,
     REQUIRED_METADATA_FIELDS,
     action_guardrail_for_index,
+    compute_source_hash,
     expected_source_path,
     extract_id_tokens,
     load_contract,
@@ -152,9 +154,11 @@ def main() -> int:
     if not source_path.exists():
         result["issues"].append(issue("error", "source_artifact_missing", f"Source artifact missing: {expected_source}"))
     else:
-        source_text = source_path.read_text(encoding="utf-8")
-        if metadata.get("source_hash", "") and metadata["source_hash"] != sha256_file(source_path):
+        actual_hash = compute_source_hash(source_path)
+        if actual_hash and metadata.get("source_hash", "") and metadata["source_hash"] != actual_hash:
             result["issues"].append(issue("error", "source_hash_mismatch", f"source_hash does not match current source for {expected_source}", field="source_hash"))
+        if source_path.is_file():
+            source_text = source_path.read_text(encoding="utf-8")
 
     stale_status = metadata.get("stale_status", "").strip().lower()
     if stale_status and stale_status not in VALID_STALE_STATUS:

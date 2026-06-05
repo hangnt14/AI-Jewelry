@@ -34,28 +34,32 @@ def make_block_message(command: str, reason: str, refresh_command: str) -> str:
 
 def make_refresh_command(index_key: str, *, slug: str, date: str, module: str, index_state: dict[str, str]) -> str:
     reason = index_state.get("reason", "")
-    if reason.startswith("missing_metadata:") or reason == "metadata_stale_status:unknown":
+
+    # Missing index entirely → bootstrap from source artifacts
+    if reason == "index_missing":
         parts = [
-            "python3 scripts/validate-index-quality.py",
+            "python3 scripts/context-budget-bootstrap.py",
             "--repo .",
-            f"--index-key {index_key}",
             f"--slug {slug}",
             f"--date {date}",
+            f"--index-key {index_key}",
         ]
-        if module:
+        if module and "{" not in module:
             parts.append(f"--module {module}")
-        parts.append("--writeback")
         return " ".join(parts)
 
-    refresh_map = {
-        "backbone_index": f"ba-start backbone --slug {slug}",
-        "stories_index": f"ba-start stories --slug {slug} --module {module}",
-        "srs_index": f"ba-start srs --slug {slug} --module {module}",
-        "userstories_index": f"ba-start stories --slug {slug} --module {module}",
-        "usecases_index": f"ba-start srs --slug {slug} --module {module}",
-        "ascii_screen_index": f"ba-start srs --slug {slug} --module {module}",
-    }
-    return refresh_map.get(index_key, f"ba-start status --slug {slug}")
+    # Stale / metadata issues / hash mismatch → re-validate existing index
+    parts = [
+        "python3 scripts/validate-index-quality.py",
+        "--repo .",
+        f"--index-key {index_key}",
+        f"--slug {slug}",
+        f"--date {date}",
+    ]
+    if module:
+        parts.append(f"--module {module}")
+    parts.append("--writeback")
+    return " ".join(parts)
 
 
 def _load_snapshot(repo: Path, contract: dict, *, slug: str, date: str) -> dict | None:

@@ -243,6 +243,21 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def compute_source_hash(path: Path) -> str:
+    """Compute SHA-256 hash of source artifact.
+
+    For files: hash of file contents.
+    For directories: combined hash of all *.md files within.
+    """
+    if path.is_dir():
+        source_files = sorted(f for f in path.glob("*.md") if f.name != "index.md")
+        if not source_files:
+            return ""
+        combined = "".join(sha256_file(sf) for sf in source_files)
+        return hashlib.sha256(combined.encode()).hexdigest()
+    return sha256_file(path)
+
+
 def parse_markdown_table(lines: list[str], start_index: int) -> tuple[list[str], list[dict[str, str]], int]:
     header_cells = [cell.strip() for cell in lines[start_index].strip().strip("|").split("|")]
     rows: list[dict[str, str]] = []
@@ -381,7 +396,7 @@ def classify_index_state(
             "source_artifact": expected_source,
         }
 
-    source_hash = sha256_file(source_path)
+    source_hash = compute_source_hash(source_path)
     if metadata["source_hash"] != source_hash:
         return {
             "state": "stale",

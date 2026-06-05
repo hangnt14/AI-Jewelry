@@ -16,6 +16,24 @@ If the input is empty, ask:
 "What would you like to do? Describe the BA task, artifact, or requirement change and I will route it to the right BA-kit command."
 </step>
 
+<step name="preflight">
+Detect BA-kit project context from CWD (matches `plans/{slug}-{date}` pattern). If a project is detected:
+
+1. Extract slug and date from the plan directory name.
+2. Run: `ba-kit guardrail --command status --slug <slug> --date <date>`.
+3. If `status=block`:
+   - Print compact advisory (≤150 chars):
+     "BA-kit indexes missing for this legacy project. Run: python3 scripts/context-budget-bootstrap.py --repo . --slug {slug} --date {date}"
+   - Continue routing — do NOT block the freeform request.
+4. If `status=warn`:
+   - Print compact advisory (≤100 chars):
+     "Some BA-kit indexes are stale. Consider running index refresh before broad file reads."
+   - Continue routing.
+5. If `status=ok`: proceed silently.
+
+This step is advisory only. It must not block, delay, or require user confirmation. The goal is awareness, not enforcement.
+</step>
+
 <step name="route">
 Match intent using the first rule that fits:
 

@@ -143,6 +143,24 @@ def estimate_tokens(byte_size: int) -> int:
     return max(1, byte_size // 4)
 
 
+def classify_glob_pattern(pattern: str) -> str:
+    """Classify Glob pattern as 'critical', 'warn', or 'allow'.
+
+    Returns 'critical' for truly unbounded patterns (**/* with no filter).
+    Returns 'warn' for broad patterns (**/* scoped to a directory).
+    Returns 'allow' for patterns with extension filters or specific paths.
+    """
+    if not pattern:
+        return "allow"
+    # Bare **/* with no path prefix or extension filter = truly unbounded
+    if pattern == "**/*":
+        return "critical"
+    # **/* without extension filter but scoped to a dir = broad but not fully unbounded
+    if "**/*" in pattern and "." not in pattern.rsplit("/", 1)[-1]:
+        return "warn"
+    return "allow"
+
+
 def main() -> int:
     enabled = os.environ.get("CONTEXT_PREFLIGHT_ENABLED", "1")
     if enabled in ("0", "false", "no"):
@@ -153,11 +171,28 @@ def main() -> int:
         return 0
 
     tool_name = data.get("tool_name", "")
-    if tool_name != "Read":
-        return 0
-
     tool_input = data.get("tool_input", {})
     if not isinstance(tool_input, dict):
+        tool_input = {}
+
+    # Glob handler — advisory-only, always exits 0
+    if tool_name == "Glob":
+        pattern = tool_input.get("pattern", "")
+        verdict = classify_glob_pattern(pattern)
+        if verdict == "critical":
+            print(
+                f"CONTEXT_GUARD_PREFLIGHT_GLOB_CRITICAL: pattern '{pattern}' is unbounded. "
+                f"ADVISORY: Use narrower patterns with file extensions or specific subdirectories. "
+                f"PostToolUse guard will still measure actual output."
+            )
+        elif verdict == "warn":
+            print(
+                f"CONTEXT_GUARD_PREFLIGHT_GLOB_WARN: pattern '{pattern}' is broad. "
+                f"Consider narrowing to specific subdirectories or file extensions."
+            )
+        return 0
+
+    if tool_name != "Read":
         return 0
 
     file_path = tool_input.get("file_path", "")
@@ -191,12 +226,12 @@ def main() -> int:
     token_est = estimate_tokens(size)
 
     # BLOCK: file exceeds block threshold with no limit/offset
-    if size >= BLOCK_THRESHOLD:
+    if size > BLOCK_THRESHOLD:
         print(build_block(file_path, kb_size, token_est))
         return 1
 
     # WARN: file exceeds warn threshold but under block threshold
-    if size >= WARN_THRESHOLD:
+    if size > WARN_THRESHOLD:
         print(build_warn(file_path, kb_size, token_est))
         return 0
 
