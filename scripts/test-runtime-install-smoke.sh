@@ -94,6 +94,13 @@ check_file "${TMP_HOME}/.claude/templates/project-home-template.md"
 check_file "${TMP_HOME}/.claude/templates/collab-home-template.md"
 check_file "${TMP_HOME}/.claude/templates/project-memory-index-template.md"
 check_file "${TMP_HOME}/.claude/ba-kit/contract.yaml"
+check_file "${TMP_HOME}/.claude/settings.json"
+check_file "${TMP_HOME}/.claude/ba-kit/hooks/guardrail-preflight-hook.sh"
+check_file "${TMP_HOME}/.claude/ba-kit/hooks/guardrail-audit-hook.sh"
+check_file "${TMP_HOME}/.claude/ba-kit/hooks/guardrail-write-scope-hook.sh"
+check_file "${TMP_HOME}/.claude/ba-kit/hooks/guardrail-context-preflight-guard-hook.sh"
+check_file "${TMP_HOME}/.claude/ba-kit/hooks/guardrail-context-output-guard-hook.sh"
+check_file "${TMP_HOME}/.claude/ba-kit/hooks/guardrail-context-audit-hook.sh"
 
 check_file "${TMP_HOME}/.codex/skills/ba-start/SKILL.md"
 check_file "${TMP_HOME}/.codex/skills/ba-collab/SKILL.md"
@@ -104,11 +111,66 @@ check_file "${TMP_HOME}/.codex/templates/collab-home-template.md"
 check_file "${TMP_HOME}/.codex/templates/project-memory-index-template.md"
 check_file "${TMP_HOME}/.codex/ba-kit/contract.yaml"
 check_file "${TMP_HOME}/.codex/config.toml"
+check_file "${TMP_HOME}/.codex/hooks.json"
+check_file "${TMP_HOME}/.codex/ba-kit/hooks/guardrail-preflight-hook.sh"
+check_file "${TMP_HOME}/.codex/ba-kit/hooks/guardrail-audit-hook.sh"
+check_file "${TMP_HOME}/.codex/ba-kit/hooks/guardrail-write-scope-hook.sh"
+check_file "${TMP_HOME}/.codex/ba-kit/hooks/guardrail-context-preflight-guard-hook.sh"
+check_file "${TMP_HOME}/.codex/ba-kit/hooks/guardrail-context-output-guard-hook.sh"
+check_file "${TMP_HOME}/.codex/ba-kit/hooks/guardrail-context-audit-hook.sh"
+check_file "${TMP_HOME}/.codex/ba-kit/scripts/guardrail-preflight.py"
+check_file "${TMP_HOME}/.codex/ba-kit/scripts/guardrail-audit.py"
+check_file "${TMP_HOME}/.codex/ba-kit/scripts/check-write-scope.py"
 check_file "${TMP_HOME}/.codex/ba-kit/scripts/validate-index-quality.py"
 
 check_dir "${TMP_HOME}/.gemini/antigravity/knowledge/ba-kit-workflow"
 check_file "${TMP_HOME}/.gemini/antigravity/knowledge/ba-kit-workflow/metadata.json"
 check_file "${TMP_HOME}/.gemini/antigravity/knowledge/ba-kit-workflow/artifacts/workflow-reference.md"
+
+printf '\nChecking hook registration parity...\n'
+python3 - "${TMP_HOME}/.claude/settings.json" "${TMP_HOME}/.codex/hooks.json" <<'PY'
+import json
+import pathlib
+import sys
+
+claude_settings = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
+codex_hooks = json.loads(pathlib.Path(sys.argv[2]).read_text(encoding="utf-8"))
+
+expected = {
+    "UserPromptSubmit": [("", "guardrail-preflight-hook.sh")],
+    "Stop": [(None, "guardrail-audit-hook.sh"), (None, "guardrail-context-audit-hook.sh")],
+    "PreToolUse": [
+        ("Write|Edit", "guardrail-write-scope-hook.sh"),
+        ("Read|Glob", "guardrail-context-preflight-guard-hook.sh"),
+    ],
+    "PostToolUse": [("Bash|Read|Grep|Glob", "guardrail-context-output-guard-hook.sh")],
+}
+
+def commands(entry):
+    return [hook.get("command", "") for hook in entry.get("hooks", []) if isinstance(hook, dict)]
+
+def assert_hooks(label, cfg):
+    hooks = cfg.get("hooks", {})
+    for event, requirements in expected.items():
+        entries = hooks.get(event, [])
+        if not isinstance(entries, list):
+            raise SystemExit(f"{label}: {event} hooks missing or not a list")
+        for matcher, script in requirements:
+            matched = False
+            for entry in entries:
+                if matcher is not None and entry.get("matcher") != matcher:
+                    continue
+                if any(script in command for command in commands(entry)):
+                    matched = True
+                    break
+            if not matched:
+                matcher_label = "*" if matcher is None else matcher
+                raise SystemExit(f"{label}: missing {event} matcher={matcher_label} script={script}")
+
+assert_hooks("claude", claude_settings)
+assert_hooks("codex", codex_hooks)
+print("  OK: Claude and Codex hook registrations match expected guardrail set")
+PY
 
 printf '\nRunning installed CLI doctor...\n'
 if ! HOME="${TMP_HOME}" BA_KIT_SKIP_UPDATE_CHECK=1 "${TMP_HOME}/.local/bin/ba-kit" doctor >"${LOG_DIR}/doctor.log" 2>&1; then

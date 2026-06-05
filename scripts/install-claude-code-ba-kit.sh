@@ -37,6 +37,7 @@ GUARDRAIL_SCRIPTS=(
   "check-write-scope.py"
   "context-output-guard.py"
   "context-preflight-guard.py"
+  "context-budget-bootstrap.py"
 )
 
 # ── helpers ──────────────────────────────────────────────────────────
@@ -483,23 +484,40 @@ total_est_tokens = sum(v["estimated_tokens"] for v in violations)
 warn_count = sum(1 for v in violations if v["level"] == "warn")
 crit_count = sum(1 for v in violations if v["level"] == "critical")
 
-# Estimate cache cost: each violation's output gets re-loaded on ~50 subsequent turns
-# Conservative estimate: 30 turn carry
-avg_carry_turns = 30
-cached_token_waste = sum(
-    v["estimated_tokens"] * avg_carry_turns
-    for v in violations
-)
+# Carry proxy: violation sequence distance, not actual assistant-turn count.
+# Sorts violations by timestamp; each violation's carry = number of subsequent violations.
+sorted_by_time = sorted(violations, key=lambda v: v.get("timestamp", ""))
+cached_token_waste = 0
+for i, v in enumerate(sorted_by_time):
+    subsequent = len(sorted_by_time) - i - 1
+    carry = max(1, subsequent)
+    cached_token_waste += v["estimated_tokens"] * carry
+
+if len(violations) <= 1:
+    carry_label = "estimated (fallback, single violation)"
+else:
+    avg_proxy = sum(max(1, len(sorted_by_time) - i - 1) for i in range(len(sorted_by_time))) / len(sorted_by_time)
+    carry_label = f"carry proxy (avg {avg_proxy:.1f} violation sequence distance)"
 
 tool_counts = {}
 for v in violations:
     t = v["tool_name"]
     tool_counts[t] = tool_counts.get(t, 0) + 1
 
+# Session budget
+budget_path = vf.parent / "context-session-budget.txt"
+session_budget_bytes = 0
+if budget_path.exists():
+    try:
+        session_budget_bytes = int(budget_path.read_text(encoding="utf-8").strip())
+    except (ValueError, OSError):
+        pass
+
 print("\nCONTEXT_GUARD_AUDIT: session context waste report")
 print(f"  Violations: {len(violations)} ({warn_count} warn, {crit_count} critical)")
 print(f"  Raw output: {total_bytes / 1024:.1f}kB total ({total_est_tokens} tokens)")
-print(f"  Est. cached waste: ~{cached_token_waste} tokens (avg {avg_carry_turns} turn carry)")
+print(f"  Est. cached waste: ~{cached_token_waste} tokens ({carry_label})")
+print(f"  Session budget: {session_budget_bytes / 1024:.1f}kB total")
 print(f"  By tool: {', '.join(f'{k}={v}' for k, v in sorted(tool_counts.items()))}")
 print()
 
@@ -521,6 +539,7 @@ PYEOF
 # Cleanup after audit
 rm -f "${VIOLATIONS_FILE}"
 rm -f "${STATE_DIR}/context-reads-manifest.jsonl"
+rm -f "${STATE_DIR}/context-session-budget.txt"
 HOOKEOF
   chmod +x "${TARGET_HOOKS}/guardrail-context-audit-hook.sh"
 }
@@ -675,20 +694,20 @@ ptu_hooks.append({
         "command": f"bash \"{hooks_dir}/guardrail-write-scope-hook.sh\""
     }]
 })
-# PreToolUse — context preflight guard (matcher: Read)
+# PreToolUse — context preflight guard (matcher: Read|Glob)
 ptu_hooks.append({
-    "matcher": "Read",
+    "matcher": "Read|Glob",
     "hooks": [{
         "type": "command",
         "command": f"bash \"{hooks_dir}/guardrail-context-preflight-guard-hook.sh\""
     }]
 })
 
-# PostToolUse — context output guard (matcher: Bash|Read|Grep)
+# PostToolUse — context output guard (matcher: Bash|Read|Grep|Glob)
 post_hooks = hooks.setdefault("PostToolUse", [])
 post_hooks[:] = [h for h in post_hooks if "guardrail-context-output-guard-hook.sh" not in str(h)]
 post_hooks.append({
-    "matcher": "Bash|Read|Grep",
+    "matcher": "Bash|Read|Grep|Glob",
     "hooks": [{
         "type": "command",
         "command": f"bash \"{hooks_dir}/guardrail-context-output-guard-hook.sh\""
@@ -841,22 +860,22 @@ if not isinstance(cfg, dict):
     cfg = {}
 hooks = cfg.setdefault("hooks", {})
 
-# PreToolUse — context preflight guard (matcher: Read)
+# PreToolUse — context preflight guard (matcher: Read|Glob)
 ptu = hooks.setdefault("PreToolUse", [])
 ptu[:] = [h for h in ptu if "guardrail-context-preflight-guard" not in str(h)]
 ptu.append({
-    "matcher": "Read",
+    "matcher": "Read|Glob",
     "hooks": [{
         "type": "command",
         "command": f"bash \"{hooks_dir}/guardrail-context-preflight-guard-hook.sh\""
     }]
 })
 
-# PostToolUse — context output guard (matcher: Bash|Read|Grep)
+# PostToolUse — context output guard (matcher: Bash|Read|Grep|Glob)
 post = hooks.setdefault("PostToolUse", [])
 post[:] = [h for h in post if "guardrail-context-output-guard" not in str(h)]
 post.append({
-    "matcher": "Bash|Read|Grep",
+    "matcher": "Bash|Read|Grep|Glob",
     "hooks": [{
         "type": "command",
         "command": f"bash \"{hooks_dir}/guardrail-context-output-guard-hook.sh\""
@@ -892,31 +911,8 @@ EOF
 
 install_codex() {
   echo ""
-  echo "Installing BA-kit context guard hooks for CodeX..."
-
-  ensure_dir "${CODEX_BA_KIT}"
-  ensure_dir "${CODEX_HOOKS}"
-  ensure_dir "${CODEX_STATE}"
-
-  install_codex_scripts
-  echo "  Copied context guard scripts to ${CODEX_SCRIPTS}"
-
-  write_codex_context_preflight_guard_hook
-  write_codex_context_output_guard_hook
-  write_codex_context_audit_hook
-  echo "  Created hook scripts in ${CODEX_HOOKS}"
-
-  register_codex_hooks
-  echo "  Registered hooks in ${CODEX_HOOKS_FILE}"
-
-  write_codex_manifest
-  echo "  Wrote manifest to ${STATE_TARGET}/codex.env"
-
-  echo ""
-  echo "  CodeX context guard hooks active for:"
-  echo "    - PreToolUse (Read): context preflight guard — blocks oversized reads, detects re-reads"
-  echo "    - PostToolUse (Bash|Read|Grep): context output guard — warns on oversized outputs"
-  echo "    - Stop: context audit — post-session waste report"
+  echo "Installing BA-kit guardrail hooks for CodeX..."
+  bash "${ROOT_DIR}/scripts/install-codex-ba-kit.sh"
 }
 
 # ── main ─────────────────────────────────────────────────────────────
@@ -954,7 +950,7 @@ echo ""
 echo "BA-kit Claude Code installation complete."
 echo ""
 echo "Installed:"
-echo "  - 9 guardrail Python scripts → ${TARGET_SCRIPTS}"
+echo "  - 10 guardrail Python scripts → ${TARGET_SCRIPTS}"
 echo "  - 6 hook scripts → ${TARGET_HOOKS}"
 echo "  - Guardrail docs → ${TARGET_DOCS}"
 echo "  - CLI → ${LOCAL_BIN_TARGET}/ba-kit"
@@ -964,8 +960,8 @@ echo "Hooks active for:"
 echo "  - UserPromptSubmit: guardrail preflight (detects BA-kit context, emits verdict)"
 echo "  - Stop: guardrail audit + context waste audit (post-session reports)"
 echo "  - PreToolUse (Write|Edit): write-scope enforcement"
-echo "  - PreToolUse (Read): context preflight guard (blocks oversized reads, detects re-reads)"
-echo "  - PostToolUse (Bash|Read|Grep): context output guard (warns on oversized outputs)"
+echo "  - PreToolUse (Read|Glob): context preflight guard (blocks oversized reads, detects re-reads)"
+echo "  - PostToolUse (Bash|Read|Grep|Glob): context output guard (warns on oversized outputs)"
 echo ""
 echo "Hooks silent outside BA-kit plan directories. No overhead for non-BA work."
 
