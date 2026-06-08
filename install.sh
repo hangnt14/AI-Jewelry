@@ -69,6 +69,7 @@ cleanup_previous_install() {
   cleanup_managed_agent_files
   cleanup_managed_template_files
   rm -rf "${RULES_TARGET}" "${CORE_TARGET}"
+  rm -f "${TARGET_HOME}/core"
 }
 
 copy_tree() {
@@ -132,6 +133,7 @@ copy_tree "${ROOT_DIR}/templates" "${TEMPLATES_TARGET}"
 remove_stale_templates "${TEMPLATES_TARGET}"
 copy_tree "${CORE_SOURCE}" "${CORE_TARGET}"
 remove_stale_core_paths "${CORE_TARGET}"
+ln -sfn ba-kit "${TARGET_HOME}/core"
 install_cli
 
 mkdir -p "${ROOT_DIR}/docs" "${ROOT_DIR}/templates" "${ROOT_DIR}/designs"
