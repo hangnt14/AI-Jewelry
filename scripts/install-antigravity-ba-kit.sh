@@ -3,7 +3,20 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TARGET_HOME="${HOME}/.gemini/antigravity"
+
+ACTIVE_AGY_HOMES=()
+for dir in "${HOME}/.gemini/antigravity-cli" "${HOME}/.gemini/antigravity" "${HOME}/.gemini/antigravity-ide"; do
+  if [[ -d "${dir}" ]]; then
+    ACTIVE_AGY_HOMES+=("${dir}")
+  fi
+done
+if [[ ${#ACTIVE_AGY_HOMES[@]} -eq 0 ]]; then
+  ACTIVE_AGY_HOMES+=("${HOME}/.gemini/antigravity")
+fi
+
+PRIMARY_HOME="${ACTIVE_AGY_HOMES[0]}"
+
+TARGET_HOME="${PRIMARY_HOME}"
 KI_BASE="${TARGET_HOME}/knowledge"
 BA_KIT_KI="${KI_BASE}/ba-kit-workflow"
 GUARDRAIL_TARGET="${TARGET_HOME}/ba-kit"
@@ -39,20 +52,24 @@ install_cli() {
 }
 
 install_guardrail_assets() {
+  local target_home="$1"
+  local guardrail_target="${target_home}/ba-kit"
+  local guardrail_script_target="${guardrail_target}/scripts"
+  local guardrail_doc_target="${guardrail_target}/docs"
   local script_name
 
-  mkdir -p "${GUARDRAIL_SCRIPT_TARGET}" "${GUARDRAIL_DOC_TARGET}"
+  mkdir -p "${guardrail_script_target}" "${guardrail_doc_target}"
   for script_name in "${GUARDRAIL_SCRIPTS[@]}"; do
     if [[ ! -f "${ROOT_DIR}/scripts/${script_name}" ]]; then
       echo "Guardrail script missing: ${ROOT_DIR}/scripts/${script_name}" >&2
       exit 1
     fi
-    cp "${ROOT_DIR}/scripts/${script_name}" "${GUARDRAIL_SCRIPT_TARGET}/${script_name}"
+    cp "${ROOT_DIR}/scripts/${script_name}" "${guardrail_script_target}/${script_name}"
   done
 
-  cp "${ROOT_DIR}/docs/runtime-hard-guardrails.md" "${GUARDRAIL_DOC_TARGET}/runtime-hard-guardrails.md"
+  cp "${ROOT_DIR}/docs/runtime-hard-guardrails.md" "${guardrail_doc_target}/runtime-hard-guardrails.md"
   if [[ -f "${ROOT_DIR}/core/token-budget.md" ]]; then
-    cp "${ROOT_DIR}/core/token-budget.md" "${GUARDRAIL_DOC_TARGET}/token-budget.md"
+    cp "${ROOT_DIR}/core/token-budget.md" "${guardrail_doc_target}/token-budget.md"
   fi
 }
 
@@ -103,11 +120,14 @@ EOF
 }
 
 create_workflow_ki() {
-  local artifacts_dir="${BA_KIT_KI}/artifacts"
-  rm -rf "${BA_KIT_KI}"
+  local target_home="$1"
+  local ki_base="${target_home}/knowledge"
+  local ba_kit_ki="${ki_base}/ba-kit-workflow"
+  local artifacts_dir="${ba_kit_ki}/artifacts"
+  rm -rf "${ba_kit_ki}"
   ensure_dir "${artifacts_dir}"
 
-  create_ki_metadata "${BA_KIT_KI}" \
+  create_ki_metadata "${ba_kit_ki}" \
     "BA-kit workflow reference for Antigravity. Covers BA-friendly resume prompts, PROJECT-HOME.md usage, lifecycle routing, agent roles, template mapping, and artifact conventions." \
     "BA-kit Workflow Reference"
 
@@ -225,16 +245,20 @@ KIEOF
 
 echo "Installing BA-kit for Antigravity from: ${ROOT_DIR}"
 
-ensure_dir "${TARGET_HOME}"
-ensure_dir "${KI_BASE}"
+for h in "${ACTIVE_AGY_HOMES[@]}"; do
+  echo "Installing workflow reference KI and guardrails to ${h}..."
+  ensure_dir "${h}"
+  ensure_dir "${h}/knowledge"
+  
+  create_workflow_ki "${h}"
+  install_guardrail_assets "${h}"
+done
 
-create_workflow_ki
-install_guardrail_assets
 install_cli
 write_manifest
 
-echo "Created BA-kit KI at ${BA_KIT_KI}"
-echo "Installed guardrail assets to ${GUARDRAIL_TARGET} (7 scripts + docs)"
+echo "Created BA-kit KI in active Antigravity runtimes"
+echo "Installed guardrail assets (7 scripts + docs)"
 echo "Installed update CLI to ${LOCAL_BIN_TARGET}/ba-kit"
 echo "BA-kit Antigravity installation complete."
 echo ""

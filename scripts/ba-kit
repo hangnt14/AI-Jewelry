@@ -1232,10 +1232,15 @@ doctor_command() {
     doctor_warn "Claude home not detected at ${HOME}/.claude"
     warnings=$((warnings + 1))
   fi
-  if [[ -d "${HOME}/.gemini/antigravity" ]]; then
-    doctor_ok "Antigravity home detected at ${HOME}/.gemini/antigravity"
-  else
-    doctor_warn "Antigravity home not detected at ${HOME}/.gemini/antigravity"
+  local has_antigravity=0
+  for dir in "${HOME}/.gemini/antigravity" "${HOME}/.gemini/antigravity-cli" "${HOME}/.gemini/antigravity-ide"; do
+    if [[ -d "${dir}" ]]; then
+      doctor_ok "Antigravity home detected at ${dir}"
+      has_antigravity=1
+    fi
+  done
+  if [[ "${has_antigravity}" -eq 0 ]]; then
+    doctor_warn "No Antigravity home detected at ~/.gemini/antigravity*"
     warnings=$((warnings + 1))
   fi
   printf '\n'
@@ -1253,9 +1258,15 @@ doctor_command() {
     doctor_warn "ba-notion not installed into ~/.codex/skills or ~/.claude/skills"
     warnings=$((warnings + 1))
   fi
-  if [[ -d "${HOME}/.gemini/antigravity/knowledge/ba-kit-workflow" ]]; then
-    doctor_ok "BA-kit workflow KI installed for Antigravity"
-  else
+
+  local ki_installed=0
+  for dir in "${HOME}/.gemini/antigravity" "${HOME}/.gemini/antigravity-cli" "${HOME}/.gemini/antigravity-ide"; do
+    if [[ -d "${dir}/knowledge/ba-kit-workflow" ]]; then
+      doctor_ok "BA-kit workflow KI installed for Antigravity at ${dir}"
+      ki_installed=1
+    fi
+  done
+  if [[ "${ki_installed}" -eq 0 ]]; then
     doctor_warn "BA-kit workflow KI not installed for Antigravity (run scripts/install-antigravity-ba-kit.sh)"
     warnings=$((warnings + 1))
   fi

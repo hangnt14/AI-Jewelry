@@ -10,6 +10,13 @@ AGENTS_TARGET="${TARGET_HOME}/agents"
 TEMPLATES_TARGET="${TARGET_HOME}/templates"
 CORE_SOURCE="${ROOT_DIR}/core"
 CORE_TARGET="${TARGET_HOME}/ba-kit"
+# Antigravity targets
+AGY_HOME="${HOME}/.gemini/antigravity"
+AGY_SKILLS_TARGET="${AGY_HOME}/skills"
+AGY_RULES_TARGET="${AGY_HOME}/rules/ba-kit"
+AGY_AGENTS_TARGET="${AGY_HOME}/agents"
+AGY_TEMPLATES_TARGET="${AGY_HOME}/templates"
+AGY_CORE_TARGET="${AGY_HOME}/ba-kit"
 LOCAL_BIN_TARGET="${HOME}/.local/bin"
 STATE_TARGET="${HOME}/.local/share/ba-kit/installations"
 STALE_TEMPLATE_FILES=(
@@ -70,6 +77,31 @@ cleanup_previous_install() {
   cleanup_managed_template_files
   rm -rf "${RULES_TARGET}" "${CORE_TARGET}"
   rm -f "${TARGET_HOME}/core"
+}
+
+cleanup_previous_agy_install() {
+  local target_home="$1"
+  rm -rf "${target_home}/rules/ba-kit" "${target_home}/ba-kit"
+  rm -rf "${target_home}/skills"/ba-* 2>/dev/null || true
+  rm -rf "${target_home}/skills"/brainstorm 2>/dev/null || true
+  rm -rf "${target_home}/skills"/reverse-web 2>/dev/null || true
+  rm -rf "${target_home}/skills"/qc-uc-review 2>/dev/null || true
+  rm -f "${target_home}/core"
+  for agent_path in "${ROOT_DIR}"/agents/*; do
+    [[ -f "${agent_path}" ]] || continue
+    rm -f "${target_home}/agents/$(basename "${agent_path}")"
+  done
+  for template_path in "${ROOT_DIR}"/templates/*; do
+    [[ -f "${template_path}" ]] || continue
+    rm -f "${target_home}/templates/$(basename "${template_path}")"
+  done
+}
+
+detect_antigravity() {
+  [[ -d "${AGY_HOME}" ]] && return 0
+  [[ -d "${HOME}/.gemini" ]] && return 0
+  command -v agy >/dev/null 2>&1 && return 0
+  return 1
 }
 
 copy_tree() {
@@ -150,20 +182,67 @@ if [[ -f "${ROOT_DIR}/scripts/install-claude-code-ba-kit.sh" ]]; then
   echo "Executing Claude Code guardrail installation..."
   if bash "${ROOT_DIR}/scripts/install-claude-code-ba-kit.sh"; then
     echo ""
-    echo "BA-kit installation complete (core + guardrails)."
+    echo "BA-kit Claude Code installation complete (core + guardrails)."
   else
     rc=$?
     echo "" >&2
     echo "WARNING: Guardrail installation failed (exit code ${rc})." >&2
-    echo "BA-kit core installed successfully, but guardrail hooks may be incomplete." >&2
+    echo "BA-kit Claude Code core installed successfully, but guardrail hooks may be incomplete." >&2
     echo "Re-run ./install.sh or check scripts/install-claude-code-ba-kit.sh for errors." >&2
-    write_manifest
-    echo ""
-    echo "BA-kit installation complete (core only, guardrails failed)."
   fi
 else
-  write_manifest
   echo ""
-  echo "BA-kit installation complete."
+  echo "BA-kit Claude Code installation complete."
 fi
+
+# ── Antigravity installation ──────────────────────────────────────────
+
+if detect_antigravity && [[ -f "${ROOT_DIR}/scripts/install-antigravity-ba-kit.sh" ]]; then
+  echo ""
+  echo "Antigravity detected. Installing BA-kit for active Antigravity runtimes..."
+  
+  ACTIVE_AGY_HOMES=()
+  for dir in "${HOME}/.gemini/antigravity-cli" "${HOME}/.gemini/antigravity" "${HOME}/.gemini/antigravity-ide"; do
+    if [[ -d "${dir}" ]]; then
+      ACTIVE_AGY_HOMES+=("${dir}")
+    fi
+  done
+  if [[ ${#ACTIVE_AGY_HOMES[@]} -eq 0 ]]; then
+    ACTIVE_AGY_HOMES+=("${HOME}/.gemini/antigravity")
+  fi
+
+  for target_home in "${ACTIVE_AGY_HOMES[@]}"; do
+    echo "Installing assets for Antigravity home: ${target_home}"
+    cleanup_previous_agy_install "${target_home}"
+
+    mkdir -p "${target_home}/skills"
+    for skill_dir in "${ROOT_DIR}"/skills/*; do
+      if [[ -d "${skill_dir}" ]]; then
+        copy_tree "${skill_dir}" "${target_home}/skills/$(basename "${skill_dir}")"
+      fi
+    done
+    copy_tree "${ROOT_DIR}/rules" "${target_home}/rules/ba-kit"
+    copy_tree "${ROOT_DIR}/agents" "${target_home}/agents"
+    copy_tree "${ROOT_DIR}/templates" "${target_home}/templates"
+    remove_stale_templates "${target_home}/templates"
+    copy_tree "${CORE_SOURCE}" "${target_home}/ba-kit"
+    remove_stale_core_paths "${target_home}/ba-kit"
+    ln -sfn ba-kit "${target_home}/core"
+
+    echo "Installed BA-kit assets to ${target_home}"
+  done
+
+  if bash "${ROOT_DIR}/scripts/install-antigravity-ba-kit.sh"; then
+    echo ""
+    echo "BA-kit Antigravity installation complete."
+  else
+    rc=$?
+    echo "" >&2
+    echo "WARNING: Antigravity guardrail installation failed (exit code ${rc})." >&2
+  fi
+fi
+
+write_manifest
+echo ""
+echo "BA-kit installation complete."
 
