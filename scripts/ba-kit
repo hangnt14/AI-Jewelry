@@ -19,6 +19,7 @@ Usage:
   ba-kit next [--slug <slug>] [--date <YYMMDD-HHmm>] [--module <module_slug>]
   ba-kit check-prereq <command> [--slug <slug>] [--date <YYMMDD-HHmm>] [--module <module_slug>]
   ba-kit doctor-srs <module_root> [--json]
+  ba-kit check-screen-behaviour <path...> [--json]
   ba-kit check-write-scope --command <command> <path>...
   ba-kit check-srs-index <srs-index.md> [--json]
   ba-kit check-screen-canon <screen.md> [--json]
@@ -44,6 +45,7 @@ Commands:
   next            Recommend the next BA-kit command for the resolved modular artifact set.
   check-prereq    Validate the exact prerequisite artifacts for a BA command.
   doctor-srs      Run canon-first SRS guardrails for one module directory.
+  check-screen-behaviour  Validate screen Behaviour Rules format and required screen sections.
   check-write-scope  Block writes outside the command-owned artifact scope.
   check-srs-index [LEGACY] Validate old srs-index.md registry (deprecated; use doctor-srs for new architecture).
   check-screen-canon [LEGACY] Validate old screens/*.md canon file (deprecated; use check-ascii-screen-index for new architecture).
@@ -1506,6 +1508,11 @@ doctor_srs_command() {
   python_guardrail_command "doctor-srs.py" "$@"
 }
 
+check_screen_behaviour_command() {
+  [[ "$#" -ge 1 ]] || fail "Usage: ba-kit check-screen-behaviour <path...> [--json]"
+  python_guardrail_command "check-screen-behaviour.py" "$@"
+}
+
 check_write_scope_command() {
   [[ "$#" -ge 3 ]] || fail "Usage: ba-kit check-write-scope --command <command> <path>..."
   python_guardrail_command "check-write-scope.py" "$@"
@@ -2187,6 +2194,9 @@ main() {
       ;;
     doctor-srs)
       doctor_srs_command "$@"
+      ;;
+    check-screen-behaviour)
+      check_screen_behaviour_command "$@"
       ;;
     check-write-scope)
       check_write_scope_command "$@"

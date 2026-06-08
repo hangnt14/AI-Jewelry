@@ -65,6 +65,20 @@ If UC does not mention an item → record gap + question.
 - 5.2 Use case ↔ screen canon consistency: check label names, positions, component types match between module use cases, screen canon, and supporting mockup when present.
 - 5.4 Shared-rule cross-check: reference `screen-field-contract.yaml`, shared shell rules, and explicit rule/message IDs. ≥85% applicable shared rules referenced → Clear.
 
+### 5.5 Behaviour Rules Language Check
+
+Behaviour Rules in screen field tables must describe user-visible behaviour in business language, not technical implementation details.
+
+| Check | Criteria |
+|---|---|
+| No API paths | Behaviour Rules must NOT contain `/api/` or HTTP methods such as POST/GET/PUT/PATCH/DELETE. |
+| No framework calls | Must NOT contain `navigate()`, `showModal()`, `setState()`, `dispatch()`, router calls, or mutation/query hook names. |
+| Screen navigation | Must reference `SCR-*` IDs when describing navigation targets. |
+| User-visible feedback | Must reference `MSG-*` codes when describing messages, toasts, banners, or inline errors. |
+| Action verbs | Use business verbs: open/close/navigate/display/show/hide/enable/disable, not technical calls. |
+
+Scoring: 0 violations -> Clear (4pts). 1-2 violations -> Partial (2pts). 3+ violations -> Missing (0pts). Evidence: read `ascii-screen/*.md` -> Fields table -> Behaviour Rules column for each field.
+
 ### KA #7 — Functional Logic & Workflow Decomposition
 - 7.3 Exception & Error Flows: error handling for every **API call from the client** — what does the App display/do when the call fails or times out?
 

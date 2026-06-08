@@ -75,6 +75,10 @@ def main() -> int:
         "--require-ascii-current",
     ]))
 
+    ascii_screen_root = module_root / "ascii-screen"
+    if any(path.name != "index.md" for path in ascii_screen_root.glob("*.md")):
+        checks.append(run_check([sys.executable, str(script_dir / "check-screen-behaviour.py"), str(ascii_screen_root)]))
+
     # Check srs source set
     checks.append(run_check([
         sys.executable, str(script_dir / "check-srs-source-set.py"),

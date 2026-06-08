@@ -55,6 +55,12 @@ Before running the deterministic compile script, scan all canon source files for
 
 5. **Run validator.** Ensure `ba-kit validate-index --writeback` passes for all indexes before compile.
 
+6. **Run behaviour guardrail.** After writing or updating screen canon files, run:
+   ```bash
+   ba-kit check-screen-behaviour plans/{slug}-{date}/03_modules/{module}/ascii-screen/
+   ```
+   If violations are found, fix them before compile.
+
 ## Step 11 - Compile SRS
 
 Run the deterministic compile script to assemble `paths.srs` from canon sources:

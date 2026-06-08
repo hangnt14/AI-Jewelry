@@ -38,7 +38,20 @@ changelog:
 
 | Field Name | Display Rules | Behaviour Rules | Validation Rules |
 |---|---|---|---|
-| {field} | {label, placeholder, visibility} | {interaction behavior} | {validation, error surface, MSG-ERR-NN} |
+| {field} | {label, placeholder, visibility, default, read-only} | Bấm -> mở SCR-XXX, hiển thị toast MSG-INF-01, hoặc enable/disable field Y theo trạng thái nghiệp vụ. | {required/format/range, inline/toast/banner, MSG-ERR-NN} |
+
+### Behaviour Rules Naming Sheet
+
+Use these patterns, not technical language:
+
+| Pattern | Correct (Business) | Wrong (Technical) |
+|---|---|---|
+| Navigate to screen | Bấm -> mở SCR-LRN-12 (My Learning) | Click -> redirect /learn |
+| Open overlay | Bấm -> mở modal SCR-FORGOT-PW | Click -> showModal('forgot') |
+| Close overlay | Bấm ngoài modal -> đóng, quay về màn cha | Click -> close() |
+| Submit form | Bấm -> validate -> gọi xác thực -> đúng: vào SCR-XXX, sai: toast MSG-ERR-01 | Click -> POST /api/auth |
+| Show message | Sau khi gửi -> toast xanh MSG-SUC-01 "Đã gửi link reset" | showSuccessToast() |
+| Toggle state | Bấm -> enable/disable field Y, hiển thị section Z | setDisabled(false) |
 
 ## User Actions
 

@@ -70,7 +70,7 @@ Module BA chỉ làm việc trong module đã nhận, không sửa module khác 
 | 2 | **Viết user stories** | `/ba-start stories --slug <slug> --module <module>` | `userstories/index.md`, `us-*.md` |
 | 3 | **Viết FRD** (nếu cần) | `/ba-start frd --slug <slug> --module <module>` | `frd.md` |
 | 4 | **Viết SRS canon** | `/ba-start srs --slug <slug> --module <module>` | `usecases/*.md`, `ascii-screen/*.md`, `srs/*.md`, `srs-index.md`, `srs.md` |
-| 5 | **Kiểm tra SRS** | `ba-kit doctor-srs plans/{slug}-{date}/03_modules/{module}` | Xác nhận canon đúng schema, compile receipt hợp lệ |
+| 5 | **Kiểm tra SRS** | `ba-kit doctor-srs plans/{slug}-{date}/03_modules/{module}` | Xác nhận canon đúng schema, Behaviour Rules hợp lệ, compile receipt hợp lệ |
 | 6 | **Gửi review** | `/ba-collab Gửi module <module> cho Lead BA review` | `delegation/review-packets/{module}.md` |
 | 7 | **Sửa theo feedback** | Quay lại bước 4-5, chỉ sửa canon, compile lại `srs.md` | Canon cập nhật, receipt mới |
 
@@ -425,7 +425,7 @@ ba-kit doctor-srs plans/{slug}-{date}/03_modules/{module}
 ba-kit check-write-scope --command figma-sync plans/{slug}-{date}/03_modules/{module}/ascii-screen/scr-01.md
 ```
 
-`doctor-srs` kiểm tra `ascii-screen/index.md`, screen canon schema, và compile receipt. `check-write-scope` dùng cho hook/runtime để chặn lệnh downstream như Figma sync sửa nhầm canon.
+`doctor-srs` kiểm tra `ascii-screen/index.md`, screen canon schema, Behaviour Rules trong `ascii-screen/*.md` khi có screen canon, source-of-truth invariants, và compile receipt. `check-write-scope` dùng cho hook/runtime để chặn lệnh downstream như Figma sync sửa nhầm canon.
 
 `/ba-start wireframes` chỉ còn là compatibility validation command. Flow hiện tại không tạo legacy wireframe pack artifacts. Nếu ASCII thiếu hoặc stale, chạy lại `/ba-start srs --slug <slug> --module <module>`.
 

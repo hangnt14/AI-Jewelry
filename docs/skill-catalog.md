@@ -135,7 +135,7 @@ If the user manually inserts wireframe images or links into the markdown source,
 
 Runtime guardrail helpers:
 
-- `ba-kit doctor-srs <module_root>` validates ASCII screen index paths, screen canon schema, source-of-truth invariants, and compile receipt presence.
+- `ba-kit doctor-srs <module_root>` validates ASCII screen index paths, screen canon schema, required screen sections, Behaviour Rules format, source-of-truth invariants, and compile receipt presence.
 - `ba-kit check-write-scope --command <command> <path>...` blocks downstream commands such as `figma-sync` and `package` from mutating canon files.
 - `ba-kit check-srs-index`, `ba-kit check-screen-canon`, and `ba-kit check-source-of-truth` expose the narrow validators for hooks and CI.
 

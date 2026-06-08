@@ -33,6 +33,7 @@ GUARDRAIL_SCRIPTS=(
   "validate-index-quality.py"
   "check-token-budget.py"
   "check-write-scope.py"
+  "check-screen-behaviour.py"
   "compile-srs.py"
   "check-srs-template-compliance.py"
   "md-to-html.py"
@@ -258,7 +259,7 @@ install_cli
 write_manifest
 
 echo "Created BA-kit KI in active Antigravity runtimes"
-echo "Installed guardrail assets (7 scripts + docs)"
+echo "Installed guardrail assets (10 scripts + docs)"
 echo "Installed update CLI to ${LOCAL_BIN_TARGET}/ba-kit"
 echo "BA-kit Antigravity installation complete."
 echo ""

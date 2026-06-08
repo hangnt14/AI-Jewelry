@@ -65,6 +65,10 @@ If UC does not mention an item → record gap + question.
 - 5.2 Use case ↔ canon consistency: treat **endpoints as components** — check endpoint names, HTTP methods, and payload fields match between module use cases, screen/data canon, and API contract/spec.
 - 5.4 Shared-rule cross-check: reference `screen-field-contract.yaml`, shared shell rules, and explicit rule/message IDs. ≥85% applicable shared rules referenced → Clear.
 
+### 5.5 Behaviour Rules Language Check (if screens exist)
+
+When the module has UI-backed screens, apply the same Behaviour Rules language criteria as the mobile profile: no API paths in Behaviour Rules, no framework calls, `SCR-*` references for navigation targets, and `MSG-*` references for user-visible feedback. This check is not applicable for pure API modules without `ascii-screen/*.md`.
+
 ### KA #7 — Functional Logic & Workflow Decomposition
 - 7.3 Exception & Error Flows: error handling for every **API call from the client** — what does the Consumer do when the call fails, times out, or returns unexpected status?
 

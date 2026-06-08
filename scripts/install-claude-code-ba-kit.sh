@@ -35,6 +35,7 @@ GUARDRAIL_SCRIPTS=(
   "validate-index-quality.py"
   "check-token-budget.py"
   "check-write-scope.py"
+  "check-screen-behaviour.py"
   "context-output-guard.py"
   "context-preflight-guard.py"
   "context-budget-bootstrap.py"

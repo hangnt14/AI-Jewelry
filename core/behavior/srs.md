@@ -76,6 +76,7 @@ Receipt must define `compile_scope`, `requested_sections`, `included_sources`, `
 - Overlay screens inherit the parent portal unless an explicit cross-portal transition is documented.
 - If modal, dialog, drawer, or overlay screens hide global navigation, set `Navigation Region Visible` to `No` and state the exception reason.
 - Primary screens must link to use cases and user stories and define portal, role, nav schema, active menu, navigation visibility, breadcrumbs/back behavior, entry/exit conditions, actions, and states.
+- Behaviour Rules in screen field tables MUST use business language describing navigation targets (`SCR-*`), overlay actions (open/close), and user-visible feedback (toast/banner/inline message with `MSG-*`). They MUST NOT contain API paths, HTTP methods, endpoint URLs, or framework-specific function names. Technical language in Behaviour Rules is a hard contract violation: `BEHAVIOUR_FORMAT_VIOLATION`.
 
 Run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} $(find {paths.ascii_screen_root} -name '*.md' ! -name 'index.md' | sort | sed 's/^/--screen-contract /')` after screen authoring when UI-backed screens exist. Treat `NAV_SCHEMA_MISMATCH`, `MENU_SCHEMA_MISMATCH`, and `MENU_ACTIVE_MISSING` as blocking.
 

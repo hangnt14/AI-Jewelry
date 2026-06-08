@@ -53,6 +53,12 @@ Before authoring UI-backed screens, apply the DESIGN.md coverage gate in `core/b
 
 If the required active-menu item or schema route is absent, stop with `MENU_SCHEMA_GAP` instead of guessing a replacement path.
 
+Behaviour Rules format gate:
+- Every Behaviour Rules cell MUST describe actions in business language: navigation targets (`SCR-*`), overlay open/close, user-visible messages (`MSG-*`), field enable/disable, or visible state changes.
+- MUST NOT contain: POST/GET/PUT/PATCH/DELETE, `/api/` paths, endpoint URLs, framework/router function names, or state-management calls.
+- Violation: `BEHAVIOUR_FORMAT_VIOLATION`.
+- Fix violations before continuing.
+
 After screen authoring, run:
 
 ```text
