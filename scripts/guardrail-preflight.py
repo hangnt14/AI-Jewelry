@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -103,6 +104,7 @@ def main() -> int:
     args = parser.parse_args()
 
     repo = Path(args.repo).resolve()
+    plan_root = repo / f"plans/{args.slug}-{args.date}"
     contract = load_contract(repo)
     policy = COMMAND_POLICIES[args.command]
 
@@ -184,6 +186,54 @@ def main() -> int:
             )
         )
 
+    # Package receipt validation: scan all modules, require receipt + template_compliance
+    if args.command == "package" and result["status"] == "ok":
+        import json as _json
+        modules_dir = plan_root / "03_modules"
+        if modules_dir.is_dir():
+            scan_issues = []
+            for mod_dir in sorted(modules_dir.iterdir()):
+                if not mod_dir.is_dir():
+                    continue
+                srs_md = mod_dir / "srs.md"
+                receipt_json = mod_dir / "srs-compile-receipt.json"
+                if not srs_md.exists():
+                    continue
+                if not receipt_json.exists():
+                    scan_issues.append(f"{mod_dir.name}: receipt missing")
+                    continue
+                try:
+                    receipt = _json.loads(receipt_json.read_text(encoding="utf-8"))
+                except Exception:
+                    scan_issues.append(f"{mod_dir.name}: receipt invalid JSON")
+                    continue
+                tc = receipt.get("template_compliance")
+                if tc is not True:
+                    scan_issues.append(f"{mod_dir.name}: template_compliance={tc}")
+                # Validate source hashes
+                source_hashes = receipt.get("source_hashes", {})
+                for rel_path, expected_hash in source_hashes.items():
+                    fpath = mod_dir / rel_path
+                    if not fpath.exists():
+                        scan_issues.append(f"{mod_dir.name}: source missing {rel_path}")
+                        continue
+                    actual_hash = hashlib.sha256(fpath.read_bytes()).hexdigest()
+                    if actual_hash != expected_hash:
+                        scan_issues.append(f"{mod_dir.name}: source hash mismatch {rel_path}")
+            if scan_issues:
+                result["status"] = "block"
+                result["reason"] = "package_receipt_validation_failed"
+                result["module_issues"] = scan_issues
+                rc = make_refresh_command(
+                    "package",
+                    slug=args.slug,
+                    date=args.date,
+                    module="",
+                    index_state={"state": "missing", "reason": "Compile modules first"},
+                )
+                result["refresh_command"] = rc
+                result["message"] = make_block_message(args.command, "receipt_validation", rc)
+
     if index_states and overall_state != "current" and not args.allow_escalation:
         reason = next(
             f"{key}_{value['state']}"
@@ -202,13 +252,13 @@ def main() -> int:
         result["reason"] = reason
         result["refresh_command"] = refresh_command
         result["message"] = make_block_message(args.command, reason, refresh_command)
-    elif index_states and overall_state != "current" and args.allow_escalation:
+    elif result["status"] == "ok" and index_states and overall_state != "current" and args.allow_escalation:
         result["status"] = "warn"
         result["reason"] = f"escalation_required:{overall_state}"
         result["message"] = (
             f"GUARDRAIL_WARN: cmd={args.command} mode={policy['guardrail_mode']} escalation={overall_state}"
         )
-    else:
+    elif result["status"] == "ok":
         allow_tokens = [Path(path).name if "/" in path else path for path in allow_reads if not path.endswith(".md") or "index" in path or path.endswith("plan.md")]
         deny_tokens = [Path(path).stem for path in deny_reads]
         result["message"] = make_ok_message(

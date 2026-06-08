@@ -1300,7 +1300,7 @@ def default_base_dir(md_path: Path) -> Path:
     return md_path.parent.parent.parent
 
 
-def convert(md_path: Path, *, base_dir: Optional[Path] = None, editor_enabled: bool = False) -> Path:
+def convert(md_path: Path, *, base_dir: Optional[Path] = None, editor_enabled: bool = False, output: Optional[Path] = None) -> Path:
     """Convert any BA markdown to HTML with embedded images and Mermaid support."""
     if base_dir is None:
         base_dir = default_base_dir(md_path)
@@ -1377,7 +1377,8 @@ def convert(md_path: Path, *, base_dir: Optional[Path] = None, editor_enabled: b
 </body>
 </html>"""
 
-    out_path = md_path.with_suffix(".html")
+    out_path = output.resolve() if output else md_path.with_suffix(".html")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(html, encoding="utf-8")
     return out_path
 
@@ -1452,6 +1453,11 @@ def main():
         action="store_true",
         help="Crawl a directory and compile matching module deliverables into a unified html file under 04_compiled",
     )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="Output HTML file path (default: auto from input name with .html suffix)",
+    )
     args = parser.parse_args()
 
     input_path = Path(args.input)
@@ -1474,6 +1480,7 @@ def main():
             input_path,
             base_dir=base,
             editor_enabled=args.with_editor,
+            output=args.output,
         )
         print(f"Generated: {out}")
 

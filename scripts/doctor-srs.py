@@ -90,6 +90,15 @@ def main() -> int:
     # Check source of truth
     checks.append(run_check([sys.executable, str(script_dir / "check-source-of-truth.py"), str(module_root)]))
 
+    # Check template compliance (srs.md vs template)
+    srs_path = module_root / "srs.md"
+    if srs_path.exists():
+        checks.append(run_check([
+            sys.executable, str(script_dir / "check-srs-template-compliance.py"),
+            "--srs", str(srs_path),
+            "--repo", str(repo),
+        ]))
+
     # Check backbone-module alignment
     checks.append(run_check([
         sys.executable, str(script_dir / "check-backbone-module-alignment.py"),

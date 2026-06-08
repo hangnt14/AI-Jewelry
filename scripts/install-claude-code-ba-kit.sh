@@ -38,6 +38,9 @@ GUARDRAIL_SCRIPTS=(
   "context-output-guard.py"
   "context-preflight-guard.py"
   "context-budget-bootstrap.py"
+  "compile-srs.py"
+  "check-srs-template-compliance.py"
+  "md-to-html.py"
 )
 
 # ── helpers ──────────────────────────────────────────────────────────

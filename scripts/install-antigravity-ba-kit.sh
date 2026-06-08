@@ -20,6 +20,9 @@ GUARDRAIL_SCRIPTS=(
   "validate-index-quality.py"
   "check-token-budget.py"
   "check-write-scope.py"
+  "compile-srs.py"
+  "check-srs-template-compliance.py"
+  "md-to-html.py"
 )
 
 ensure_dir() {

@@ -25,8 +25,8 @@ Muc tieu cua file nay la khoa tran kich thuoc cho instruction surface cua BA-kit
   "files": [
     {
       "path": "core/contract.yaml",
-      "baseline": 24796,
-      "max": 25500,
+      "baseline": 25706,
+      "max": 25706,
       "label": "machine contract"
     },
     {
@@ -49,8 +49,8 @@ Muc tieu cua file nay la khoa tran kich thuoc cho instruction surface cua BA-kit
     },
     {
       "path": "core/behavior/impact.md",
-      "baseline": 2032,
-      "max": 4500,
+      "baseline": 4877,
+      "max": 4877,
       "label": "impact behavior shard"
     },
     {
@@ -85,8 +85,8 @@ Muc tieu cua file nay la khoa tran kich thuoc cho instruction surface cua BA-kit
     },
     {
       "path": "skills/ba-start/SKILL.md",
-      "baseline": 3866,
-      "max": 4100,
+      "baseline": 4124,
+      "max": 4124,
       "label": "ba-start stub"
     },
     {
@@ -175,16 +175,16 @@ Muc tieu cua file nay la khoa tran kich thuoc cho instruction surface cua BA-kit
     },
     {
       "path": "CLAUDE.md",
-      "baseline": 4420,
-      "max": 4700,
+      "baseline": 7100,
+      "max": 7100,
       "label": "claude runtime policy"
     }
   ],
   "bundles": [
     {
       "name": "runtime_policies",
-      "baseline": 12491,
-      "max": 13200,
+      "baseline": 15171,
+      "max": 15171,
       "paths": [
         "AGENTS.md",
         "GEMINI.md",
@@ -193,8 +193,8 @@ Muc tieu cua file nay la khoa tran kich thuoc cho instruction surface cua BA-kit
     },
     {
       "name": "shared_entry_runtime",
-      "baseline": 48186,
-      "max": 50600,
+      "baseline": 50616,
+      "max": 50616,
       "paths": [
         "core/contract.yaml",
         "core/contract-behavior.md",
@@ -227,8 +227,8 @@ Muc tieu cua file nay la khoa tran kich thuoc cho instruction surface cua BA-kit
     },
     {
       "name": "impact_runtime_bundle",
-      "baseline": 57014,
-      "max": 59900,
+      "baseline": 62357,
+      "max": 62357,
       "paths": [
         "core/contract.yaml",
         "core/contract-behavior.md",
