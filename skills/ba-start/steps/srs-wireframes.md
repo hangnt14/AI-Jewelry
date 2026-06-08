@@ -6,17 +6,57 @@ This step requires:
 - `core/contract-behavior.md`
 - `core/behavior/srs.md`
 
-## Step 8.2 - Capture Design Decisions And Persist Runtime DESIGN.md
+## Step 8.2 - Verify DESIGN.md Coverage For Module Portals
 
 Skip this step when reverse mode is the active lane. Reverse-backed SRS work must use reverse evidence,
 not `DESIGN.md`, as the blocking prerequisite.
 
-Before BA-kit writes screen canon for UI-backed screens or generates mandatory ASCII wireframes, ask the user to approve the project runtime `DESIGN.md` direction.
+**DESIGN.md is a system-level prerequisite created by Lead BA during backbone.**
+Two-tier change authority applies:
 
-Decision intake must cover reference direction, visual tone/density, color and contrast, typography, component feel, layout priority, portal navigation schema, active-menu rule, breadcrumb/back behavior, hidden navigation exceptions, hard constraints, and anti-patterns.
+| Level | Scope | Who | Gate |
+|-------|-------|-----|------|
+| L1 - Portal | New portal, new nav schema, new shell variant | Lead BA only | Hard — stop + escalate |
+| L2 - Nav Item | Add menu item to existing portal/nav schema | Module BA with confirm | Soft — ask user → add → flag review |
 
-If `paths.design_doc` already exists, ask whether to reuse it, refresh it, or stop. If no file exists or refresh is approved, synthesize it from approved decisions using `~/.claude/templates/design-md-template.md` (fallback: [../../../templates/design-md-template.md](../../../templates/design-md-template.md)). Stop if design decisions remain unresolved.
-Treat `paths.design_doc` as the visual-direction artifact. Shared portal/navigation ownership lives in `paths.shared_shell_contract` and `paths.shared_shell_index`.
+Before authoring UI-backed screens, verify the module's portal(s) are covered:
+
+### L1 Checks — Stop And Escalate To Lead BA
+
+1. **DESIGN.md must exist.** If `paths.design_doc` is missing:
+   ```
+   DESIGN_GAP: design_doc missing for slug={slug}
+   Action: Lead BA must run 'ba-start backbone --slug {slug}' first.
+   ```
+   Stop. Do NOT create DESIGN.md from this module step.
+
+2. **Portal must be in DESIGN.md.** For every `Portal ID` used by this module, verify it exists in `paths.design_doc` §2. If missing:
+   ```
+   DESIGN_GAP: {portal_id} not found in designs/{slug}/DESIGN.md
+   Action: Lead BA must run 'ba-start impact --slug {slug} "Add {portal_id} to DESIGN.md"'
+   ```
+   Stop.
+
+3. **Nav Schema must exist.** If the module's `Nav Schema ID` is not declared in DESIGN.md:
+   ```
+   MENU_SCHEMA_GAP: {nav_schema_id} not found for {portal_id}
+   Action: Lead BA must add Nav Schema to DESIGN.md and shared-shell-contract.md.
+   ```
+   Stop.
+
+### L2 Checks — Module BA May Resolve With User Confirmation
+
+4. **Missing menu item in existing nav schema.** If the portal and nav schema exist but a needed `Expected Active Menu Item` is absent:
+   ```
+   MENU_ITEM_GAP: screen {screen_id} needs menu item "{active_item}" in {portal_id}/{nav_schema_id}
+   ```
+   Ask user: "Thêm menu item '{active_item}' vào {portal_id}/{nav_schema_id} trong DESIGN.md và shared-shell-contract.md?"
+   - **Yes**: add the item to both DESIGN.md Navigation Schema and shared-shell-contract.md. Flag in review packet for Lead BA visibility.
+   - **No**: stop, escalate to Lead BA.
+
+5. **Verify shared-shell-contract consistency.** Read `paths.shared_shell_contract` and confirm it declares all portals, nav schemas, and shell variants used by `paths.design_doc`. If inconsistent, flag and escalate.
+
+All checks pass → proceed to screen authoring.
 
 ## Source: srs/flows.md
 

@@ -641,6 +641,11 @@ HOOKEOF
   chmod +x "${TARGET_HOOKS}/guardrail-write-scope-hook.sh"
 }
 
+write_index_validation_hook() {
+  cp "${ROOT_DIR}/scripts/guardrail-index-validation-hook.sh" "${TARGET_HOOKS}/guardrail-index-validation-hook.sh"
+  chmod +x "${TARGET_HOOKS}/guardrail-index-validation-hook.sh"
+}
+
 # ── settings.json hook registration ──────────────────────────────────
 
 register_hooks() {
@@ -717,6 +722,17 @@ post_hooks.append({
     "hooks": [{
         "type": "command",
         "command": f"bash \"{hooks_dir}/guardrail-context-output-guard-hook.sh\""
+    }]
+})
+
+# PostToolUse — index validation (matcher: Write|Edit)
+# Auto-validates index files after write. Fallback safety net for the hard instruction in step files.
+post_hooks[:] = [h for h in post_hooks if "guardrail-index-validation-hook.sh" not in str(h)]
+post_hooks.append({
+    "matcher": "Write|Edit",
+    "hooks": [{
+        "type": "command",
+        "command": f"bash \"{hooks_dir}/guardrail-index-validation-hook.sh\""
     }]
 })
 
@@ -941,6 +957,7 @@ write_write_scope_hook
 write_context_output_guard_hook
 write_context_preflight_guard_hook
 write_context_audit_hook
+write_index_validation_hook
 echo "Created hook scripts in ${TARGET_HOOKS}"
 
 register_hooks
@@ -957,7 +974,7 @@ echo "BA-kit Claude Code installation complete."
 echo ""
 echo "Installed:"
 echo "  - 10 guardrail Python scripts → ${TARGET_SCRIPTS}"
-echo "  - 6 hook scripts → ${TARGET_HOOKS}"
+echo "  - 7 hook scripts → ${TARGET_HOOKS}"
 echo "  - Guardrail docs → ${TARGET_DOCS}"
 echo "  - CLI → ${LOCAL_BIN_TARGET}/ba-kit"
 echo "  - Hooks registered in ${SETTINGS_FILE}"
@@ -968,6 +985,7 @@ echo "  - Stop: guardrail audit + context waste audit (post-session reports)"
 echo "  - PreToolUse (Write|Edit): write-scope enforcement"
 echo "  - PreToolUse (Read|Glob): context preflight guard (blocks oversized reads, detects re-reads)"
 echo "  - PostToolUse (Bash|Read|Grep|Glob): context output guard (warns on oversized outputs)"
+echo "  - PostToolUse (Write|Edit): index validation (auto-validates index files after write)"
 echo ""
 echo "Hooks silent outside BA-kit plan directories. No overhead for non-BA work."
 

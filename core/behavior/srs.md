@@ -53,10 +53,25 @@ Receipt must define `compile_scope`, `requested_sections`, `included_sources`, `
 - Reverse-mode carveout: when `paths.reverse_baseline_lock` exists and reverse-backed SRS work is active,
   do not require `paths.design_doc` as a prerequisite for screen authoring.
   Instead require current reverse evidence and route any future-state UI request back through `impact`.
-- Before authoring UI-backed screens, require approved `paths.design_doc` with a Navigation Schema for every portal used by the module.
-- Treat `paths.design_doc` Navigation Schema as source of truth for `Nav Schema ID`, menu labels, and allowed active-menu paths.
-- Copy `Expected Active Menu Item` exactly from an allowed menu item/path in the matching schema.
-- If a needed item is absent, emit `MENU_SCHEMA_GAP: {screen_id} needs {active_item} in {portal_id}/{nav_schema_id}` and stop.
+- **DESIGN.md is a system-level prerequisite owned by Lead BA.** Module BA may augment nav items in existing portals with user confirmation. Portal-level changes escalate hard.
+  Two-tier change authority:
+
+| Level | Scope | Who | Gate |
+|-------|-------|-----|------|
+| **L1 - Portal** | New portal, new nav schema, new shell variant, new shared component | Lead BA only | Hard — `DESIGN_GAP` → stop → escalate via `impact` |
+| **L2 - Nav Item** | Add/modify menu items in an existing nav schema whose portal is already in DESIGN.md | Module BA with user confirm | Soft — `MENU_ITEM_GAP` → ask user → add to DESIGN.md → flag in review packet |
+
+  **L1 checks — stop and escalate:**
+  - If `paths.design_doc` is missing entirely: `DESIGN_GAP: design_doc missing` → escalate to Lead BA.
+  - If the module's portal is not in DESIGN.md §2: `DESIGN_GAP: {portal_id} not found` → escalate to Lead BA.
+
+  **L2 checks — Module BA may resolve:**
+  - If portal exists but a needed menu item is absent: `MENU_ITEM_GAP: {screen_id} needs "{active_item}" in {portal_id}/{nav_schema_id}`.
+    - Module BA: ask user "Thêm menu item '{active_item}' vào {portal_id}/{nav_schema_id} trong DESIGN.md?"
+    - User confirms → add item to DESIGN.md Navigation Schema + shared-shell-contract → flag in review packet.
+    - User declines → stop, escalate to Lead BA.
+  - If a structural nav schema issue exists (schema ID mismatch, missing schema entirely): `MENU_SCHEMA_GAP` → escalate to Lead BA (L1).
+  - Module BA MUST NOT create new portals, new nav schemas, or new shell variants in DESIGN.md.
 - Every screen in the same `Portal ID` must reuse the same `Nav Schema ID` unless an explicit exception is declared.
 - Overlay screens inherit the parent portal unless an explicit cross-portal transition is documented.
 - If modal, dialog, drawer, or overlay screens hide global navigation, set `Navigation Region Visible` to `No` and state the exception reason.
@@ -68,7 +83,6 @@ Run `python3 scripts/validate-navigation-consistency.py --design {paths.design_d
 
 - Reverse-mode carveout: if reverse evidence is the active gate, skip ASCII generation and cite evidence instead.
 - In reverse mode, canonical SRS writes must cite reverse evidence and trace IDs before promotion.
-- If `paths.design_doc` is missing or unresolved for a forward UI-backed module, run design direction approval and stop if the user does not approve.
 - Build `paths.screen_field_contract` after screen authoring when UI-backed screens exist. This artifact is the normalized machine-facing truth derived from screen canon.
 - `paths.screen_field_contract` must preserve exact `Portal ID`, `Nav Schema ID`, `Expected Active Menu Item`, field allowlists, required states, Display / Behaviour / Validation rules, rule codes, message codes, and short raw excerpts when prose cannot be normalized safely.
 - `paths.screen_field_contract` is owned by `srs`, not by downstream wireframe tool lanes.
@@ -78,4 +92,11 @@ Run `python3 scripts/validate-navigation-consistency.py --design {paths.design_d
 
 ## Index Generation
 
-When SRS writes or refreshes `paths.usecases_index` or `paths.ascii_screen_index`, generate with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, and run producer-side validation before any downstream routing treats the index as current.
+When SRS writes or refreshes `paths.usecases_index` or `paths.ascii_screen_index`, generate with `stale_status: unknown`, leave `validated_at` and `validated_by` blank. **[BẮT BUỘC]** Immediately run both:
+
+```bash
+ba-kit validate-index --index-key usecases_index --slug <slug> --date <date> --module <module> --writeback
+ba-kit validate-index --index-key ascii_screen_index --slug <slug> --date <date> --module <module> --writeback
+```
+
+If either validation fails, stop execution. Do not proceed to SRS compile or downstream commands. The PostToolUse hook serves as fallback, but these inline calls are the primary enforcement.

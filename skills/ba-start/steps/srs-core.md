@@ -49,7 +49,7 @@ Consistency rules:
 
 Output: `paths.ascii_screen_index` + `paths.ascii_screen_item` files
 
-Before authoring UI-backed screens, apply the navigation schema gate in `core/behavior/srs.md`. If `paths.design_doc` is missing or unresolved, run Step 8.2 from `srs-wireframes.md` first.
+Before authoring UI-backed screens, apply the DESIGN.md coverage gate in `core/behavior/srs.md`. `paths.design_doc` and `paths.shared_shell_contract` must already exist (created by Lead BA during backbone) and cover the module's portals. If missing → `DESIGN_GAP` → stop, escalate to Lead BA. Module BA MUST NOT create DESIGN.md.
 
 If the required active-menu item or schema route is absent, stop with `MENU_SCHEMA_GAP` instead of guessing a replacement path.
 
@@ -63,6 +63,19 @@ python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} \
 Pass each individual `ascii-screen/*.md` file (not the index) as a separate `--screen-contract` argument.
 
 Fix blocking navigation validator findings before continuing.
+
+### Index Validation [BẮT BUỘC]
+
+After writing or refreshing `paths.usecases_index` and `paths.ascii_screen_index`, immediately run:
+
+```bash
+ba-kit validate-index --index-key usecases_index --slug <slug> --date <date> --module <module> --writeback
+ba-kit validate-index --index-key ascii_screen_index --slug <slug> --date <date> --module <module> --writeback
+```
+
+- PASS/WARN: continue to Step 8.1.
+- FAIL: STOP. Fix index errors, re-run validator. Do not proceed to screen field contract or compile.
+- NEVER skip this step.
 
 ## Step 8.1 - Build Normalized Screen Truth
 

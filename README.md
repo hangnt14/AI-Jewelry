@@ -38,6 +38,95 @@ Agent sẽ map intent sang workflow an toàn:
 - Collaboration BA: claim module, check conflict, create review packet, optional GitHub PR handoff.
 - Git/GitHub là implementation detail; commit, push, PR, merge chỉ chạy khi user approve rõ.
 
+## Các Actor và Các Bước
+
+BA-kit phục vụ 6 actor chính. Mỗi actor có chuỗi bước riêng, bắt đầu từ khởi tạo dự án đến bàn giao.
+
+### 1. Lead BA / Solo BA — Điều Phối & Khởi Tạo
+
+Lead BA chịu trách nhiệm toàn bộ dự án khi solo, hoặc điều phối module khi multi-BA.
+
+| # | Bước | Command / Hành Động | Output Chính |
+|---|------|---------------------|--------------|
+| 1 | **Cài đặt BA-kit** | `./install.sh` → `ba-kit doctor` | Skills, rules, templates vào `~/.claude/` |
+| 2 | **Khởi tạo dự án** | `/ba-start intake <file>` hoặc `/ba-do Tôi có tài liệu...` | `PROJECT-HOME.md`, `01_intake/intake.md`, `01_intake/plan.md` |
+| 3 | **Review intake** | Đọc `intake.md`, trả lời câu hỏi gap analysis | Intake chuẩn hóa: stakeholder, goal, scope, mode |
+| 4 | **Options** (nếu cần) | `/ba-start options --slug <slug>` → `--select option-N` hoặc `--skip` | `01_intake/options/comparison.md` |
+| 5 | **Xây backbone** | `/ba-start backbone --slug <slug>` | `02_backbone/backbone.md`, `project-memory.md`, shared rules/messages |
+| 6 | **Chốt UI/IA** (nếu có UI) | Persist `DESIGN.md` + `shared-shell-contract.md` | Portal matrix, nav schema, shell variant |
+| 7a | **Solo: viết module** | Chạy `stories` → `srs` cho từng module (xem bảng Module BA) | `03_modules/{module}/*` |
+| 7b | **Multi-BA: chia module** | Tạo `COLLAB-HOME.md`, giao module cho từng BA | Module list, owner map, write scope |
+| 8 | **Review cross-module** | `/ba-start status --slug <slug>`, `/ba-collab status --slug <slug>` | Phát hiện conflict terminology, rule/message code, menu |
+| 9 | **Package bàn giao** | `/ba-start package --slug <slug>` | `04_compiled/compiled-frd.html`, `compiled-srs.html` |
+| 10 | **Xử lý thay đổi** | `/ba-start impact --slug <slug> "mô tả..."` | Impact report, đề xuất command cần chạy lại |
+
+### 2. Module BA — Viết Artifact Trong Module Được Giao
+
+Module BA chỉ làm việc trong module đã nhận, không sửa module khác hay shared shell.
+
+| # | Bước | Command / Hành Động | Output Chính |
+|---|------|---------------------|--------------|
+| 1 | **Nhận module** | `/ba-collab Tôi nhận module <module>` | `MODULE-HOME.md` |
+| 2 | **Viết user stories** | `/ba-start stories --slug <slug> --module <module>` | `userstories/index.md`, `us-*.md` |
+| 3 | **Viết FRD** (nếu cần) | `/ba-start frd --slug <slug> --module <module>` | `frd.md` |
+| 4 | **Viết SRS canon** | `/ba-start srs --slug <slug> --module <module>` | `usecases/*.md`, `ascii-screen/*.md`, `srs/*.md`, `srs-index.md`, `srs.md` |
+| 5 | **Kiểm tra SRS** | `ba-kit doctor-srs plans/{slug}-{date}/03_modules/{module}` | Xác nhận canon đúng schema, compile receipt hợp lệ |
+| 6 | **Gửi review** | `/ba-collab Gửi module <module> cho Lead BA review` | `delegation/review-packets/{module}.md` |
+| 7 | **Sửa theo feedback** | Quay lại bước 4-5, chỉ sửa canon, compile lại `srs.md` | Canon cập nhật, receipt mới |
+
+### 3. Stakeholder — Cung Cấp Yêu Cầu & Phê Duyệt
+
+Stakeholder không chạy command. Họ tương tác qua BA.
+
+| # | Bước | Hành Động |
+|---|------|-----------|
+| 1 | **Cung cấp yêu cầu** | Gửi file (PDF, doc, slide) hoặc mô tả bằng text |
+| 2 | **Trả lời gap analysis** | BA hỏi → stakeholder chốt: ai, mục tiêu, scope, ưu tiên |
+| 3 | **Review intake + backbone** | Đọc `intake.md` và `backbone.md`, xác nhận scope trước khi BA viết downstream |
+| 4 | **Review options** (nếu có) | Xem `options/comparison.md`, chọn phương án |
+| 5 | **Review SRS/FRD** | Đọc `compiled-srs.html` hoặc `compiled-frd.html` trong browser |
+| 6 | **Đưa change request** | Báo BA: "Xuất CSV phải có audit log" → BA chạy `impact` |
+| 7 | **Phê duyệt deliverables** | Xác nhận package cuối trước khi handoff cho dev/test |
+
+### 4. UI/UX Designer — Thiết Kế Giao Diện Từ Canon
+
+Designer làm việc downstream, không định nghĩa requirement mới.
+
+| # | Bước | Hành Động | Input |
+|---|------|-----------|-------|
+| 1 | **Đọc design direction** | Nắm visual tone, component baseline, layout principles | `designs/{slug}/DESIGN.md` |
+| 2 | **Đọc shared shell** | Nắm portal matrix, nav schema, active menu | `02_backbone/shared-shell-contract.md` |
+| 3 | **Sync Figma** (optional) | `/ba-figma-sync --slug <slug> --module <module>` | `ascii-screen/*.md` → Figma frames |
+| 4 | **Báo mismatch** | Nếu Figma khác canon → báo BA sửa canon trước, sync lại sau | `figma-mismatch-report.md` |
+
+**Nguyên tắc:** Canon là source of truth. Không sửa canon từ Figma.
+
+### 5. QC / Test Lead — Kiểm Tra Chất Lượng Module SRS
+
+QC đọc module canon để đánh giá mức độ sẵn sàng cho test design.
+
+| # | Bước | Hành Động | Output |
+|---|------|-----------|--------|
+| 1 | **QC review module** | `/ba-start srs` xong → tự động trigger QC, hoặc chạy `qc-uc-review` | `qc-review/{module}-qc-review-report-vN.md` |
+| 2 | **Đọc canon** | Duyệt `usecases/*.md`, `ascii-screen/*.md`, `srs/*.md`, field contract | — |
+| 3 | **Chấm điểm & báo gap** | Verdict readiness, completeness score (0-100%), gap report | QC report + question backlog |
+| 4 | **Block nếu < 70%** | Gate cứng: score < 70 → BA phải sửa canon trước khi test design | — |
+
+### 6. Developer — Nhận Đặc Tả Để Triển Khai
+
+Developer nhận SRS compiled làm input chính cho implementation.
+
+| # | Bước | Input |
+|---|------|-------|
+| 1 | **Đọc SRS compiled** | `04_compiled/compiled-srs.html` hoặc `03_modules/{module}/srs.md` |
+| 2 | **Đọc use case** | `usecases/uc-*.md` — main flow, alternate flow, pre/post conditions |
+| 3 | **Đọc screen spec** | `ascii-screen/*.md` — field table, display/behaviour/validation rules, ASCII wireframe, states |
+| 4 | **Đọc data model** (nếu có) | `srs/erd.md` |
+| 5 | **Đọc shared rules** | `02_backbone/common-rules.md`, `message-list.md` — CR-*, MSG-* codes |
+| 6 | **Implement** | Code theo field contract, validation rules, screen states |
+
+---
+
 ## Flow Hiện Tại
 
 ```text

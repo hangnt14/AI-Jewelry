@@ -36,7 +36,7 @@ Map the user text using the first matching intent:
 | BA says | Internal action |
 | --- | --- |
 | create collaboration workspace / chia module / setup teamwork | initialize `COLLAB-HOME.md` with module inventory only. Do NOT create module directories or MODULE-HOME.md yet |
-| tôi nhận module X / assign module X cho Y | claim module X. Create `03_modules/X/` directory with subdirs (screens/, usecases/, data/) + `MODULE-HOME.md` for X only. Do NOT create directories for other unclaimed modules |
+| tôi nhận module X / assign module X cho Y | claim module X. Create `03_modules/X/` directory + `MODULE-HOME.md` for X only. Do NOT pre-create subdirs — lifecycle steps create their own subdirs (stories → userstories/, srs → usecases/, ascii-screen/, srs/) |
 | kiểm tra module X trước review / có conflict không | pre-review check |
 | làm xong module X / gửi Lead BA review | create review packet; optional PR only after approval |
 | cập nhật theo feedback / changes requested | mark changes-requested or in-progress |
@@ -49,7 +49,7 @@ Map the user text using the first matching intent:
 Allowed local mutations:
 - create or refresh `paths.collab_home` from `templates/collab-home-template.md` (setup teamwork only)
 - create or refresh `paths.module_home` from `templates/module-home-template.md` ONLY when a specific module is claimed. Do NOT batch-create module homes during setup
-- create `03_modules/{slug}/` directory with subdirs ONLY on claim, never during setup
+- create `03_modules/{module_slug}/` directory + `paths.module_home` ONLY on claim, never during setup. Do NOT pre-create subdirs (screens/, userstories/, usecases/, ascii-screen/, srs/) — lifecycle steps own their subdirs
 - create or refresh `paths.review_packet` from `templates/review-packet-template.md`
 - update module status only as: unassigned, assigned, in-progress, ready-for-review, changes-requested, approved, integrated, blocked
 - update review status only as: none, local-packet, draft-pr, review-requested, changes-requested, approved, merged, conflict
@@ -61,7 +61,9 @@ Never mutate lifecycle artifacts directly from collab intent. If the request cha
 Before marking ready-for-review or approved:
 - verify the module has an owner
 - verify changed paths are inside `03_modules/{module_slug}/` unless Lead BA approved escalation
-- flag changes to backbone, DESIGN.md, hot/global memory, or other modules as cross-module escalation
+- flag changes to backbone, hot/global memory, or other modules as cross-module escalation
+- flag L2 nav-item additions to DESIGN.md and shared-shell-contract.md in review packet for Lead BA visibility (these are allowed with user confirmation, not blocked)
+- flag L1 portal/nav-schema/shell-variant additions to DESIGN.md as cross-module escalation (these require Lead BA)
 - flag possible duplicate `CR-*` / `MSG-*` codes when detectable
 </step>
 

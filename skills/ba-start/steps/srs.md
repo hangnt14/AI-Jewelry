@@ -33,6 +33,7 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the in
 
 - Resolve slug, date, and module using the shared contract.
 - Require `paths.backbone`, `paths.backbone_index`, and `paths.userstories_index`.
+- For UI-backed modules: require `paths.design_doc` and `paths.shared_shell_contract` (created by Lead BA during backbone). If missing, emit `DESIGN_GAP` and stop — do NOT create them from SRS.
 - If a required artifact is missing, print the exact missing path, tell the user which subcommand to run first, and stop.
 - Run preflight from indexes first:
   - If `ba-kit guardrail --command srs --slug <slug> --date <date> --module <module>` returns `status=block`, surface the block message and stop
@@ -52,19 +53,25 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the in
 - `paths.srs` — compiled output only (requested-scope compile)
 - `paths.srs_compile_receipt` — receipt with compile scope and source hashes
 - `paths.screen_field_contract` — normalized machine-facing screen truth
-- `paths.design_doc` when Step 8.2 confirms or refreshes the UI design direction
 
 Do NOT create `srs-index.md`, `screens/`, `data/`, `flows/`, or `srs-groups/`.
+Do NOT create or modify `paths.design_doc` or `paths.shared_shell_contract` — these are system-level artifacts owned by Lead BA. Exception: Module BA may add nav items to an existing portal with user confirmation (see `srs-wireframes.md` Step 8.2 L2).
 
 Treat generated index artifacts as `agent_facing`; keep them compact.
-When `paths.usecases_index` or `paths.ascii_screen_index` is written or refreshed, keep `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run:
+When `paths.usecases_index` or `paths.ascii_screen_index` is written or refreshed, keep `stale_status: unknown`, leave `validated_at` and `validated_by` blank.
+
+**[BẮT BUỘC — KHÔNG ĐƯỢC BỎ QUA]** Ngay sau khi write index, PHẢI chạy cả hai:
 
 ```bash
 ba-kit validate-index --index-key usecases_index --slug <slug> --date <date> --module <module> --writeback
 ba-kit validate-index --index-key ascii_screen_index --slug <slug> --date <date> --module <module> --writeback
 ```
 
-before downstream work treats the indexes as `current`.
+- Nếu cả hai PASS hoặc WARN: `stale_status` được promote lên `current`. Có thể tiếp tục compile SRS.
+- Nếu bất kỳ validation nào FAIL: DỪNG. Không được compile `srs.md` hay chạy downstream command. Sửa index rồi chạy lại validator.
+- PostToolUse hook (`guardrail-index-validation-hook.sh`) sẽ tự chạy lại validator như fallback, nhưng agent PHẢI gọi inline trước.
+
+Không được bỏ qua bước này với lý do "để sau", "index nhỏ", hay "sẽ validate sau".
 
 Treat `paths.srs` as the compiled, reader-facing deliverable. Direct edits to `paths.srs` are blocked by default; canonical edits belong in the module source files and must compile back into `paths.srs` via the partial compile routine.
 
@@ -87,7 +94,7 @@ Receipt must define `compile_scope`, `requested_sections`, `included_sources`, `
 ```text
 Backbone alignment gate
 Step 8   -> srs-core.md  (generate source set)
-Step 8.2 -> srs-wireframes.md  (DESIGN.md gate, ASCII coverage)
+Step 8.2 -> srs-wireframes.md  (DESIGN.md coverage verification gate)
 Step 10  -> srs-wireframes.md  (screen field contract)
 Step 10.1 + 11 -> srs-assembly.md  (partial compile, receipt)
 ```

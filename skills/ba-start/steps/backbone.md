@@ -51,6 +51,8 @@ Run Step 5 only.
 - `paths.backbone`
 - `paths.backbone_index`
 - `paths.project_memory`
+- `paths.design_doc` — when UI-backed scope exists
+- `paths.shared_shell_contract` + `paths.shared_shell_index` — when UI-backed scope exists
 
 ## Step 5 - Build the requirements backbone
 
@@ -71,13 +73,39 @@ The backbone must contain:
 
 After writing the backbone, initialize or refresh `paths.project_memory` using `~/.claude/templates/project-memory-template.md` (fallback: [../../../templates/project-memory-template.md](../../../templates/project-memory-template.md)).
 Also create or refresh `paths.backbone_index` using `~/.claude/templates/backbone-index-template.md` (fallback: [../../../templates/backbone-index-template.md](../../../templates/backbone-index-template.md)).
-Generate the index with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run:
+Generate the index with `stale_status: unknown`, leave `validated_at` and `validated_by` blank.
+
+**[BẮT BUỘC — KHÔNG ĐƯỢC BỎ QUA]** Ngay sau khi write `backbone-index.md`, PHẢI chạy:
 
 ```bash
 ba-kit validate-index --index-key backbone_index --slug <slug> --date <date> --writeback
 ```
 
-before any downstream action treats the index as `current`.
+- Nếu validation PASS hoặc WARN: `stale_status` được promote lên `current`. Có thể tiếp tục downstream.
+- Nếu validation FAIL: DỪNG. Không được chạy `stories`, `frd`, `srs`, `package` hay bất kỳ downstream command nào. Sửa index rồi chạy lại validator.
+- PostToolUse hook (`guardrail-index-validation-hook.sh`) sẽ tự chạy lại validator như fallback, nhưng agent PHẢI gọi inline trước.
+
+Không được bỏ qua bước này với lý do "để sau", "index nhỏ", hay "sẽ validate sau".
+
+### Step 5.1 — Persist DESIGN.md and Shared Shell Contract [BẮT BUỘC khi có UI]
+
+**Owner: Lead BA only. Module BA MUST NOT create or modify these files.**
+
+When the backbone Portal Matrix defines at least one portal (UI-backed scope exists), immediately create:
+
+1. **`paths.design_doc`** using `~/.claude/templates/design-md-template.md` (fallback: [../../../templates/design-md-template.md](../../../templates/design-md-template.md)).
+   - Section 2 (Information Architecture) MUST include EVERY portal from the backbone Portal Matrix.
+   - Section 2.2 (Navigation Schema) MUST declare every nav schema used by any portal.
+   - Do NOT restrict DESIGN.md to just one module — it is a system-level visual direction artifact.
+   - Ask user to approve design direction (visual tone, colors, typography, component feel). Stop if unresolved.
+
+2. **`paths.shared_shell_contract`** using `~/.claude/templates/shared-shell-contract-template.md` (fallback: [../../../templates/shared-shell-contract-template.md](../../../templates/shared-shell-contract-template.md)).
+   - MUST declare ALL portals, nav schemas, shell variants, layout variants, and shared components.
+   - This is the machine-readable counterpart to DESIGN.md §2.
+
+3. **`paths.shared_shell_index`** using `~/.claude/templates/shared-shell-index-template.md` (fallback: [../../../templates/shared-shell-index-template.md](../../../templates/shared-shell-index-template.md)).
+
+**Rule:** These files are system-level, owned by Lead BA. Module BAs MAY add menu items to existing nav schemas with user confirmation (flag in review packet). New portals, nav schemas, shell variants, or shared components require Lead BA via `impact`.
 
 Also refresh `paths.project_home` using `~/.claude/templates/project-home-template.md` (fallback: [../../../templates/project-home-template.md](../../../templates/project-home-template.md)) so non-technical BAs can resume without understanding slug/date/module internals.
 
@@ -96,6 +124,7 @@ Backbone rules:
 - treat the backbone as the primary authoring source after intake
 - do not draft FRD, stories, or SRS directly from raw intake once the backbone exists
 - when UI-backed scope exists, lock portal ownership and route-group ownership here before any module-level screen work starts
+- when UI-backed scope exists, persist `paths.design_doc` and `paths.shared_shell_contract` covering ALL portals from the Portal Matrix; module BAs are prohibited from creating or editing these files
 - promote only the selected option's portal/module/actor/constraint decisions
 - do not import rejected options or the full comparison into `backbone.md`
 - keep the artifact concise and decision-oriented

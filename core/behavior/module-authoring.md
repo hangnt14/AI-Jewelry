@@ -22,7 +22,7 @@ Module artifacts are downstream from backbone. Before writing any module artifac
 - Preserve accepted backbone scope, terminology, gates, and risks.
 - Route material scope or requirement corrections through `impact` before mutating accepted downstream artifacts.
 - Stories output is `userstories/index.md` plus one `userstories/us-{slug}.md` per story. Do not create `user-stories.md` or `user-stories-index.md`.
-- When stories writes or refreshes `paths.userstories_index`, generate it with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run producer-side validation before any downstream routing treats the index as current.
+- When stories writes or refreshes `paths.userstories_index`, generate it with `stale_status: unknown`, leave `validated_at` and `validated_by` blank. **[BẮT BUỘC]** Immediately run `ba-kit validate-index --index-key userstories_index --slug <slug> --date <date> --module <module> --writeback`. If validation fails, stop execution. Do not proceed to SRS or other downstream work. The PostToolUse hook serves as fallback, but this inline call is the primary enforcement.
 - For any routeable downstream rerun from module authoring, re-enter through `paths.backbone_index` first and reopen only the targeted backbone slices it routes to.
 - Generated module indexes are navigators only. They must include IDs, source headings, trace hints, counts, freshness, and route hints, not duplicated requirement prose.
 - If a required upstream decision is absent or contradictory, stop and route back to the owning step instead of inventing prose.

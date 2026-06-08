@@ -180,14 +180,42 @@ Artifact profile controls format and length:
 
 When generating `user_facing` artifacts, use reader-friendly Vietnamese labels for internal terms: source of truth -> tài liệu gốc, gate -> điều kiện tiến hành, canon -> tài liệu nguồn chuẩn, compile receipt -> biên bản tổng hợp, index -> chỉ mục điều hướng, backbone -> khung yêu cầu đã chốt, intake -> tiếp nhận yêu cầu, package snapshot -> gói bàn giao tại thời điểm, project memory -> bộ nhớ dự án, shared shell -> khung giao diện dùng chung, screen field contract -> đặc tả trường màn hình, qc-review -> kiểm tra chất lượng, scope lock -> chốt phạm vi. Keep raw state values, IDs, file paths, receipt filenames, option IDs, command names, and QC verdict fields literal. Do not apply to `agent_facing` or `machine_facing`.
 
-Generated internal artifacts must not duplicate requirement prose from intake, backbone, stories, or SRS. Keep excerpts short, include stale/unknown status instead of guessing, and move substantial prose into the source-of-truth artifact.
+## Index Validation Mandate [HARD — NON-NEGOTIABLE]
 
-When a command writes or refreshes an index artifact, the producer-side contract is:
+Every index artifact (`paths.backbone_index`, `paths.userstories_index`, `paths.usecases_index`, `paths.ascii_screen_index`) MUST pass producer-side validation before any downstream command treats it as `current`.
 
-- emit `stale_status: unknown` on generation
-- leave `validated_at` and `validated_by` blank until validator success
-- allow only the validator to upgrade `stale_status` to `current`
-- downgrade to `stale` or keep `unknown` when validation fails
+### Write-Time Rule
+
+When a command writes or refreshes an index artifact:
+
+1. **Generate** the index with `stale_status: unknown`, leave `validated_at` and `validated_by` blank.
+2. **IMMEDIATELY run** `ba-kit validate-index --index-key <key> --slug <slug> --date <date> [--module <module>] --writeback` in the same execution step.
+3. **If validation fails** (exit code != 0 or status != pass): stop execution. Do not proceed to downstream commands. Report the exact validation errors.
+4. **If validation passes** (status: pass or warn): `stale_status` becomes `current`, `validated_at` and `validated_by` are set. Downstream commands may trust the index.
+5. **SKIPPING validation is a contract violation.** No downstream command may route through an index with `stale_status: unknown` or `stale_status: stale`.
+
+### PostToolUse Hook (Fallback)
+
+A PostToolUse hook (`guardrail-index-validation-hook.sh`) runs automatically after every `Write|Edit` tool call inside a BA-kit plan directory. When it detects a write to an index file, it re-runs `validate-index-quality.py --writeback`. This ensures index freshness even if the agent's inline validation step is missed.
+
+### Applicable Indexes
+
+| Index Key | Written By | Module Required |
+|-----------|-----------|-----------------|
+| `backbone_index` | `ba-start backbone` | No |
+| `userstories_index` | `ba-start stories` | Yes |
+| `usecases_index` | `ba-start srs` | Yes |
+| `ascii_screen_index` | `ba-start srs` | Yes |
+
+### Enforcement Layers
+
+| Layer | Mechanism | Triggers |
+|-------|-----------|----------|
+| Primary | Hard instruction in step file (`[BẮT BUỘC]`) | Agent executes inline during step |
+| Fallback | PostToolUse hook (`guardrail-index-validation-hook.sh`) | Auto-fires after Write/Edit to index file |
+| Consumer | Downstream guardrail (`guardrail-preflight.py`) | Blocks if `stale_status != current` |
+
+If all three layers fail, the index stays `unknown`/`stale` and downstream commands stop with a stale-index block.
 
 ## Large Artifact Write Protocol
 

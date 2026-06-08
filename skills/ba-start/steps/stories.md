@@ -87,10 +87,16 @@ Execution rules:
 
 After generating all story item files, create or refresh `paths.userstories_index` using `templates/userstories-index-template.md`. Keep it as a navigator over stories, acceptance-criteria counts, screen IDs, and source headings.
 
-Generate `paths.userstories_index` with `stale_status: unknown`, leave `validated_at` and `validated_by` blank, then run:
+Generate `paths.userstories_index` with `stale_status: unknown`, leave `validated_at` and `validated_by` blank.
+
+**[BẮT BUỘC — KHÔNG ĐƯỢC BỎ QUA]** Ngay sau khi write `userstories/index.md`, PHẢI chạy:
 
 ```bash
 ba-kit validate-index --index-key userstories_index --slug <slug> --date <date> --module <module> --writeback
 ```
 
-before any downstream routing trusts the index as `current`.
+- Nếu validation PASS hoặc WARN: `stale_status` được promote lên `current`. Có thể tiếp tục sang SRS.
+- Nếu validation FAIL: DỪNG. Không được chạy `srs` hay bất kỳ downstream command nào. Sửa index rồi chạy lại validator.
+- PostToolUse hook (`guardrail-index-validation-hook.sh`) sẽ tự chạy lại validator như fallback, nhưng agent PHẢI gọi inline trước.
+
+Không được bỏ qua bước này với lý do "để sau", "index nhỏ", hay "sẽ validate sau".

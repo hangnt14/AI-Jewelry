@@ -2,6 +2,33 @@
 
 Guide này viết cho người mới. Không cần nhớ hết command. Chỉ cần đi đúng flow, đọc trạng thái, rồi chạy bước tiếp theo.
 
+## Các Actor Trong BA-kit
+
+Trước khi đi vào chi tiết, hiểu rõ ai làm gì trong một dự án BA-kit:
+
+| Actor | Vai Trò Chính | Bắt Đầu Từ Đâu |
+|-------|---------------|----------------|
+| **Lead BA / Solo BA** | Khởi tạo dự án, intake, backbone, chia module, review cross-module, package bàn giao | `./install.sh` → `/ba-start intake` |
+| **Module BA** | Nhận 1 module, viết stories + SRS canon, gửi review | `/ba-collab Tôi nhận module <tên>` |
+| **Stakeholder** | Cung cấp yêu cầu, trả lời gap, review milestone, phê duyệt | Gửi file/text yêu cầu cho BA |
+| **UI/UX Designer** | Đọc DESIGN.md + shared shell, sync Figma downstream | `designs/{slug}/DESIGN.md` |
+| **QC / Test Lead** | QC review module SRS, chấm điểm readiness | `qc-uc-review` |
+| **Developer** | Nhận compiled SRS, đọc use case + screen spec, implement | `04_compiled/compiled-srs.html` |
+
+**Flow tổng quan theo actor:**
+
+```text
+Stakeholder → [cung cấp yêu cầu]
+Lead BA → [cài đặt → intake → options → backbone → chia module]
+    ├── Solo: Lead BA tự viết stories → SRS → package
+    └── Multi: Module BA viết stories → SRS → gửi review → Lead BA review → package
+Designer → [đọc DESIGN.md + canon → sync Figma] (downstream, không sửa canon)
+QC → [QC review module SRS → report] (gate cứng score < 70)
+Developer → [nhận compiled SRS → implement]
+```
+
+Chi tiết từng bước cho mỗi actor: xem [README.md](../README.md#các-actor-và-các-bước).
+
 ## 0. Cách nghĩ trước khi dùng
 
 BA-kit không phải tool tạo file markdown rời rạc. Nó là một flow làm BA:
