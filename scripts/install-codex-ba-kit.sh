@@ -34,6 +34,7 @@ GUARDRAIL_SCRIPTS=(
   "context-budget-bootstrap.py"
   "compile-srs.py"
   "check-srs-template-compliance.py"
+  "check-screen-behaviour.py"
   "md-to-html.py"
 )
 STALE_TEMPLATE_FILES=(
@@ -856,7 +857,7 @@ if [[ -d "${CORE_SOURCE}" ]]; then
 fi
 remove_stale_templates "${TARGET_TEMPLATES}"
 install_guardrail_runtime_assets
-echo "Installed guardrail runtime assets to ${CORE_TARGET} (10 scripts)"
+echo "Installed guardrail runtime assets to ${CORE_TARGET} (14 scripts)"
 write_codex_hook_scripts
 echo "Created Codex hook scripts in ${HOOK_TARGET}"
 register_codex_hooks
