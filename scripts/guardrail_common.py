@@ -6,6 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -214,7 +215,14 @@ STALENESS_PRECEDENCE = {
 
 
 def load_contract(repo: Path) -> dict[str, Any]:
-    return json.loads((repo / "core" / "contract.yaml").read_text(encoding="utf-8"))
+    # Try ~/.claude/core/ first (installed BA-kit contract), then {repo}/core/
+    home_contract = Path.home() / ".claude" / "core" / "contract.yaml"
+    if home_contract.exists():
+        return json.loads(home_contract.read_text(encoding="utf-8"))
+    p = repo / "core" / "contract.yaml"
+    if not p.exists():
+        sys.exit(f"Contract not found: {p}")
+    return json.loads(p.read_text(encoding="utf-8"))
 
 
 def render_path(template: str, *, slug: str, date: str, module: str = "", option: str = "*", group: str = "*", source_hash: str = "*") -> str:

@@ -18,6 +18,32 @@ from pathlib import Path
 from typing import Any
 
 
+# Placeholder patterns (same as compile-srs.py)
+PLACEHOLDER_PATTERNS = [
+    r"\[Tên dự án\]",
+    r"\[Tên module\]",
+    r"\[Tên portal[^\]]*\]",
+    r"\[Tên màn hình\]",
+    r"\[Tên UC\]",
+    r"\[Mô tả\]",
+    r"\[TBD\]",
+    r"\[placeholder[^\]]*\]",
+    r"\[Project\]",
+    r"\[Module\]",
+    r"\[Screen Name\]",
+    r"\[Use Case Name\]",
+]
+
+
+def detect_placeholders(text: str, source_label: str) -> list[str]:
+    """Find unfilled template placeholders in text."""
+    found = []
+    for pattern in PLACEHOLDER_PATTERNS:
+        for m in re.finditer(pattern, text):
+            found.append(f"{source_label}: {m.group(0)}")
+    return found
+
+
 # ---------------------------------------------------------------------------
 # Write-scope guard (defence-in-depth — wrapper also runs this)
 # ---------------------------------------------------------------------------
@@ -245,6 +271,10 @@ def resolve_codes_in_text(text: str, registry: dict[str, str]) -> tuple[str, lis
 # ---------------------------------------------------------------------------
 
 def load_contract(repo: Path) -> dict[str, Any]:
+    # Try ~/.claude/core/ first (installed BA-kit contract), then {repo}/core/
+    home_contract = Path.home() / ".claude" / "core" / "contract.yaml"
+    if home_contract.exists():
+        return json.loads(home_contract.read_text(encoding="utf-8"))
     p = repo / "core" / "contract.yaml"
     if not p.exists():
         sys.exit(f"Contract not found: {p}")
@@ -765,10 +795,16 @@ def run_export(args: argparse.Namespace) -> int:
     # Print summary
     resolved = sum(1 for u in summary["usecases"] if not u.get("unresolved_refs"))
     total_unresolved = sum(len(u.get("unresolved_refs", [])) for u in summary["usecases"])
+    total_placeholders = sum(len(u.get("placeholder_warnings", [])) for u in summary["usecases"])
     print(f"Exported {len(uc_files)} UC(s) to {docs_ba}")
     print(f"  Resolved: {resolved}/{len(uc_files)}")
     if total_unresolved:
         print(f"  Unresolved references: {total_unresolved}")
+    if total_placeholders:
+        print(f"  Placeholder warnings: {total_placeholders}")
+        for u in summary["usecases"]:
+            for pw in u.get("placeholder_warnings", []):
+                print(f"    - {pw}")
     # Check validation errors
     total_val_errors = sum(len(u.get("validation_errors", [])) for u in summary["usecases"])
     if total_val_errors:
@@ -812,6 +848,10 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, output_root: Path,
     full_registry = {**rule_registry, **message_registry}
     _, unresolved_from_uc = resolve_codes_in_text(uc_body, full_registry)
 
+    # Detect placeholders in UC body
+    uc_placeholders = detect_placeholders(uc_body, f"UC-{uc_slug}")
+    screen_placeholders: list[str] = []
+
     # Collect codes from linked screen bodies for §4 Cross-References
     screen_body_codes: set[str] = set()
     for scr_slug in linked_screens:
@@ -820,6 +860,7 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, output_root: Path,
             scr_text = scr_path.read_text(encoding="utf-8")
             _, scr_body = split_frontmatter(scr_text)
             screen_body_codes.update(CODE_RE.findall(scr_body))
+            screen_placeholders.extend(detect_placeholders(scr_body, f"Screen-{scr_slug}"))
 
     # Set source path for header metadata
     uc_fm["_source_path"] = str(_try_rel(uc_path, repo_root))
@@ -904,6 +945,7 @@ def process_use_case(*, uc_path: Path, docs_ba: Path, output_root: Path,
         "linked_stories": linked_stories,
         "linked_screens": linked_screens,
         "unresolved_refs": all_unresolved,
+        "placeholder_warnings": sorted(set(uc_placeholders + screen_placeholders)),
         "validation_errors": validation_errors,
         "png_count": len(png_paths) if not validation_errors else 0,
     }

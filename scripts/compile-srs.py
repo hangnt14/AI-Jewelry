@@ -77,6 +77,152 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+# ── YAML frontmatter stripper ─────────────────────────────────────────
+
+YAML_FRONTMATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.DOTALL)
+
+# Patterns that indicate an unfilled template placeholder
+PLACEHOLDER_PATTERNS = [
+    r"\[Tên dự án\]",
+    r"\[Tên module\]",
+    r"\[Tên portal[^\]]*\]",
+    r"\[Tên màn hình\]",
+    r"\[Tên UC\]",
+    r"\[Mô tả\]",
+    r"\[TBD\]",
+    r"\[placeholder[^\]]*\]",
+    r"\[Project\]",
+    r"\[Module\]",
+    r"\[Screen Name\]",
+    r"\[Use Case Name\]",
+]
+
+
+def strip_yaml_frontmatter(text: str) -> tuple[str, dict]:
+    """Strip YAML frontmatter from markdown text.
+
+    Returns (body_without_frontmatter, frontmatter_dict).
+    """
+    m = YAML_FRONTMATTER_RE.match(text)
+    if not m:
+        return text, {}
+    raw = m.group(1)
+    fm = {}
+    for line in raw.splitlines():
+        line = line.strip()
+        if ":" in line:
+            key, _, value = line.partition(":")
+            fm[key.strip()] = value.strip().strip('"').strip("'")
+    return text[m.end():], fm
+
+
+def detect_placeholders(text: str, source_label: str) -> list[str]:
+    """Find unfilled template placeholders in text."""
+    found = []
+    for pattern in PLACEHOLDER_PATTERNS:
+        for m in re.finditer(pattern, text):
+            found.append(f"{source_label}: {m.group(0)}")
+    return found
+
+
+def verify_index_against_disk(index_path: Path, source_dir: Path) -> list[str]:
+    """Cross-validate index entries against actual files on disk.
+
+    Parses the index table's 'File' column and checks each referenced file exists.
+    Returns list of missing file paths (empty = all good).
+    """
+    missing = []
+    if not index_path.exists():
+        return [f"Index file missing: {index_path}"]
+    text = index_path.read_text(encoding="utf-8")
+    # Parse the section index table — find rows with a File column
+    in_table = False
+    file_col_idx = -1
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            in_table = False
+            continue
+        cells = [c.strip() for c in stripped.strip("|").split("|")]
+        if not cells:
+            continue
+        # Detect header row
+        if any(c == "File" for c in cells):
+            file_col_idx = next((i for i, c in enumerate(cells) if c == "File"), -1)
+            in_table = True
+            continue
+        # Skip separator rows
+        if all(c.startswith("-") or c == "" for c in cells if c):
+            continue
+        if in_table and file_col_idx >= 0 and file_col_idx < len(cells):
+            fname = cells[file_col_idx].strip("`").strip()
+            if fname and fname != "—":
+                fp = source_dir / fname
+                if not fp.exists():
+                    missing.append(str(fname))
+    return missing
+
+
+def load_project_context(plan_root: Path) -> dict[str, str]:
+    """Load project-level context for auto-filling placeholders.
+
+    Reads backbone.md and DESIGN.md for project name, slug, module info.
+    """
+    ctx: dict[str, str] = {}
+
+    # Try backbone
+    backbone_path = plan_root / "02_backbone" / "backbone.md"
+    if backbone_path.exists():
+        bb_text = backbone_path.read_text(encoding="utf-8")
+        m = re.search(r"^#\s+(.+)$", bb_text, re.MULTILINE)
+        if m:
+            ctx["project_name"] = m.group(1).strip()
+
+    # Try PROJECT-HOME
+    home_path = plan_root / "PROJECT-HOME.md"
+    if home_path.exists():
+        home_text = home_path.read_text(encoding="utf-8")
+        m = re.search(r"Slug:\s*(\S+)", home_text)
+        if m:
+            ctx["slug"] = m.group(1).strip()
+
+    # Try DESIGN.md
+    design_glob = list(plan_root.parent.glob("designs/*/DESIGN.md"))
+    if design_glob:
+        design_text = design_glob[0].read_text(encoding="utf-8")
+        m = re.search(r"Project:\s*(.+)", design_text)
+        if m:
+            ctx["project_name"] = ctx.get("project_name") or m.group(1).strip()
+
+    return ctx
+
+
+def auto_fill_placeholder(text: str, context: dict[str, str], module_name: str) -> tuple[str, int]:
+    """Fill known [Placeholder] patterns from project context.
+
+    Returns (filled_text, filled_count).
+    Only fills patterns where context can provide a value.
+    Does NOT fill portal IDs, nav schema IDs, or spec-level fields.
+    """
+    fill_map = {
+        "Tên dự án": context.get("project_name", ""),
+        "Tên module": module_name,
+        "Project": context.get("project_name", ""),
+        "Module": module_name,
+    }
+    count = 0
+
+    def _refill(m: re.Match) -> str:
+        nonlocal count
+        inner = m.group(1).strip()
+        if inner in fill_map and fill_map[inner]:
+            count += 1
+            return fill_map[inner]
+        return m.group(0)
+
+    return re.sub(r"\[([^\]]+)\]", _refill, text), count
+
+
 def parse_template(path: Path) -> list[dict]:
     """Extract heading structure from template file.
 
@@ -272,6 +418,10 @@ def main() -> int:
             pass
 
     compiled_sections = []
+    placeholder_warnings = []
+    index_disk_errors = []
+    project_ctx = load_project_context(plan_root)
+    auto_fill_total = 0
 
     # FR section
     fr_content = extract_fr_section(spec_content)
@@ -304,9 +454,16 @@ def main() -> int:
         for uc_file in uc_files:
             source_hashes[f"usecases/{uc_file.name}"] = sha256_file(uc_file)
         for uc_file in uc_files:
-            uc_text = uc_file.read_text(encoding="utf-8")
+            uc_raw = uc_file.read_text(encoding="utf-8")
+            uc_text, uc_fm = strip_yaml_frontmatter(uc_raw)
+            # Auto-fill placeholders from project context
+            uc_text, filled = auto_fill_placeholder(uc_text, project_ctx, module_name)
+            auto_fill_total += filled
             uc_items.append((uc_file, uc_text))
             cross_function_stats["ucs_scanned"] += 1
+            # Detect remaining unfilled placeholders
+            uc_label = f"usecases/{uc_file.name}"
+            placeholder_warnings.extend(detect_placeholders(uc_text, uc_label))
             if "## Cross-Function Impact" in uc_text:
                 cross_function_stats["ucs_with_section"] += 1
                 edges = uc_text.count("|") - uc_text[:uc_text.find("## Cross-Function Impact")].count("|") if "## Cross-Function Impact" in uc_text else 0
@@ -324,6 +481,10 @@ def main() -> int:
         uc_entries.append(build_uc_summary_table(uc_items))
         uc_entries.extend(text for _, text in uc_items)
         compiled_sections.append("UseCases")
+        # HARD GATE: verify index entries exist on disk
+        uc_missing = verify_index_against_disk(usecases_index, module_root)
+        if uc_missing:
+            index_disk_errors.extend(f"usecases/index.md → {m}" for m in uc_missing)
 
     # Merge diagrams.md
     diagrams_path = module_root / "usecases" / "diagrams.md"
@@ -347,9 +508,28 @@ def main() -> int:
         for sf in screen_files:
             source_hashes[f"ascii-screen/{sf.name}"] = sha256_file(sf)
         for sf in screen_files:
-            screen_text = sf.read_text(encoding="utf-8")
+            screen_raw = sf.read_text(encoding="utf-8")
+            screen_text, screen_fm = strip_yaml_frontmatter(screen_raw)
+            # Auto-fill placeholders from project context
+            screen_text, filled = auto_fill_placeholder(screen_text, project_ctx, module_name)
+            auto_fill_total += filled
             screen_entries.append(screen_text)
+            # Detect remaining unfilled placeholders
+            sc_label = f"ascii-screen/{sf.name}"
+            placeholder_warnings.extend(detect_placeholders(screen_text, sc_label))
         compiled_sections.append("Screens")
+        # HARD GATE: verify index entries exist on disk
+        sc_missing = verify_index_against_disk(ascii_screen_index, module_root)
+        if sc_missing:
+            index_disk_errors.extend(f"ascii-screen/index.md → {m}" for m in sc_missing)
+
+    # BLOCK compile if index claims files that don't exist on disk
+    if index_disk_errors:
+        print("ERROR: Index-disk mismatch — index references files that do not exist:", file=sys.stderr)
+        for err in index_disk_errors:
+            print(f"  {err}", file=sys.stderr)
+        print("Fix: write missing source files or update the index. Compile aborted.", file=sys.stderr)
+        return 2
 
     if screen_entries:
         replace_section("mo-ta-man-hinh", "\n\n".join(screen_entries))
@@ -488,6 +668,8 @@ def main() -> int:
         "source_hashes": source_hashes,
         "cross_function": cross_function_stats,
         "template_compliance": template_compliance,
+        "placeholder_autofill_count": auto_fill_total,
+        "placeholder_warnings": placeholder_warnings,
         "html_status": html_status,
         "html_path": html_path_str,
         "html_error": html_error_str,
@@ -505,6 +687,14 @@ def main() -> int:
     if not template_compliance:
         for err in compliance_errors:
             print(f"    - {err}")
+    if auto_fill_total > 0:
+        print(f"  Auto-filled placeholders: {auto_fill_total}")
+    if placeholder_warnings:
+        print(f"  Placeholder warnings: {len(placeholder_warnings)} unfilled template placeholders")
+        for pw in placeholder_warnings[:10]:
+            print(f"    - {pw}")
+        if len(placeholder_warnings) > 10:
+            print(f"    ... and {len(placeholder_warnings) - 10} more")
     print(f"  HTML: {html_status}")
     if html_status == "failed":
         print(f"    Error: {html_error_str[:200]}")

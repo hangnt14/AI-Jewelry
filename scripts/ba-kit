@@ -335,10 +335,39 @@ render_contract_path() {
   printf '%s\n' "${template}"
 }
 
+resolve_artifact_path() {
+  local repo="$1" key="$2" slug="$3" date_token="$4" module_slug="${5:-}"
+  # Resolve the contract template to a relative path
+  local rel
+  rel="$(render_contract_path "${repo}" "${key}" "${slug}" "${date_token}" "${module_slug}")"
+  # Strip the plans/{slug}-{date}/ prefix to get the module-relative part
+  local stripped="${rel#plans/${slug}-${date_token}/}"
+  # If stripping didn't change anything, the path isn't under plans/ — resolve from repo
+  if [[ "${stripped}" == "${rel}" ]]; then
+    printf '%s/%s\n' "${repo}" "${rel}"
+    return 0
+  fi
+  # Resolve the project root (CWD-aware), then append the stripped path
+  local root
+  root="$(project_root_path "${repo}" "${slug}" "${date_token}")"
+  printf '%s/%s\n' "${root}" "${stripped}"
+}
+
 project_root_path() {
   local repo="$1"
   local slug="$2"
   local date_token="$3"
+  # Prefer CWD — if plans/{slug}-{date} exists in PWD or its parents, use that.
+  # This enables BA-kit CLI to work with projects outside the installed BA-kit repo.
+  local cwd="${PWD}"
+  while [[ "${cwd}" != "/" ]]; do
+    if [[ -d "${cwd}/plans/${slug}-${date_token}" ]]; then
+      printf '%s/plans/%s-%s\n' "${cwd}" "${slug}" "${date_token}"
+      return 0
+    fi
+    cwd="$(dirname "${cwd}")"
+  done
+  # Fall back to registered repo
   render_contract_path "${repo}" "project_root" "${slug}" "${date_token}"
 }
 
@@ -346,14 +375,30 @@ list_project_dirs() {
   local repo="$1"
   local path base
 
-  [[ -d "${repo}/plans" ]] || return 0
-  while IFS= read -r -d '' path; do
+  # Scan registered repo
+  [[ -d "${repo}/plans" ]] && find "${repo}/plans" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null | sort -z | while IFS= read -r -d '' path; do
     base="$(basename "${path}")"
     [[ "${base}" == "reports" || "${base}" == "_source-cache" ]] && continue
     if [[ "${base}" =~ ^(.+)-([0-9]{6}-[0-9]{4})$ ]]; then
       printf '%s\t%s\t%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${path}"
     fi
-  done < <(find "${repo}/plans" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+  done
+
+  # Also scan CWD — if PWD has plans/ outside the registered repo
+  local cwd="${PWD}"
+  while [[ "${cwd}" != "/" && "${cwd}" != "${repo}" ]]; do
+    if [[ -d "${cwd}/plans" ]]; then
+      find "${cwd}/plans" -mindepth 1 -maxdepth 1 -type d -print0 2>/dev/null | sort -z | while IFS= read -r -d '' path; do
+        base="$(basename "${path}")"
+        [[ "${base}" == "reports" || "${base}" == "_source-cache" ]] && continue
+        if [[ "${base}" =~ ^(.+)-([0-9]{6}-[0-9]{4})$ ]]; then
+          printf '%s\t%s\t%s\n' "${BASH_REMATCH[1]}" "${BASH_REMATCH[2]}" "${path}"
+        fi
+      done
+      break
+    fi
+    cwd="$(dirname "${cwd}")"
+  done
 }
 
 collect_candidate_slugs() {
@@ -1257,7 +1302,8 @@ status_command() {
   printf 'Date set: %s\n\n' "${date_token}"
 
   root="$(project_root_path "${repo}" "${slug}" "${date_token}")"
-  printf '[Source]\n'
+  printf 'Project root: %s\n' "${root}"
+  printf '\n[Source]\n'
   print_json_state_line "${repo}/$(render_contract_path "${repo}" "source_manifest" "${slug}" "${date_token}")" "00_source/manifest.json"
   print_artifact_status_line "${repo}/$(render_contract_path "${repo}" "source_summary" "${slug}" "${date_token}")" "00_source/summary.md"
 
@@ -1415,9 +1461,9 @@ check_prereq_command() {
   requires="$(command_requirements "${repo}" "${target_command}")"
   while IFS= read -r requirement; do
     [[ -n "${requirement}" ]] || continue
-    path="$(render_contract_path "${repo}" "${requirement}" "${slug}" "${date_token}" "${module}")"
-    if [[ ! -f "${repo}/${path}" ]]; then
-      printf 'Missing: %s\n' "${repo}/${path}"
+    abspath="$(resolve_artifact_path "${repo}" "${requirement}" "${slug}" "${date_token}" "${module}")"
+    if [[ ! -f "${abspath}" ]]; then
+      printf 'Missing: %s\n' "${abspath}"
       case "${requirement}" in
         intake) printf 'Run first: ba-start intake\n' ;;
         backbone) printf 'Run first: ba-start backbone --slug %s\n' "${slug}" ;;

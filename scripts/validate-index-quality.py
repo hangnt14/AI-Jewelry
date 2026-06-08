@@ -191,6 +191,16 @@ def main() -> int:
             if not value.isdigit() or int(value) <= 0:
                 result["issues"].append(issue("error", "invalid_count_field", f"Row {idx} has invalid {field}: {value or '<empty>'}", row=idx, field=field))
 
+        # Verify indexed file exists on disk (resolve from module root, not index parent)
+        file_field = row.get("File", "")
+        if file_field and file_field != "—":
+            fname = strip_code(file_field)
+            if fname:
+                # File column has paths like "usecases/uc-login.md" relative to module root
+                module_root = index_path.parent.parent
+                if not (module_root / fname).exists():
+                    result["issues"].append(issue("error", "indexed_file_missing", f"Row {idx}: indexed file does not exist: {fname}", row=idx, field="File"))
+
         if source_text:
             valid_target, reason = validate_row_target(args.index_key, row, source_path=source_path, source_text=source_text)
             if not valid_target:

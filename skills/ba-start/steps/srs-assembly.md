@@ -31,6 +31,30 @@ During UC compilation (Step 11, substep 4 — usecases), for each UC that declar
 
 Pending edges are NOT errors — partial data is valid when other modules haven't been authored yet.
 
+## Step 10.9 - Pre-Compile Cleanup: Resolve Placeholders [BẮT BUỘC]
+
+Before running the deterministic compile script, scan all canon source files for unfilled template placeholders, fix column name alignment, and verify index-disk consistency.
+
+1. **Fix index column names.** Ensure index table columns exactly match the templates (see `templates/usecases-index-template.md`, `templates/ascii-screen-index-template.md`, `templates/userstories-index-template.md`). Common errors: `Stories` instead of `Linked Stories`, `Source Backbone` instead of `Source Backbone IDs`, missing `Trigger` column.
+
+2. **Compute source_hash.** Fill `source_hash` in every index metadata table using actual SHA-256 hashes of the source directory/files (see `guardrail_common.compute_source_hash`). Never leave empty or placeholder values.
+
+3. **[BẮT BUỘC] Index-disk consistency audit.** After writing all canon files, verify EVERY file referenced in `usecases/index.md` and `ascii-screen/index.md` exists on disk:
+   ```bash
+   # Verify UC files exist
+   ls 03_modules/{module}/usecases/uc-*.md | wc -l
+   # Compare with rows in usecases/index.md
+   grep "| UC-" 03_modules/{module}/usecases/index.md | wc -l
+   # Same for screens
+   ls 03_modules/{module}/ascii-screen/scr-*.md | wc -l
+   grep "| SCR-" 03_modules/{module}/ascii-screen/index.md | wc -l
+   ```
+   If counts don't match: **STOP. Do not compile. Write missing files or fix index FIRST.** `compile-srs.py` will also block with `index_disk_errors`.
+
+4. **Fix placeholders.** Auto-resolve `[Tên dự án]`, `[Tên module]` etc. from backbone context. Ask user for any that cannot be auto-resolved.
+
+5. **Run validator.** Ensure `ba-kit validate-index --writeback` passes for all indexes before compile.
+
 ## Step 11 - Compile SRS
 
 Run the deterministic compile script to assemble `paths.srs` from canon sources:
@@ -51,6 +75,9 @@ python3 scripts/compile-srs.py ... --no-html
 
 The script handles:
 - Reading `srs-template.md` for heading structure
+- Stripping YAML frontmatter from UC and screen canon files before merging
+- Auto-filling known placeholders from project context (`[Tên dự án]`, `[Tên module]`, `[Project]`, `[Module]`)
+- Detecting remaining unfilled placeholders and reporting as warnings
 - Merging all canon sources into correct template sections: `srs/spec.md` → FR/NFR, `usecases/uc-*.md` → UC section, `ascii-screen/*.md` → Screen Descriptions, `srs/flows.md` → Flows, `srs/erd.md` → ERD
 - Inlining cross-function impact per UC (Step 10.5)
 - Running `validate-navigation-consistency.py` when UI-backed screens and `DESIGN.md` exist; treats `MENU_SCHEMA_MISMATCH`, `NAV_SCHEMA_MISMATCH`, and `MENU_ACTIVE_MISSING` as blocking
