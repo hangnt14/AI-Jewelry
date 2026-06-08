@@ -31,62 +31,31 @@ During UC compilation (Step 11, substep 4 — usecases), for each UC that declar
 
 Pending edges are NOT errors — partial data is valid when other modules haven't been authored yet.
 
-## Step 11 - Partial Compile And Receipt
+## Step 11 - Compile SRS
 
-The orchestrator compiles `paths.srs` from the source set inline. Do not delegate assembly. `paths.srs` is a compiled deliverable only — never a source of truth.
+Run the deterministic compile script to assemble `paths.srs` from canon sources:
 
-Assembly procedure:
-
-1. Parse requested compile scope (full / spec / usecases / screens / flows / states / erd / mixed).
-2. Identify included sources from `paths.srs_spec`, `paths.usecases_index` + usecase files, `paths.ascii_screen_index` + screen files, `paths.usecase_diagrams`, `paths.srs_flows`, `paths.srs_states`, `paths.srs_erd` as applicable.
-3. Write the SRS skeleton to `paths.srs` using the `srs-template.md` heading structure.
-4. Compile near-verbatim from source files into the matching sections:
-   - `srs/spec.md` → Functional Requirements, NFR, Business Rules
-   - `usecases/uc-*.md` → Use Cases section, including UC diagrams
-   - `ascii-screen/*.md` → Screen Descriptions, including state visual coverage, overlay context, ASCII wireframes
-   - `srs/flows.md` → Data Flow / Module Flow sections
-   - `srs/states.md` → State Registry section
-   - `srs/erd.md` → ERD section
-5. Write `paths.srs_compile_receipt` using `templates/srs-compile-receipt-template.md`, recording:
-   - `compile_scope`
-   - `requested_sections`
-   - `included_sources`
-   - `excluded_sources`
-   - `source_hashes` for each included source
-   - `cross_function` — counts and status from Step 10.5 inlining:
-     - `ucs_scanned`: number of UCs checked for `## Cross-Function Impact` section
-     - `ucs_with_section`: number of UCs that have the section (including those with only "None" rows)
-     - `ucs_with_edges`: number of UCs with at least one non-None dependency row
-     - `intra_module_resolved`: count of within-module edges inlined
-     - `inter_module_resolved`: count of inter-module edges resolved (both sides declared)
-     - `inter_module_pending`: count of inter-module edges pending (consumer/producer not yet authored)
-     - `inter_module_mismatch`: count of inter-module edges with conflicting declarations
-6. After assembly, run cross-artifact consistency check:
-   - every UC step maps to a screen field or action and vice versa
-   - UC actor actions use the same wording as screen User Actions
-   - UC system responses match screen Behaviour Rules
-   - alternate flows are reflected in screen error states
-   - every UI-backed screen canon file has `ascii_status: current` and required `## ASCII Wireframe` state subsections
-   - user story acceptance criteria are covered by UC postconditions and screen validation rules
-   - final screen descriptions do not redefine `Portal ID`, `Nav Schema ID`, or active/highlight behavior
-   - run `python3 scripts/validate-navigation-consistency.py --design {paths.design_doc} --screen-contract {ascii_screen_item_1} --screen-contract {ascii_screen_item_2} ...` (pass each individual `ascii-screen/*.md` file, not the index) when UI-backed screens and `paths.design_doc` exist
-   - treat `MENU_SCHEMA_MISMATCH`, `NAV_SCHEMA_MISMATCH`, and `MENU_ACTIVE_MISSING` as blocking before assembly is accepted
-7. Resolve placeholder references and ID conflicts inline.
-8. Verify every SCR and UC traces back to user stories.
-9. Do not delete canonical source files.
-
-Execution order:
-
-```text
-srs/spec.md
-  -> usecases/ + usecases/diagrams.md  (with cross-function impact inlining per Step 10.5)
-  -> ascii-screen/ (with ASCII coverage verified)
-  -> srs/flows.md (when justified)
-  -> srs/states.md (when justified)
-  -> srs/erd.md (when justified)
-  -> shared/traceability.md + shared/definitions.md
-  -> compile to srs.md
-  -> write srs-compile-receipt.json
+```bash
+python3 scripts/compile-srs.py --repo . --slug {slug} --date {date} --module {module}
 ```
 
-If a source file is missing for a requested scope section, stop and route back to the owning step.
+Or with direct path:
+```bash
+python3 scripts/compile-srs.py --module-root plans/{slug}-{date}/03_modules/{module}
+```
+
+To skip HTML generation (markdown-only):
+```bash
+python3 scripts/compile-srs.py ... --no-html
+```
+
+The script handles:
+- Reading `srs-template.md` for heading structure
+- Merging all canon sources into correct template sections: `srs/spec.md` → FR/NFR, `usecases/uc-*.md` → UC section, `ascii-screen/*.md` → Screen Descriptions, `srs/flows.md` → Flows, `srs/erd.md` → ERD
+- Inlining cross-function impact per UC (Step 10.5)
+- Running `validate-navigation-consistency.py` when UI-backed screens and `DESIGN.md` exist; treats `MENU_SCHEMA_MISMATCH`, `NAV_SCHEMA_MISMATCH`, and `MENU_ACTIVE_MISSING` as blocking
+- Validating template compliance (all required headings present)
+- Writing `paths.srs` (compiled `srs.md`) + `paths.srs_compile_receipt`
+- Generating per-module HTML at `04_compiled/{module_slug}/compiled-srs.html` (unless `--no-html`)
+
+Do not manually assemble `srs.md`. The script is the single source of truth for compile. Do not delete canonical source files.

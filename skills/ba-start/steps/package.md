@@ -78,6 +78,9 @@ Run a final packaging and quality pass:
 
 ## Step 12.1 - Generate packaged HTML
 
+> Per-module HTML from `compile-srs.py` at `paths.compiled_srs_module`.
+> Aggregate step: single stakeholder HTML.
+
 When the engagement includes multiple modules with FRD or SRS, aggregate and convert them to HTML:
 
 ```bash
