@@ -308,15 +308,23 @@ def extract_section_body(lines: list[str], heading_slug: str) -> str:
 
 
 def extract_fr_section(spec_content: str) -> str:
-    """Extract FR table body from srs/spec.md (without heading line)."""
+    """Extract FR table body from srs/spec.md (without heading line).
+    Tries Vietnamese slug first, falls back to English."""
     lines = spec_content.splitlines()
-    return extract_section_body(lines, "yeu-cau-chuc-nang")
+    body = extract_section_body(lines, "yeu-cau-chuc-nang")
+    if not body:
+        body = extract_section_body(lines, "functional-requirements")
+    return body
 
 
 def extract_nfr_section(spec_content: str) -> str:
-    """Extract NFR section body from srs/spec.md (without heading line)."""
+    """Extract NFR section body from srs/spec.md (without heading line).
+    Tries Vietnamese slug first, falls back to English."""
     lines = spec_content.splitlines()
-    return extract_section_body(lines, "yeu-cau-phi-chuc-nang")
+    body = extract_section_body(lines, "yeu-cau-phi-chuc-nang")
+    if not body:
+        body = extract_section_body(lines, "non-functional-requirements")
+    return body
 
 
 def extract_subsection(content: str, heading_slug: str) -> str:
@@ -355,21 +363,33 @@ def _extract_us_field(text: str, label: str) -> str:
 
 
 def _extract_table(text: str, heading: str) -> str:
-    """Extract the first markdown table after a heading."""
-    start = text.find(heading)
-    if start == -1:
+    """Extract ALL markdown tables under a heading (any level, with optional title suffix)."""
+    # Match heading at any level with optional " — suffix" text
+    pattern = re.compile(rf"^#+\s+{re.escape(heading)}(?:\s*—.*)?$", re.MULTILINE | re.IGNORECASE)
+    m = pattern.search(text)
+    if not m:
         return ""
-    section = text[start:]
-    lines = section.splitlines()
-    result = []
-    in_table = False
-    for line in lines:
+    # Find the end of this section (next heading at same or higher level)
+    section_start = m.start()
+    heading_level = len(m.group().split()[0])  # count # characters
+    rest = text[section_start + len(m.group()):]
+    # Find next heading at same or higher level
+    next_boundary = re.search(rf"^#{{1,{heading_level}}}\s", rest, re.MULTILINE)
+    section_text = rest[:next_boundary.start()] if next_boundary else rest
+
+    # Extract ALL tables in this section
+    tables = []
+    current_table = []
+    for line in section_text.splitlines():
         if line.startswith("|"):
-            result.append(line)
-            in_table = True
-        elif in_table and not line.startswith("|"):
-            break
-    return "\n".join(result) if result else ""
+            current_table.append(line)
+        elif current_table:
+            if len(current_table) >= 2:  # header + separator
+                tables.append("\n".join(current_table))
+            current_table = []
+    if len(current_table) >= 2:
+        tables.append("\n".join(current_table))
+    return "\n\n".join(tables) if tables else ""
 
 
 def _extract_ct_summary(text: str) -> str:
@@ -774,7 +794,7 @@ def main() -> int:
     common_rules_path = plan_root / "02_backbone" / "common-rules.md"
     if common_rules_path.exists():
         cr_text = common_rules_path.read_text(encoding="utf-8")
-        cr_table = _extract_table(cr_text, "## Common Rules")
+        cr_table = _extract_table(cr_text, "Common Rules")
         if cr_table:
             replace_section("tham-chieu-quy-tac-thong-diep-dung-chung", cr_table)
             compiled_sections.append("CommonRules")
@@ -783,7 +803,7 @@ def main() -> int:
     msg_list_path = plan_root / "02_backbone" / "message-list.md"
     if msg_list_path.exists():
         msg_text = msg_list_path.read_text(encoding="utf-8")
-        msg_table = _extract_table(msg_text, "## Message List")
+        msg_table = _extract_table(msg_text, "Message List")
         if msg_table:
             replace_section("tham-chieu-quy-tac-thong-diep-dung-chung",
                           extract_section_body(output_lines, "tham-chieu-quy-tac-thong-diep-dung-chung") + "\n\n" + msg_table)
