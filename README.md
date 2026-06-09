@@ -2,6 +2,27 @@
 
 BA-kit là playbook Business Analysis cho Claude Code, Codex, và Antigravity. Repo này biến agent thành một BA workstation có lifecycle rõ ràng, artifact có cấu trúc, collaboration theo module, và handoff đủ chuẩn cho stakeholder/engineering.
 
+<div align="center">
+
+[![bakit-org - bakit](https://img.shields.io/static/v1?label=bakit-org&message=bakit&color=blue&logo=github)](https://github.com/bakit-org/bakit)
+[![stars - bakit](https://img.shields.io/github/stars/bakit-org/bakit?style=social)](https://github.com/bakit-org/bakit)
+[![forks - bakit](https://img.shields.io/github/forks/bakit-org/bakit?style=social)](https://github.com/bakit-org/bakit)
+
+[![License](https://img.shields.io/badge/License-Commercial-blue)](#license)
+
+[![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](https://docs.bakit.ai.vn)
+
+[![Made with Bash](https://img.shields.io/badge/Bash->=3-blue?logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
+[![Made with Python](https://img.shields.io/badge/Python->=3.13-blue?logo=python&logoColor=white)](https://python.org)
+
+[![Agent - Claude Code](https://img.shields.io/badge/Agent-Claude_Code-2ea44f?style=for-the-badge&logo=claudecode)](https://claude.com/product/claude-code)
+[![Agent - CodeX](https://img.shields.io/badge/Agent-CodeX-2ea44f?style=for-the-badge)](https://openai.com/codex/)
+[![Agent - Antigravity 2.0](https://img.shields.io/badge/Agent-Antigravity_2.0-2ea44f)](https://antigravity.google/)
+[![Agent - Antigravity CLI](https://img.shields.io/badge/Agent-Antigravity_CLI-2ea44f)](https://antigravity.google/)
+[![Agent - Antigravity IDE](https://img.shields.io/badge/Agent-Antigravity_IDE-2ea44f)](https://antigravity.google/)
+
+</div>
+
 ## License
 
 BA-kit is distributed under a commercial proprietary source-available license.
