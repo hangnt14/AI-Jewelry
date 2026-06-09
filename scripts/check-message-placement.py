@@ -156,6 +156,26 @@ def check_file(path: Path) -> dict[str, Any]:
                 "message": f"{code} in ## Message Placement but not found in ASCII wireframe or Message Zones legend.",
             })
 
+    # Check 3.5: inline messages must have ▼ marker near their field in wireframe
+    wireframe_start = text.find("```")
+    wireframe_end = text.rfind("```")
+    wireframe_text = text[wireframe_start:wireframe_end] if wireframe_start >= 0 and wireframe_end > wireframe_start else ""
+    for row in placement_rows:
+        code = row.get("message_code", "").strip()
+        surface = row.get("surface", "").strip().lower()
+        if surface == "inline" and f"▼ {code}" not in wireframe_text:
+            issues.append({
+                "severity": "WARN", "code": "inline_msg_no_marker",
+                "message": f"{code}: inline message should have '▼ {code}' marker in ASCII wireframe next to the field.",
+            })
+
+    # Check 3.6: Message Zones legend should exist
+    if "Message Zones:" not in text:
+        issues.append({
+            "severity": "WARN", "code": "missing_message_zones",
+            "message": "ASCII wireframe should include a 'Message Zones:' legend listing all message positions.",
+        })
+
     # Check 4: dead placement (in table but not referenced)
     for code in sorted(placed_codes - referenced_codes):
         issues.append({

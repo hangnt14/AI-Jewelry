@@ -55,11 +55,17 @@ Before running the deterministic compile script, scan all canon source files for
 
 5. **Run validator.** Ensure `ba-kit validate-index --writeback` passes for all indexes before compile.
 
-6. **Run behaviour guardrail.** After writing or updating screen canon files, run:
+6. **Run guardrails on screen canon.** After writing or updating screen canon files, run ALL mandatory guardrails:
    ```bash
    ba-kit check-screen-behaviour plans/{slug}-{date}/03_modules/{module}/ascii-screen/
+   ba-kit check-control-type-compliance plans/{slug}-{date}/03_modules/{module}/ascii-screen/
+   ba-kit check-message-placement plans/{slug}-{date}/03_modules/{module}/ascii-screen/
    ```
-   If violations are found, fix them before compile.
+   Fix violations before compile. The `Message Zones:` legend and `▼ MSG-*` markers are mandatory per `srs-wireframes.md` Step 9.
+   Also run terminology check (WARN only):
+   ```bash
+   ba-kit check-terminology plans/{slug}-{date}/03_modules/{module}/
+   ```
 
 ## Step 11 - Compile SRS
 
