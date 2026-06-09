@@ -1,8 +1,5 @@
-# BA-kit
-
-BA-kit là playbook Business Analysis cho Claude Code, Codex, và Antigravity. Repo này biến agent thành một BA workstation có lifecycle rõ ràng, artifact có cấu trúc, collaboration theo module, và handoff đủ chuẩn cho stakeholder/engineering.
-
 <div align="center">
+# BA-kit
 
 [![bakit-org - bakit](https://img.shields.io/static/v1?label=bakit-org&message=bakit&color=blue&logo=github)](https://github.com/bakit-org/bakit)
 
@@ -20,6 +17,10 @@ BA-kit là playbook Business Analysis cho Claude Code, Codex, và Antigravity. R
 [![Agent - Antigravity IDE](https://img.shields.io/badge/Agent-Antigravity_IDE-2ea44f)](https://antigravity.google/)
 
 </div>
+
+BA-kit là playbook Business Analysis cho Claude Code, Codex, và Antigravity. Repo này biến agent thành một BA workstation có lifecycle rõ ràng, artifact có cấu trúc, collaboration theo module, và handoff đủ chuẩn cho stakeholder/engineering.
+
+
 
 ## License
 
