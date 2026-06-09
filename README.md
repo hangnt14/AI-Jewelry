@@ -1,5 +1,6 @@
-<div align="center">
 ## BA-kit
+
+<div align="center">
 
 [![bakit-org - bakit](https://img.shields.io/static/v1?label=bakit-org&message=bakit&color=blue&logo=github)](https://github.com/bakit-org/bakit)
 
