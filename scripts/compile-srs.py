@@ -320,6 +320,30 @@ def render_path(template: str, slug: str, date: str, module: str) -> str:
     return template.replace("{slug}", slug).replace("{date}", date).replace("{module_slug}", module)
 
 
+def run_guardrail(name: str, cmd: list[str], *, block_on_failure: bool = True) -> dict:
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    result = {
+        "name": name,
+        "returncode": proc.returncode,
+        "status": "pass" if proc.returncode == 0 else ("fail" if block_on_failure else "warn"),
+        "stdout": proc.stdout.strip()[:2000],
+        "stderr": proc.stderr.strip()[:2000],
+    }
+    if proc.returncode != 0 and block_on_failure:
+        print(f"ERROR: {name} failed. Compile aborted.", file=sys.stderr)
+        if result["stdout"]:
+            print(result["stdout"], file=sys.stderr)
+        if result["stderr"]:
+            print(result["stderr"], file=sys.stderr)
+    elif proc.returncode != 0:
+        print(f"WARN: {name} reported issues.", file=sys.stderr)
+        if result["stdout"]:
+            print(result["stdout"], file=sys.stderr)
+        if result["stderr"]:
+            print(result["stderr"], file=sys.stderr)
+    return result
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Deterministic SRS compiler")
     group = parser.add_mutually_exclusive_group(required=True)
@@ -397,6 +421,49 @@ def main() -> int:
             return 2
 
     spec_content = (module_root / "srs" / "spec.md").read_text(encoding="utf-8")
+    ascii_screen_root = module_root / "ascii-screen"
+    screen_files_for_gates = sorted(
+        f for f in ascii_screen_root.glob("*.md") if f.name != "index.md"
+    ) if ascii_screen_root.exists() else []
+    control_library = plan_root / "02_backbone" / "control-type-library.md"
+    common_rules = plan_root / "02_backbone" / "common-rules.md"
+
+    guardrail_results = []
+    if screen_files_for_gates:
+        ct_cmd = [
+            sys.executable, str(SCRIPT_DIR / "check-control-type-compliance.py"),
+            str(ascii_screen_root),
+        ]
+        if control_library.exists():
+            ct_cmd.extend(["--library", str(control_library)])
+        guardrail_results.append(run_guardrail("control_type_compliance", ct_cmd))
+
+        guardrail_results.append(run_guardrail(
+            "message_placement",
+            [sys.executable, str(SCRIPT_DIR / "check-message-placement.py"), str(ascii_screen_root)],
+        ))
+
+        if common_rules.exists():
+            guardrail_results.append(run_guardrail(
+                "common_rules_coverage",
+                [
+                    sys.executable, str(SCRIPT_DIR / "validate-cr-coverage.py"),
+                    str(ascii_screen_root),
+                    "--common-rules", str(common_rules),
+                ],
+                block_on_failure=False,
+            ))
+
+    term_cmd = [
+        sys.executable, str(SCRIPT_DIR / "check-terminology-consistency.py"),
+        str(module_root),
+    ]
+    if control_library.exists():
+        term_cmd.extend(["--library", str(control_library)])
+    guardrail_results.append(run_guardrail("terminology_consistency", term_cmd, block_on_failure=False))
+
+    if any(result["returncode"] != 0 and result["status"] == "fail" for result in guardrail_results):
+        return 2
 
     source_hashes = {}
     source_hashes["srs/spec.md"] = sha256_file(module_root / "srs" / "spec.md")
@@ -421,6 +488,7 @@ def main() -> int:
     placeholder_warnings = []
     index_disk_errors = []
     project_ctx = load_project_context(plan_root)
+    project_ctx.setdefault("project_name", slug_val)
     auto_fill_total = 0
 
     # FR section
@@ -586,6 +654,9 @@ def main() -> int:
     output_lines = metadata_header + output_lines
 
     full_output = "\n".join(output_lines)
+    full_output, filled = auto_fill_placeholder(full_output, project_ctx, module_name)
+    auto_fill_total += filled
+    output_lines = full_output.splitlines()
 
     # Generate TOC
     heading_re = re.compile(r"^(#{1,3})\s+(.+)$")
@@ -602,6 +673,14 @@ def main() -> int:
     # Write srs.md first (needed for compliance check)
     srs_path = module_root / "srs.md"
     srs_path.write_text(full_output, encoding="utf-8")
+
+    verify_result = run_guardrail(
+        "compiled_output_verification",
+        [sys.executable, str(SCRIPT_DIR / "verify-compiled-output.py"), str(srs_path), "--json"],
+    )
+    guardrail_results.append(verify_result)
+    if verify_result["returncode"] != 0:
+        return 2
 
     # Run compliance checker for authoritative template_compliance
     compliance_errors = []
@@ -647,6 +726,7 @@ def main() -> int:
                     str(srs_path),
                     "--base-dir", str(module_root),
                     "--output", str(html_out),
+                    "--docsengine",
                 ],
                 capture_output=True, text=True, check=True,
             )
@@ -674,6 +754,7 @@ def main() -> int:
         "html_path": html_path_str,
         "html_error": html_error_str,
         "navigation_issues": nav_issues,
+        "guardrail_results": guardrail_results,
         "validation_errors": compliance_errors,
         "generated_at": now.isoformat(),
     }

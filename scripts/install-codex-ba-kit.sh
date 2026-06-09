@@ -21,22 +21,7 @@ TARGET_CONFIG="${TARGET_HOME}/config.toml"
 HOOKS_FILE="${TARGET_HOME}/hooks.json"
 LOCAL_BIN_TARGET="${HOME}/.local/bin"
 STATE_TARGET="${HOME}/.local/share/ba-kit/installations"
-GUARDRAIL_SCRIPTS=(
-  "guardrail-preflight.py"
-  "guardrail-build-excerpts.py"
-  "guardrail-audit.py"
-  "guardrail_common.py"
-  "validate-index-quality.py"
-  "check-token-budget.py"
-  "check-write-scope.py"
-  "context-output-guard.py"
-  "context-preflight-guard.py"
-  "context-budget-bootstrap.py"
-  "compile-srs.py"
-  "check-srs-template-compliance.py"
-  "check-screen-behaviour.py"
-  "md-to-html.py"
-)
+GUARDRAIL_SCRIPTS=()
 STALE_TEMPLATE_FILES=(
   "wireframe-input-template.md"
   "wireframe-map-template.md"
@@ -107,6 +92,21 @@ if ! command -v node >/dev/null 2>&1; then
   echo "ERROR: node is required but not found in PATH" >&2
   exit 1
 fi
+
+load_guardrail_scripts() {
+  local runtime="$1" line
+  GUARDRAIL_SCRIPTS=()
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "${line}" || "${line}" == \#* ]] && continue
+    if [[ "${line}" =~ ^\[([a-z]+)\][[:space:]]+(.+)$ ]]; then
+      [[ "${BASH_REMATCH[1]}" == "${runtime}" ]] && GUARDRAIL_SCRIPTS+=("${BASH_REMATCH[2]}")
+    else
+      GUARDRAIL_SCRIPTS+=("${line}")
+    fi
+  done < "${ROOT_DIR}/scripts/guardrail-scripts-list.txt"
+}
 
 install_cli() {
   local temp_target
@@ -593,6 +593,8 @@ rm -f "${STATE_DIR}/context-session-budget.txt"
 HOOKEOF
 
   chmod +x "${HOOK_TARGET}"/guardrail-*-hook.sh
+  cp "${ROOT_DIR}/scripts/hooks/postwrite-guardrail.sh" "${HOOK_TARGET}/postwrite-guardrail.sh"
+  chmod +x "${HOOK_TARGET}/postwrite-guardrail.sh"
 }
 
 register_codex_hooks() {
@@ -635,10 +637,14 @@ pre.append({
 })
 
 post = hooks.setdefault("PostToolUse", [])
-post[:] = [h for h in post if "guardrail-context-output-guard-hook.sh" not in str(h)]
+post[:] = [h for h in post if "guardrail-context-output-guard-hook.sh" not in str(h) and "postwrite-guardrail.sh" not in str(h)]
 post.append({
     "matcher": "Bash|Read|Grep|Glob",
     "hooks": [{"type": "command", "command": f"bash \"{hooks_dir}/guardrail-context-output-guard-hook.sh\""}],
+})
+post.append({
+    "matcher": "Write|Edit",
+    "hooks": [{"type": "command", "command": f"BA_KIT_HOOK_HOME=\"{pathlib.Path.home()}/.codex/ba-kit\" bash \"{hooks_dir}/postwrite-guardrail.sh\""}],
 })
 
 cfg["hooks"] = hooks
@@ -856,8 +862,9 @@ if [[ -d "${CORE_SOURCE}" ]]; then
   echo "Installed BA core to ${CORE_TARGET}"
 fi
 remove_stale_templates "${TARGET_TEMPLATES}"
+load_guardrail_scripts "codex"
 install_guardrail_runtime_assets
-echo "Installed guardrail runtime assets to ${CORE_TARGET} (14 scripts)"
+echo "Installed guardrail runtime assets to ${CORE_TARGET} (${#GUARDRAIL_SCRIPTS[@]} scripts)"
 write_codex_hook_scripts
 echo "Created Codex hook scripts in ${HOOK_TARGET}"
 register_codex_hooks

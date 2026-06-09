@@ -79,8 +79,32 @@ def _parse_library(text: str) -> dict[str, dict[str, Any]]:
         info["interactive"] = ct_id not in {"modal", "drawer", "toast", "banner"}
         info["has_states"] = "**Default States:**" in section
         info["is_overlay"] = ct_id in {"modal", "drawer", "dialog"}
+        info["edge_cases"] = _parse_edge_cases(section)
         result[ct_id] = info
     return result
+
+
+def _parse_edge_cases(section: str) -> list[str]:
+    marker = "**Edge Case cần mô tả thêm:**"
+    start = section.find(marker)
+    if start == -1:
+        return []
+    tail = section[start + len(marker):]
+    end_markers = [
+        idx for idx in (
+            tail.find("\n**"),
+            tail.find("\n---"),
+            tail.find("\n### "),
+        )
+        if idx != -1
+    ]
+    block = tail[:min(end_markers)] if end_markers else tail
+    edge_cases = []
+    for line in block.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("- "):
+            edge_cases.append(stripped[2:].strip())
+    return edge_cases
 
 
 def split_row(line: str) -> list[str]:

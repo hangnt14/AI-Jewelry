@@ -1,18 +1,37 @@
 #!/usr/bin/env bash
 # BA-kit PostToolUse hook — validate screen/usecase files after write/edit
-# Installed to ~/.claude/ba-kit/hooks/postwrite-guardrail.sh
+# Installed to runtime BA-kit hook directory.
 # Hook luôn exit 0 (non-blocking). Tắt bằng BA_KIT_SKIP_HOOKS=1
 set -euo pipefail
 
-BA_KIT_HOOK_HOME="${HOME}/.claude/ba-kit"
+if [[ -z "${BA_KIT_HOOK_HOME:-}" ]]; then
+  if [[ -d "${HOME}/.codex/ba-kit" ]]; then
+    BA_KIT_HOOK_HOME="${HOME}/.codex/ba-kit"
+  else
+    BA_KIT_HOOK_HOME="${HOME}/.claude/ba-kit"
+  fi
+fi
 SCRIPTS_DIR="${BA_KIT_HOOK_HOME}/scripts"
 
 if [[ "${BA_KIT_SKIP_HOOKS:-0}" == "1" ]]; then
   exit 0
 fi
 
-TOOL_NAME="${1:-}"
+TOOL_DATA="$(cat - 2>/dev/null || echo "{}")"
 FILE_PATH="${2:-}"
+if [[ -z "${FILE_PATH}" ]] && [[ -n "${TOOL_DATA}" ]] && [[ "${TOOL_DATA}" != "{}" ]]; then
+  FILE_PATH="$(echo "${TOOL_DATA}" | python3 -c "
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    tool_input = data.get('tool_input', data)
+    if not isinstance(tool_input, dict):
+        tool_input = {}
+    print(tool_input.get('file_path') or tool_input.get('path') or tool_input.get('file') or data.get('file_path') or data.get('path') or data.get('file') or '')
+except Exception:
+    pass
+" 2>/dev/null || echo "")"
+fi
 
 if [[ ! "${FILE_PATH}" =~ (ascii-screen|usecases)/.*\.md$ ]]; then
   exit 0
@@ -65,7 +84,7 @@ if [[ "${FILE_PATH}" =~ ascii-screen/ ]]; then
   if [[ -n "${NEW_REFS}" ]]; then
     MODULE_DIR="$(dirname "$(dirname "${FILE_PATH}")")"
     for ref in ${NEW_REFS}; do
-      if [[ "${ref}" =~ ^SCR- ]]; then
+      if [[ "${ref}" =~ ^SCR-[0-9]{2}$ ]]; then
         SCR_COUNT=$(find "${MODULE_DIR}/ascii-screen/" -name "*${ref}*.md" 2>/dev/null | wc -l || true)
         if [[ "${SCR_COUNT}" -eq 0 ]]; then
           echo "REF: ${ref} referenced in ${FILE_PATH} but screen file not found in ascii-screen/"

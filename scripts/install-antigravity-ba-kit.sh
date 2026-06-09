@@ -25,22 +25,25 @@ GUARDRAIL_DOC_TARGET="${GUARDRAIL_TARGET}/docs"
 LOCAL_BIN_TARGET="${HOME}/.local/bin"
 STATE_TARGET="${HOME}/.local/share/ba-kit/installations"
 
-GUARDRAIL_SCRIPTS=(
-  "guardrail-preflight.py"
-  "guardrail-build-excerpts.py"
-  "guardrail-audit.py"
-  "guardrail_common.py"
-  "validate-index-quality.py"
-  "check-token-budget.py"
-  "check-write-scope.py"
-  "check-screen-behaviour.py"
-  "compile-srs.py"
-  "check-srs-template-compliance.py"
-  "md-to-html.py"
-)
+GUARDRAIL_SCRIPTS=()
 
 ensure_dir() {
   mkdir -p "$1"
+}
+
+load_guardrail_scripts() {
+  local runtime="$1" line
+  GUARDRAIL_SCRIPTS=()
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "${line}" || "${line}" == \#* ]] && continue
+    if [[ "${line}" =~ ^\[([a-z]+)\][[:space:]]+(.+)$ ]]; then
+      [[ "${BASH_REMATCH[1]}" == "${runtime}" ]] && GUARDRAIL_SCRIPTS+=("${BASH_REMATCH[2]}")
+    else
+      GUARDRAIL_SCRIPTS+=("${line}")
+    fi
+  done < "${ROOT_DIR}/scripts/guardrail-scripts-list.txt"
 }
 
 install_cli() {
@@ -252,6 +255,7 @@ for h in "${ACTIVE_AGY_HOMES[@]}"; do
   ensure_dir "${h}/knowledge"
   
   create_workflow_ki "${h}"
+  load_guardrail_scripts "antigravity"
   install_guardrail_assets "${h}"
 done
 
@@ -259,7 +263,7 @@ install_cli
 write_manifest
 
 echo "Created BA-kit KI in active Antigravity runtimes"
-echo "Installed guardrail assets (10 scripts + docs)"
+echo "Installed guardrail assets (${#GUARDRAIL_SCRIPTS[@]} scripts + docs)"
 echo "Installed update CLI to ${LOCAL_BIN_TARGET}/ba-kit"
 echo "BA-kit Antigravity installation complete."
 echo ""

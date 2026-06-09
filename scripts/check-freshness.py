@@ -41,6 +41,7 @@ def check_freshness(repo: Path, slug: str, date: str, module: str) -> dict:
     contract = load_contract(repo)
     receipt_rel = render_path(contract["paths"]["srs_compile_receipt"], slug=slug, date=date, module=module)
     receipt_path = repo / receipt_rel
+    module_root = receipt_path.parent
 
     if not receipt_path.exists():
         return {"status": "MISSING", "stale_files": [], "message": "No compile receipt found — run ba-start srs first"}
@@ -50,13 +51,16 @@ def check_freshness(repo: Path, slug: str, date: str, module: str) -> dict:
     except json.JSONDecodeError:
         return {"status": "MISSING", "stale_files": [], "message": "Receipt is corrupted"}
 
-    source_manifest = receipt.get("source_manifest", [])
+    source_manifest = _normalise_source_manifest(receipt, module_root)
     if not source_manifest:
-        return {"status": "MISSING", "stale_files": [], "message": "Receipt has no source manifest"}
+        return {"status": "MISSING", "stale_files": [], "message": "Receipt has no source hashes"}
 
     stale_files = []
     for entry in source_manifest:
-        source_path = repo / entry.get("path", "")
+        source_path = Path(entry.get("path", ""))
+        if not source_path.is_absolute():
+            base = module_root if entry.get("base") == "module" else repo
+            source_path = base / source_path
         if not source_path.exists():
             stale_files.append({"path": entry.get("path", "?"), "reason": "deleted"})
             continue
@@ -74,6 +78,30 @@ def check_freshness(repo: Path, slug: str, date: str, module: str) -> dict:
         return {"status": "STALE", "stale_files": stale_files,
                 "message": f"{len(stale_files)} source files changed since last compile"}
     return {"status": "FRESH", "stale_files": [], "message": "All sources match receipt — no re-compile needed"}
+
+
+def _normalise_source_manifest(receipt: dict, module_root: Path) -> list[dict[str, str]]:
+    """Support both current source_hashes receipts and older source_manifest receipts."""
+    manifest = receipt.get("source_manifest")
+    if isinstance(manifest, list):
+        return [
+            {
+                "path": str(entry.get("path", "")),
+                "source_hash": str(entry.get("source_hash", "")),
+                "base": str(entry.get("base", "repo")),
+            }
+            for entry in manifest
+            if isinstance(entry, dict)
+        ]
+
+    source_hashes = receipt.get("source_hashes")
+    if isinstance(source_hashes, dict):
+        return [
+            {"path": str(path), "source_hash": str(source_hash), "base": "module"}
+            for path, source_hash in source_hashes.items()
+        ]
+
+    return []
 
 
 def main() -> int:

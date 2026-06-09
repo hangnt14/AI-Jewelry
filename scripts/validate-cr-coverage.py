@@ -17,8 +17,14 @@ import sys
 from pathlib import Path
 from typing import Any
 
-CR_CODE_RE = re.compile(r"\bCR-(DIS|BEH|VAL|MIX)-\d{2}\b")
+CR_CODE_RE = re.compile(r"\bCR-(?:DIS|BEH|VAL|MIX)-\d{2}\b")
 SKIP_CR_RE = re.compile(r"<!--\s*skip-cr:(CR-\w+-\d+)(?:\s+Lý do:\s*(.+?))?\s*-->")
+COMMON_RULES_HEADER_ALIASES = {
+    "code": ("code",),
+    "rule_statement": ("rule_statement", "statement"),
+    "applies_to": ("applies_to", "applies_to_(pattern)", "applies_to_pattern"),
+    "edge_cases": ("edge_cases", "edge_case"),
+}
 
 
 def _parse_common_rules(path: Path) -> dict[str, dict[str, Any]]:
@@ -48,16 +54,23 @@ def _parse_common_rules(path: Path) -> dict[str, dict[str, Any]]:
             row = dict(zip(headers, cells + [""] * (len(headers) - len(cells))))
             code = row.get("code", "").strip()
             if CR_CODE_RE.match(code):
-                applies_to = row.get("applies_to", "").strip()
-                edge_cases_raw = row.get("edge_cases", "").strip()
+                applies_to = _row_value(row, "applies_to").strip()
+                edge_cases_raw = _row_value(row, "edge_cases").strip()
                 edge_cases = [e.strip() for e in edge_cases_raw.split(".") if e.strip()] if edge_cases_raw and edge_cases_raw not in {"-", "—"} else []
                 result[code] = {
-                    "statement": row.get("rule_statement", "").strip(),
+                    "statement": _row_value(row, "rule_statement").strip(),
                     "applies_to": applies_to,
                     "keywords": _extract_keywords(applies_to),
                     "edge_cases": edge_cases,
                 }
     return result
+
+
+def _row_value(row: dict[str, str], canonical: str) -> str:
+    for alias in COMMON_RULES_HEADER_ALIASES.get(canonical, (canonical,)):
+        if alias in row:
+            return row.get(alias, "")
+    return ""
 
 
 def _extract_keywords(applies_to: str) -> list[str]:
