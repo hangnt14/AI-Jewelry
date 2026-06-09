@@ -90,8 +90,14 @@ def main() -> int:
     source_hashes = receipt.get("source_hashes", {})
     included = receipt.get("included_sources", [])
     stale_sources: list[str] = []
+    module_root_rel = render_path(
+        contract["paths"]["module_root"],
+        slug=args.slug,
+        date=args.date,
+        module=args.module,
+    )
     for src_path_str in included:
-        src_path = repo / src_path_str
+        src_path = repo / module_root_rel / src_path_str
         if not src_path.exists():
             result["issues"].append({"severity": "error", "code": "included_source_missing", "file": src_path_str})
             continue
