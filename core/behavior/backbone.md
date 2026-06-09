@@ -27,7 +27,11 @@ Stop when the requested option file does not exist, multiple options exist witho
 - First-pass backbone creation may skip impact/governance pre-mutation checks because no accepted backbone exists yet.
 - Refresh `paths.backbone_index` after backbone creation or approved rerun.
 - **[BẮT BUỘC]** Immediately after writing `paths.backbone_index`, run `ba-kit validate-index --index-key backbone_index --slug <slug> --date <date> --writeback`. If validation fails, stop. Do not proceed to downstream commands. The PostToolUse hook serves as fallback, but this inline call is the primary enforcement.
-- **When UI-backed scope exists:** create `paths.design_doc` and `paths.shared_shell_contract` during backbone. These are system-level artifacts owned by Lead BA.
+- **Always create shared registries** `paths.common_rules`, `paths.message_list`, and `paths.shared_rule_message_index` during backbone. These are system-level artifacts that module screens and contracts reference by code (`CR-*`, `MSG-*`).
+  - Populate `paths.common_rules` with initial CR-* codes derived from backbone scope.
+  - Populate `paths.message_list` with initial MSG-* codes for common messages.
+  - Generate `paths.shared_rule_message_index` by running the validator with `--write-index`.
+- **When UI-backed scope exists:** create `paths.design_doc`, `paths.shared_shell_contract`, and `paths.control_type_library` during backbone. These are system-level artifacts owned by Lead BA.
   - `paths.design_doc` must cover ALL portals from the backbone Portal Matrix, not just one module.
   - `paths.shared_shell_contract` must declare every nav schema, shell variant, and layout variant used by any portal.
   - Module BAs are PROHIBITED from creating new portals, new nav schemas, new shell variants, or new shared components in these files.

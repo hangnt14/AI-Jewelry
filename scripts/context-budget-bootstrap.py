@@ -361,7 +361,9 @@ def main() -> int:
 
     repo = Path(args.repo).resolve()
     plan_root = Path(args.plan_root).resolve() if args.plan_root else repo
-    contract_path = repo / "core" / "contract.yaml"
+    contract_path = Path.home() / ".claude" / "core" / "contract.yaml"
+    if not contract_path.exists():
+        contract_path = repo / "core" / "contract.yaml"
     if not contract_path.exists():
         print(json.dumps({"error": "contract.yaml not found", "repo": str(repo)}))
         return 1

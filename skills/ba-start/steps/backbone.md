@@ -50,7 +50,11 @@ Run Step 5 only.
 - `paths.project_home`
 - `paths.backbone`
 - `paths.backbone_index`
+- `paths.common_rules` — always; system-level shared rule registry
+- `paths.message_list` — always; system-level shared message registry
+- `paths.shared_rule_message_index` — always; compiled CR/MSG cross-reference index
 - `paths.project_memory`
+- `paths.control_type_library` — when UI-backed scope exists
 - `paths.design_doc` — when UI-backed scope exists
 - `paths.shared_shell_contract` + `paths.shared_shell_index` — when UI-backed scope exists
 
@@ -74,6 +78,21 @@ The backbone must contain:
 After writing the backbone, initialize or refresh `paths.project_memory` using `~/.claude/templates/project-memory-template.md` (fallback: [../../../templates/project-memory-template.md](../../../templates/project-memory-template.md)).
 Also create or refresh `paths.backbone_index` using `~/.claude/templates/backbone-index-template.md` (fallback: [../../../templates/backbone-index-template.md](../../../templates/backbone-index-template.md)).
 Generate the index with `stale_status: unknown`, leave `validated_at` and `validated_by` blank.
+
+**Create shared registries.** These are system-level artifacts that module artifacts reference by code:
+
+1. **`paths.common_rules`** using `~/.claude/templates/common-rules-template.md` (fallback: [../../../templates/common-rules-template.md](../../../templates/common-rules-template.md)).
+   - Populate initial CR-* codes derived from backbone scope: CR-VAL-* for common validations (email, password, required), CR-DIS-* for display rules (pagination threshold), CR-BEH-* for behaviour rules (button disabled conditions).
+   - Each rule must include `applies_to` pattern and `edge_cases` column.
+
+2. **`paths.message_list`** using `~/.claude/templates/message-list-template.md` (fallback: [../../../templates/message-list-template.md](../../../templates/message-list-template.md)).
+   - Populate initial MSG-* codes: MSG-ERR-* for common errors, MSG-SUC-* for success toasts, MSG-WRN-* for warnings, MSG-INF-* for info messages.
+   - Each message must include `surface` (inline/toast/banner/modal) and `canonical_text`.
+
+3. **`paths.shared_rule_message_index`** — after writing both registries, generate the compiled index by running:
+   ```bash
+   ba-kit validate-shared-rule-message-registry --write-index --slug <slug> --date <date>
+   ```
 
 **[BẮT BUỘC — KHÔNG ĐƯỢC BỎ QUA]** Ngay sau khi write `backbone-index.md`, PHẢI chạy:
 
@@ -99,11 +118,17 @@ When the backbone Portal Matrix defines at least one portal (UI-backed scope exi
    - Do NOT restrict DESIGN.md to just one module — it is a system-level visual direction artifact.
    - Ask user to approve design direction (visual tone, colors, typography, component feel). Stop if unresolved.
 
-2. **`paths.shared_shell_contract`** using `~/.claude/templates/shared-shell-contract-template.md` (fallback: [../../../templates/shared-shell-contract-template.md](../../../templates/shared-shell-contract-template.md)).
+2. **`paths.control_type_library`** using `~/.claude/templates/control-type-library-template.md` (fallback: [../../../templates/control-type-library-template.md](../../../templates/control-type-library-template.md)).
+   - Copy the template AS-IS into the backbone directory.
+   - This file defines 20 standard control types with default display, behaviour, states, and edge cases.
+   - Screen canon files reference these control types via the Control Type column.
+   - No customization needed during backbone creation — BA customizes per-project during module authoring.
+
+3. **`paths.shared_shell_contract`** using `~/.claude/templates/shared-shell-contract-template.md` (fallback: [../../../templates/shared-shell-contract-template.md](../../../templates/shared-shell-contract-template.md)).
    - MUST declare ALL portals, nav schemas, shell variants, layout variants, and shared components.
    - This is the machine-readable counterpart to DESIGN.md §2.
 
-3. **`paths.shared_shell_index`** using `~/.claude/templates/shared-shell-index-template.md` (fallback: [../../../templates/shared-shell-index-template.md](../../../templates/shared-shell-index-template.md)).
+4. **`paths.shared_shell_index`** using `~/.claude/templates/shared-shell-index-template.md` (fallback: [../../../templates/shared-shell-index-template.md](../../../templates/shared-shell-index-template.md)).
 
 **Rule:** These files are system-level, owned by Lead BA. Module BAs MAY add menu items to existing nav schemas with user confirmation (flag in review packet). New portals, nav schemas, shell variants, or shared components require Lead BA via `impact`.
 

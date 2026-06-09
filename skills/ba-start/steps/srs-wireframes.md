@@ -93,8 +93,30 @@ Required screen canon result:
 - `ascii_status: current`
 - `## ASCII Wireframe` present
 - one ASCII subsection per required state listed in State Visual Coverage
+- **[BẮT BUỘC]** Every inline message declared in `## Message Placement` MUST have a `▼ MSG-ERR-XX` marker at the exact field position in the wireframe
+- **[BẮT BUỘC]** Toast messages MUST be drawn in a toast zone (corner box) in the wireframe
+- **[BẮT BUỘC]** Banner messages MUST be drawn as a banner bar in the wireframe
+- **[BẮT BUỘC]** Every wireframe MUST end with a `Message Zones:` legend listing all message positions
 - Figma sync run as a separate consumer skill
 - compiled `paths.srs` refreshed after canon changes
+
+Example wireframe with markers:
+```
++--------------------------------------------------+
+| {Screen Title}                                   |
++--------------------------------------------------+
+| {field label}: [________________]                |
+| ▼ MSG-ERR-01: {error message}                    |
+| [{Action Button}]                                |
+|              ┌──────────────────┐                |
+|              │ ✓ MSG-SUC-01     │                |
+|              └──────────────────┘                |
++--------------------------------------------------+
+
+Message Zones:
+  Inline: dưới field {field_name} (MSG-ERR-01)
+  Toast area: góc phải dưới (MSG-SUC-01: tự tắt sau 3s)
+```
 
 ## Step 10 - Produce Final Screen Field Contract
 

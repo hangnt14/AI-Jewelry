@@ -27,27 +27,27 @@ CODEX_HOOKS="${CODEX_BA_KIT}/hooks"
 CODEX_STATE="${CODEX_BA_KIT}/state"
 CODEX_HOOKS_FILE="${CODEX_HOME}/hooks.json"
 
-GUARDRAIL_SCRIPTS=(
-  "guardrail-preflight.py"
-  "guardrail-build-excerpts.py"
-  "guardrail-audit.py"
-  "guardrail_common.py"
-  "validate-index-quality.py"
-  "check-token-budget.py"
-  "check-write-scope.py"
-  "check-screen-behaviour.py"
-  "context-output-guard.py"
-  "context-preflight-guard.py"
-  "context-budget-bootstrap.py"
-  "compile-srs.py"
-  "check-srs-template-compliance.py"
-  "md-to-html.py"
-)
+GUARDRAIL_SCRIPTS=()
 
 # ── helpers ──────────────────────────────────────────────────────────
 
 ensure_dir() {
   mkdir -p "$1"
+}
+
+load_guardrail_scripts() {
+  local runtime="$1" line
+  GUARDRAIL_SCRIPTS=()
+  while IFS= read -r line || [[ -n "${line}" ]]; do
+    line="${line#"${line%%[![:space:]]*}"}"
+    line="${line%"${line##*[![:space:]]}"}"
+    [[ -z "${line}" || "${line}" == \#* ]] && continue
+    if [[ "${line}" =~ ^\[([a-z]+)\][[:space:]]+(.+)$ ]]; then
+      [[ "${BASH_REMATCH[1]}" == "${runtime}" ]] && GUARDRAIL_SCRIPTS+=("${BASH_REMATCH[2]}")
+    else
+      GUARDRAIL_SCRIPTS+=("${line}")
+    fi
+  done < "${ROOT_DIR}/scripts/guardrail-scripts-list.txt"
 }
 
 install_cli() {
@@ -83,6 +83,30 @@ install_guardrail_docs() {
   if [[ -f "${ROOT_DIR}/docs/ba-qc-export-bridge-note.md" ]]; then
     cp "${ROOT_DIR}/docs/ba-qc-export-bridge-note.md" "${TARGET_DOCS}/ba-qc-export-bridge-note.md"
   fi
+}
+
+# ── core assets installation ──────────────────────────────────────────
+
+install_core_assets() {
+  # Core files for scripts (REPO_ROOT = ~/.claude/ba-kit/)
+  ensure_dir "${TARGET_BA_KIT}/core/behavior"
+  cp "${ROOT_DIR}/core/contract.yaml" "${TARGET_BA_KIT}/core/contract.yaml"
+  cp "${ROOT_DIR}/core/contract-behavior.md" "${TARGET_BA_KIT}/core/contract-behavior.md"
+  cp "${ROOT_DIR}/core/behavior/"*.md "${TARGET_BA_KIT}/core/behavior/"
+
+  # Templates
+  ensure_dir "${TARGET_BA_KIT}/templates"
+  cp -r "${ROOT_DIR}/templates/"* "${TARGET_BA_KIT}/templates/"
+
+  # Skills (step files)
+  ensure_dir "${TARGET_BA_KIT}/skills"
+  cp -r "${ROOT_DIR}/skills/"* "${TARGET_BA_KIT}/skills/"
+
+  # Also copy contract.yaml to home for load_contract() home-first check
+  ensure_dir "${TARGET_HOME}/core"
+  cp "${ROOT_DIR}/core/contract.yaml" "${TARGET_HOME}/core/contract.yaml"
+
+  echo "Installed core assets to ${TARGET_BA_KIT}/core/ and templates/"
 }
 
 # ── hook script generation ───────────────────────────────────────────
@@ -647,6 +671,11 @@ write_index_validation_hook() {
   chmod +x "${TARGET_HOOKS}/guardrail-index-validation-hook.sh"
 }
 
+write_postwrite_guardrail_hook() {
+  cp "${ROOT_DIR}/scripts/hooks/postwrite-guardrail.sh" "${TARGET_HOOKS}/postwrite-guardrail.sh"
+  chmod +x "${TARGET_HOOKS}/postwrite-guardrail.sh"
+}
+
 # ── settings.json hook registration ──────────────────────────────────
 
 register_hooks() {
@@ -728,12 +757,19 @@ post_hooks.append({
 
 # PostToolUse — index validation (matcher: Write|Edit)
 # Auto-validates index files after write. Fallback safety net for the hard instruction in step files.
-post_hooks[:] = [h for h in post_hooks if "guardrail-index-validation-hook.sh" not in str(h)]
+post_hooks[:] = [h for h in post_hooks if "guardrail-index-validation-hook.sh" not in str(h) and "postwrite-guardrail.sh" not in str(h)]
 post_hooks.append({
     "matcher": "Write|Edit",
     "hooks": [{
         "type": "command",
         "command": f"bash \"{hooks_dir}/guardrail-index-validation-hook.sh\""
+    }]
+})
+post_hooks.append({
+    "matcher": "Write|Edit",
+    "hooks": [{
+        "type": "command",
+        "command": f"BA_KIT_HOOK_HOME=\"{pathlib.Path.home()}/.claude/ba-kit\" bash \"{hooks_dir}/postwrite-guardrail.sh\""
     }]
 })
 
@@ -946,11 +982,14 @@ ensure_dir "${TARGET_BA_KIT}"
 ensure_dir "${TARGET_HOOKS}"
 ensure_dir "${TARGET_STATE}"
 
+load_guardrail_scripts "claude"
 install_guardrail_scripts
 echo "Installed guardrail scripts to ${TARGET_SCRIPTS}"
 
 install_guardrail_docs
 echo "Installed guardrail docs to ${TARGET_DOCS}"
+
+install_core_assets
 
 write_preflight_hook
 write_audit_hook
@@ -959,6 +998,7 @@ write_context_output_guard_hook
 write_context_preflight_guard_hook
 write_context_audit_hook
 write_index_validation_hook
+write_postwrite_guardrail_hook
 echo "Created hook scripts in ${TARGET_HOOKS}"
 
 register_hooks
@@ -974,9 +1014,10 @@ echo ""
 echo "BA-kit Claude Code installation complete."
 echo ""
 echo "Installed:"
-echo "  - 10 guardrail Python scripts → ${TARGET_SCRIPTS}"
+echo "  - ${#GUARDRAIL_SCRIPTS[@]} guardrail Python scripts → ${TARGET_SCRIPTS}"
 echo "  - 7 hook scripts → ${TARGET_HOOKS}"
 echo "  - Guardrail docs → ${TARGET_DOCS}"
+echo "  - Core assets → ${TARGET_HOME}/core/ + templates/ + skills/"
 echo "  - CLI → ${LOCAL_BIN_TARGET}/ba-kit"
 echo "  - Hooks registered in ${SETTINGS_FILE}"
 echo ""

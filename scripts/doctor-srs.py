@@ -78,6 +78,26 @@ def main() -> int:
     ascii_screen_root = module_root / "ascii-screen"
     if any(path.name != "index.md" for path in ascii_screen_root.glob("*.md")):
         checks.append(run_check([sys.executable, str(script_dir / "check-screen-behaviour.py"), str(ascii_screen_root)]))
+        control_library = module_root.parent.parent / "02_backbone" / "control-type-library.md"
+        ct_cmd = [sys.executable, str(script_dir / "check-control-type-compliance.py"), str(ascii_screen_root)]
+        if control_library.exists():
+            ct_cmd.extend(["--library", str(control_library)])
+        checks.append(run_check(ct_cmd))
+        checks.append(run_check([sys.executable, str(script_dir / "check-message-placement.py"), str(ascii_screen_root)]))
+
+        common_rules = module_root.parent.parent / "02_backbone" / "common-rules.md"
+        if common_rules.exists():
+            checks.append(run_check([
+                sys.executable, str(script_dir / "validate-cr-coverage.py"),
+                str(ascii_screen_root),
+                "--common-rules", str(common_rules),
+            ]))
+
+    term_cmd = [sys.executable, str(script_dir / "check-terminology-consistency.py"), str(module_root)]
+    control_library = module_root.parent.parent / "02_backbone" / "control-type-library.md"
+    if control_library.exists():
+        term_cmd.extend(["--library", str(control_library)])
+    checks.append(run_check(term_cmd))
 
     # Check srs source set
     checks.append(run_check([
@@ -88,6 +108,12 @@ def main() -> int:
     # Check partial compile receipt
     checks.append(run_check([
         sys.executable, str(script_dir / "check-partial-srs-compile-receipt.py"),
+        "--repo", str(repo), "--slug", slug, "--date", date, "--module", module,
+    ]))
+
+    # Check compiled SRS freshness
+    checks.append(run_check([
+        sys.executable, str(script_dir / "check-freshness.py"),
         "--repo", str(repo), "--slug", slug, "--date", date, "--module", module,
     ]))
 

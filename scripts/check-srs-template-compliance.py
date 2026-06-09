@@ -21,25 +21,24 @@ REQUIRED_HEADING_SLUGS = [
     "dac-ta-yeu-cau-phan-mem",
     "muc-dich-va-pham-vi",
     "yeu-cau-chuc-nang",
+    "user-stories",
     "dac-ta-use-case",
-    "hop-dong-man-hinh-tien-wireframe",
-    "danh-muc-man-hinh",
     "mo-ta-man-hinh",
     "yeu-cau-phi-chuc-nang",
-    "ascii-wireframes",
 ]
 
 OPTIONAL_HEADING_SLUGS = [
     "so-do-luong-du-lieu",
     "so-do-thuc-the-quan-he",
-    "dac-ta-api",
+    "tham-chieu-quy-tac-thong-diep-dung-chung",
 ]
 
 REQUIRED_TABLE_MARKERS = [
+    ("yeu-cau-chuc-nang", "| FR ID | Yêu cầu"),
     ("yeu-cau-chuc-nang", "| Mã (ID) | Yêu cầu"),
+    ("user-stories", "| Mã US"),
     ("dac-ta-use-case", "| Mã UC"),
-    ("hop-dong-man-hinh-tien-wireframe", "| Mã (Screen ID)"),
-    ("danh-muc-man-hinh", "| Mã (Screen/Frame ID)"),
+    ("yeu-cau-phi-chuc-nang", "| NFR ID | Danh mục"),
     ("yeu-cau-phi-chuc-nang", "| Mã (ID) | Danh mục"),
 ]
 
@@ -99,7 +98,10 @@ def main() -> int:
     args = parser.parse_args()
 
     repo = Path(args.repo).resolve()
-    template_path = repo / "templates" / "srs-template.md"
+    # Check global templates first
+    template_path = Path.home() / ".claude" / "ba-kit" / "templates" / "srs-template.md"
+    if not template_path.exists():
+        template_path = repo / "templates" / "srs-template.md"
 
     if not template_path.exists():
         print(f"ERROR: template not found: {template_path}", file=sys.stderr)
@@ -140,20 +142,27 @@ def main() -> int:
             })
 
     # Check required tables exist within their sections
+    checked_sections = set()
     for section_slug, table_marker in REQUIRED_TABLE_MARKERS:
+        if section_slug in checked_sections:
+            continue  # Already passed with a previous marker
         start, end, _ = find_section(srs_lines, section_slug)
         if start < 0:
             continue
         found = False
+        # Collect ALL markers for this section
+        markers = [m for s, m in REQUIRED_TABLE_MARKERS if s == section_slug]
         for i in range(start, end):
-            if table_marker in srs_lines[i]:
+            if any(m in srs_lines[i] for m in markers):
                 found = True
+                checked_sections.add(section_slug)
                 break
         if not found:
             result["issues"].append({
                 "severity": "error",
                 "code": "missing_required_table",
                 "section": section_slug,
+                "expected_marker": markers[0],
                 "expected_marker": table_marker,
             })
 

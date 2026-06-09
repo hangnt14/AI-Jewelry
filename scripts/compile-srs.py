@@ -38,18 +38,16 @@ REQUIRED_HEADING_SLUGS = [
     "dac-ta-yeu-cau-phan-mem",
     "muc-dich-va-pham-vi",
     "yeu-cau-chuc-nang",
+    "user-stories",
     "dac-ta-use-case",
-    "hop-dong-man-hinh-tien-wireframe",
-    "danh-muc-man-hinh",
     "mo-ta-man-hinh",
     "yeu-cau-phi-chuc-nang",
-    "ascii-wireframes",
 ]
 
 OPTIONAL_HEADING_SLUGS = [
     "so-do-luong-du-lieu",
     "so-do-thuc-the-quan-he",
-    "dac-ta-api",
+    "tham-chieu-quy-tac-thong-diep-dung-chung",
 ]
 
 
@@ -166,7 +164,7 @@ def verify_index_against_disk(index_path: Path, source_dir: Path) -> list[str]:
 def load_project_context(plan_root: Path) -> dict[str, str]:
     """Load project-level context for auto-filling placeholders.
 
-    Reads backbone.md and DESIGN.md for project name, slug, module info.
+    Reads backbone.md, DESIGN.md, shared-shell-contract.md for metadata.
     """
     ctx: dict[str, str] = {}
 
@@ -177,6 +175,23 @@ def load_project_context(plan_root: Path) -> dict[str, str]:
         m = re.search(r"^#\s+(.+)$", bb_text, re.MULTILINE)
         if m:
             ctx["project_name"] = m.group(1).strip()
+
+        # Extract portal IDs
+        for m in re.finditer(r"\|\s*(PORTAL-\w+)\s*\|", bb_text):
+            pid = m.group(1).strip()
+            if "portal_ids" not in ctx:
+                ctx["portal_ids"] = pid
+            else:
+                ctx["portal_ids"] += ", " + pid if pid not in ctx.get("portal_ids", "") else ""
+
+        # Extract module names from feature map
+        modules = []
+        for m in re.finditer(r"\|\s*(F-\d+)\s*\|\s*([^|]+)\s*\|", bb_text):
+            name = m.group(2).strip()
+            if name and name not in modules:
+                modules.append(name)
+        if modules:
+            ctx["modules"] = ", ".join(modules)
 
     # Try PROJECT-HOME
     home_path = plan_root / "PROJECT-HOME.md"
@@ -194,6 +209,13 @@ def load_project_context(plan_root: Path) -> dict[str, str]:
         if m:
             ctx["project_name"] = ctx.get("project_name") or m.group(1).strip()
 
+        # Extract nav schema IDs
+        nav_schemas = set()
+        for m in re.finditer(r"\|\s*(NAV-\w+(?:-\d+)?)\s*\|", design_text):
+            nav_schemas.add(m.group(1).strip())
+        if nav_schemas:
+            ctx["nav_schemas"] = ", ".join(sorted(nav_schemas))
+
     return ctx
 
 
@@ -201,14 +223,25 @@ def auto_fill_placeholder(text: str, context: dict[str, str], module_name: str) 
     """Fill known [Placeholder] patterns from project context.
 
     Returns (filled_text, filled_count).
-    Only fills patterns where context can provide a value.
-    Does NOT fill portal IDs, nav schema IDs, or spec-level fields.
+    Fills project/module names, portal IDs, nav schemas, and module lists from backbone context.
+    Does NOT fill screen-level or UC-level fields (those come from source files).
     """
+    from datetime import datetime as _dt
     fill_map = {
         "Tên dự án": context.get("project_name", ""),
         "Tên module": module_name,
         "Project": context.get("project_name", ""),
         "Module": module_name,
+        "Tên portal": context.get("portal_ids", ""),
+        "Danh sách portal": context.get("portal_ids", ""),
+        "Portal list": context.get("portal_ids", ""),
+        "Danh sách nav schema": context.get("nav_schemas", ""),
+        "Nav schema list": context.get("nav_schemas", ""),
+        "Danh sách module": context.get("modules", ""),
+        "Module list": context.get("modules", ""),
+        "Slug": context.get("slug", ""),
+        "YYYY-MM-DD": _dt.now().strftime("%Y-%m-%d"),
+        "v1.0": "1.0",
     }
     count = 0
 
@@ -218,6 +251,11 @@ def auto_fill_placeholder(text: str, context: dict[str, str], module_name: str) 
         if inner in fill_map and fill_map[inner]:
             count += 1
             return fill_map[inner]
+        # Try case-insensitive match
+        for key, val in fill_map.items():
+            if key.lower() == inner.lower() and val:
+                count += 1
+                return val
         return m.group(0)
 
     return re.sub(r"\[([^\]]+)\]", _refill, text), count
@@ -273,15 +311,23 @@ def extract_section_body(lines: list[str], heading_slug: str) -> str:
 
 
 def extract_fr_section(spec_content: str) -> str:
-    """Extract FR table body from srs/spec.md (without heading line)."""
+    """Extract FR table body from srs/spec.md (without heading line).
+    Tries Vietnamese slug first, falls back to English."""
     lines = spec_content.splitlines()
-    return extract_section_body(lines, "yeu-cau-chuc-nang")
+    body = extract_section_body(lines, "yeu-cau-chuc-nang")
+    if not body:
+        body = extract_section_body(lines, "functional-requirements")
+    return body
 
 
 def extract_nfr_section(spec_content: str) -> str:
-    """Extract NFR section body from srs/spec.md (without heading line)."""
+    """Extract NFR section body from srs/spec.md (without heading line).
+    Tries Vietnamese slug first, falls back to English."""
     lines = spec_content.splitlines()
-    return extract_section_body(lines, "yeu-cau-phi-chuc-nang")
+    body = extract_section_body(lines, "yeu-cau-phi-chuc-nang")
+    if not body:
+        body = extract_section_body(lines, "non-functional-requirements")
+    return body
 
 
 def extract_subsection(content: str, heading_slug: str) -> str:
@@ -291,6 +337,78 @@ def extract_subsection(content: str, heading_slug: str) -> str:
     if start < 0:
         return ""
     return "\n".join(lines[start + 1:end]).strip()
+
+
+def _build_us_summary_table(us_files: list[Path]) -> str:
+    """Build the SRS-level User Story summary table from US canon files."""
+    rows = [
+        "| Mã US (User Story ID) | Tiêu đề (Title) | Vai trò (Role) | Tính năng (Feature) | Lợi ích (Benefit) | Ưu tiên (Priority) | Trạng thái (Status) |",
+        "| --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for us_file in us_files:
+        text = us_file.read_text(encoding="utf-8")
+        body, _ = strip_yaml_frontmatter(text)
+        us_id = us_file.stem.replace("us-", "US-").upper()
+        title = next((line.lstrip("#").strip() for line in body.splitlines() if line.startswith("#")), us_id)
+        role = _extract_us_field(body, "Vai trò") or _extract_us_field(body, "Role") or "—"
+        feature = _extract_us_field(body, "Tính năng") or _extract_us_field(body, "Feature") or "—"
+        benefit = _extract_us_field(body, "Lợi ích") or _extract_us_field(body, "Benefit") or "—"
+        priority = _extract_us_field(body, "Ưu tiên") or _extract_us_field(body, "Priority") or "—"
+        status = _extract_us_field(body, "Trạng thái") or _extract_us_field(body, "Status") or "—"
+        rows.append(f"| {us_id} | {title} | {role} | {feature} | {benefit} | {priority} | {status} |")
+    return "\n".join(rows)
+
+
+def _extract_us_field(text: str, label: str) -> str:
+    """Extract a bold markdown field value from a US document."""
+    match = re.search(rf"^\*\*{re.escape(label)}:\*\*\s*(.+)$", text, re.MULTILINE)
+    return match.group(1).strip() if match else ""
+
+
+def _extract_table(text: str, heading: str) -> str:
+    """Extract ALL markdown tables under a heading (any level, with optional title suffix)."""
+    # Match heading at any level with optional " — suffix" text
+    pattern = re.compile(rf"^#+\s+{re.escape(heading)}(?:\s*—.*)?$", re.MULTILINE | re.IGNORECASE)
+    m = pattern.search(text)
+    if not m:
+        return ""
+    # Find the end of this section (next heading at same or higher level)
+    section_start = m.start()
+    heading_level = len(m.group().split()[0])  # count # characters
+    rest = text[section_start + len(m.group()):]
+    # Find next heading at same or higher level
+    next_boundary = re.search(rf"^#{{1,{heading_level}}}\s", rest, re.MULTILINE)
+    section_text = rest[:next_boundary.start()] if next_boundary else rest
+
+    # Extract ALL tables in this section
+    tables = []
+    current_table = []
+    for line in section_text.splitlines():
+        if line.startswith("|"):
+            current_table.append(line)
+        elif current_table:
+            if len(current_table) >= 2:  # header + separator
+                tables.append("\n".join(current_table))
+            current_table = []
+    if len(current_table) >= 2:
+        tables.append("\n".join(current_table))
+    return "\n\n".join(tables) if tables else ""
+
+
+def _extract_ct_summary(text: str) -> str:
+    """Build a summary table of control types from the library."""
+    rows = ["### Control Type Library Summary\n",
+            "| Control Type | Mô tả | Interactive |",
+            "| --- | --- | --- |"]
+    for m in re.finditer(r"###\s+\d+\.\s+(.+?)\s+\(`([^`]+)`\)", text):
+        name = m.group(1).strip()
+        ct_id = m.group(2).strip()
+        # Find the description line
+        desc_match = re.search(rf"###\s+\d+\.\s+{re.escape(name)}\s+\(`{re.escape(ct_id)}`\)\n\n\*\*Mô tả:\*\*\s*(.+?)\n", text)
+        desc = desc_match.group(1).strip() if desc_match else "—"
+        interactive = "Yes" if ct_id not in {"modal", "drawer", "toast", "banner"} else "No"
+        rows.append(f"| `{ct_id}` | {desc} | {interactive} |")
+    return "\n".join(rows)
 
 
 def extract_uc_field(text: str, label: str) -> str:
@@ -318,6 +436,30 @@ def build_uc_summary_table(uc_items: list[tuple[Path, str]]) -> str:
 
 def render_path(template: str, slug: str, date: str, module: str) -> str:
     return template.replace("{slug}", slug).replace("{date}", date).replace("{module_slug}", module)
+
+
+def run_guardrail(name: str, cmd: list[str], *, block_on_failure: bool = True) -> dict:
+    proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    result = {
+        "name": name,
+        "returncode": proc.returncode,
+        "status": "pass" if proc.returncode == 0 else ("fail" if block_on_failure else "warn"),
+        "stdout": proc.stdout.strip()[:2000],
+        "stderr": proc.stderr.strip()[:2000],
+    }
+    if proc.returncode != 0 and block_on_failure:
+        print(f"ERROR: {name} failed. Compile aborted.", file=sys.stderr)
+        if result["stdout"]:
+            print(result["stdout"], file=sys.stderr)
+        if result["stderr"]:
+            print(result["stderr"], file=sys.stderr)
+    elif proc.returncode != 0:
+        print(f"WARN: {name} reported issues.", file=sys.stderr)
+        if result["stdout"]:
+            print(result["stdout"], file=sys.stderr)
+        if result["stderr"]:
+            print(result["stderr"], file=sys.stderr)
+    return result
 
 
 def main() -> int:
@@ -397,6 +539,49 @@ def main() -> int:
             return 2
 
     spec_content = (module_root / "srs" / "spec.md").read_text(encoding="utf-8")
+    ascii_screen_root = module_root / "ascii-screen"
+    screen_files_for_gates = sorted(
+        f for f in ascii_screen_root.glob("*.md") if f.name != "index.md"
+    ) if ascii_screen_root.exists() else []
+    control_library = plan_root / "02_backbone" / "control-type-library.md"
+    common_rules = plan_root / "02_backbone" / "common-rules.md"
+
+    guardrail_results = []
+    if screen_files_for_gates:
+        ct_cmd = [
+            sys.executable, str(SCRIPT_DIR / "check-control-type-compliance.py"),
+            str(ascii_screen_root),
+        ]
+        if control_library.exists():
+            ct_cmd.extend(["--library", str(control_library)])
+        guardrail_results.append(run_guardrail("control_type_compliance", ct_cmd))
+
+        guardrail_results.append(run_guardrail(
+            "message_placement",
+            [sys.executable, str(SCRIPT_DIR / "check-message-placement.py"), str(ascii_screen_root)],
+        ))
+
+        if common_rules.exists():
+            guardrail_results.append(run_guardrail(
+                "common_rules_coverage",
+                [
+                    sys.executable, str(SCRIPT_DIR / "validate-cr-coverage.py"),
+                    str(ascii_screen_root),
+                    "--common-rules", str(common_rules),
+                ],
+                block_on_failure=False,
+            ))
+
+    term_cmd = [
+        sys.executable, str(SCRIPT_DIR / "check-terminology-consistency.py"),
+        str(module_root),
+    ]
+    if control_library.exists():
+        term_cmd.extend(["--library", str(control_library)])
+    guardrail_results.append(run_guardrail("terminology_consistency", term_cmd, block_on_failure=False))
+
+    if any(result["returncode"] != 0 and result["status"] == "fail" for result in guardrail_results):
+        return 2
 
     source_hashes = {}
     source_hashes["srs/spec.md"] = sha256_file(module_root / "srs" / "spec.md")
@@ -415,12 +600,43 @@ def main() -> int:
             content_lines = content.splitlines()
             output_lines[start + 1 : end] = content_lines
         else:
-            pass
+            # No source content — strip stub template rows, keep heading
+            stripped = [line for line in output_lines[start + 1 : end]
+                       if not _is_template_stub(line)]
+            output_lines[start + 1 : end] = stripped if stripped else ["_Chưa có dữ liệu. Chạy ba-start srs để compile từ canon sources._"]
+
+    def _is_template_stub(line: str) -> bool:
+        """Detect template placeholder/stub rows that should be stripped."""
+        s = line.strip()
+        # Table stub rows
+        if s.startswith("|"):
+            if re.search(r"\[(?:TBD|placeholder|Tên|[A-Z][a-z]+ Name|.*example)\]", s, re.IGNORECASE):
+                return True
+            if re.search(r"\{[^}]+\}", s):
+                return True
+            return False
+        # Non-table template text with placeholders
+        if re.search(r"\[(?:TBD|placeholder|YYYY-MM-DD|v\d+\.\d+|điền từ backbone|Mục đích và phạm vi|mô tả trạng thái|Tên hành động|kết quả|khi nào)\]", s, re.IGNORECASE):
+            return True
+        return False
+
+    def downgrade_headings(text: str, levels: int = 1) -> str:
+        """Downgrade markdown heading levels (## → ###, # → ##, etc.) for inlining."""
+        lines = text.splitlines()
+        result = []
+        for line in lines:
+            m = re.match(r"^(#{1,4})\s", line)
+            if m:
+                new_level = min(len(m.group(1)) + levels, 6)
+                line = "#" * new_level + line[len(m.group(1)):]
+            result.append(line)
+        return "\n".join(result)
 
     compiled_sections = []
     placeholder_warnings = []
     index_disk_errors = []
     project_ctx = load_project_context(plan_root)
+    project_ctx.setdefault("project_name", slug_val)
     auto_fill_total = 0
 
     # FR section
@@ -429,11 +645,42 @@ def main() -> int:
         replace_section("yeu-cau-chuc-nang", fr_content)
         compiled_sections.append("FR")
 
+    # Strip template placeholder sections that have no source content
+    replace_section("muc-dich-va-pham-vi", "")
+
     # NFR section
     nfr_content = extract_nfr_section(spec_content)
     if nfr_content:
         replace_section("yeu-cau-phi-chuc-nang", nfr_content)
         compiled_sections.append("NFR")
+
+    # Merge user stories
+    userstories_index = module_root / "userstories" / "index.md"
+    us_entries = []
+    if userstories_index.exists():
+        us_dir = module_root / "userstories"
+        us_files = sorted(f for f in us_dir.glob("us-*.md") if f.name != "index.md")
+        source_hashes["userstories/index.md"] = sha256_file(userstories_index)
+        us_items = []
+        for us_file in us_files:
+            source_hashes[f"userstories/{us_file.name}"] = sha256_file(us_file)
+        for us_file in us_files:
+            us_raw = us_file.read_text(encoding="utf-8")
+            us_text, us_fm = strip_yaml_frontmatter(us_raw)
+            us_text, filled = auto_fill_placeholder(us_text, project_ctx, module_name)
+            auto_fill_total += filled
+            us_items.append(us_text)
+            us_label = f"userstories/{us_file.name}"
+            placeholder_warnings.extend(detect_placeholders(us_text, us_label))
+        us_entries.append(_build_us_summary_table(us_files))
+        us_entries.extend(us_items)
+        compiled_sections.append("UserStories")
+    if us_entries:
+        us_content = "\n\n".join(us_entries)
+        us_content = downgrade_headings(us_content, levels=2)
+        replace_section("user-stories", us_content)
+    else:
+        replace_section("user-stories", "")
 
     # Merge usecases
     usecases_index = module_root / "usecases" / "index.md"
@@ -493,7 +740,9 @@ def main() -> int:
         source_hashes["usecases/diagrams.md"] = sha256_file(diagrams_path)
 
     if uc_entries:
-        replace_section("dac-ta-use-case", "\n\n".join(uc_entries))
+        uc_content = "\n\n".join(uc_entries)
+        uc_content = downgrade_headings(uc_content, levels=2)  # H1→H3, H2→H4
+        replace_section("dac-ta-use-case", uc_content)
 
     # Merge screens (ascii-screen/)
     ascii_screen_index = module_root / "ascii-screen" / "index.md"
@@ -532,7 +781,9 @@ def main() -> int:
         return 2
 
     if screen_entries:
-        replace_section("mo-ta-man-hinh", "\n\n".join(screen_entries))
+        sc_content = "\n\n".join(screen_entries)
+        sc_content = downgrade_headings(sc_content, levels=1)  # H2→H3, H3→H4
+        replace_section("mo-ta-man-hinh", sc_content)
 
     # Optional: flows
     flows_path = module_root / "srs" / "flows.md"
@@ -547,6 +798,35 @@ def main() -> int:
         erd_content = erd_path.read_text(encoding="utf-8")
         replace_section("so-do-thuc-the-quan-he", erd_content)
         compiled_sections.append("ERD")
+
+    # Backbone: common rules
+    common_rules_path = plan_root / "02_backbone" / "common-rules.md"
+    if common_rules_path.exists():
+        cr_text = common_rules_path.read_text(encoding="utf-8")
+        cr_table = _extract_table(cr_text, "Common Rules")
+        if cr_table:
+            replace_section("tham-chieu-quy-tac-thong-diep-dung-chung", cr_table)
+            compiled_sections.append("CommonRules")
+
+    # Backbone: message list
+    msg_list_path = plan_root / "02_backbone" / "message-list.md"
+    if msg_list_path.exists():
+        msg_text = msg_list_path.read_text(encoding="utf-8")
+        msg_table = _extract_table(msg_text, "Message List")
+        if msg_table:
+            replace_section("tham-chieu-quy-tac-thong-diep-dung-chung",
+                          extract_section_body(output_lines, "tham-chieu-quy-tac-thong-diep-dung-chung") + "\n\n" + msg_table)
+            compiled_sections.append("MessageList")
+
+    # Backbone: control type library summary
+    ct_library_path = plan_root / "02_backbone" / "control-type-library.md"
+    if ct_library_path.exists():
+        ct_text = ct_library_path.read_text(encoding="utf-8")
+        ct_summary = _extract_ct_summary(ct_text)
+        if ct_summary:
+            replace_section("tham-chieu-quy-tac-thong-diep-dung-chung",
+                          extract_section_body(output_lines, "tham-chieu-quy-tac-thong-diep-dung-chung") + "\n\n" + ct_summary)
+            compiled_sections.append("ControlTypeLibrary")
 
     # Navigation consistency validation
     design_paths = sorted(plan_root.parent.glob("designs/*/DESIGN.md")) if plan_root.parent.name != "BA-kit" else []
@@ -586,6 +866,9 @@ def main() -> int:
     output_lines = metadata_header + output_lines
 
     full_output = "\n".join(output_lines)
+    full_output, filled = auto_fill_placeholder(full_output, project_ctx, module_name)
+    auto_fill_total += filled
+    output_lines = full_output.splitlines()
 
     # Generate TOC
     heading_re = re.compile(r"^(#{1,3})\s+(.+)$")
@@ -602,6 +885,14 @@ def main() -> int:
     # Write srs.md first (needed for compliance check)
     srs_path = module_root / "srs.md"
     srs_path.write_text(full_output, encoding="utf-8")
+
+    verify_result = run_guardrail(
+        "compiled_output_verification",
+        [sys.executable, str(SCRIPT_DIR / "verify-compiled-output.py"), str(srs_path), "--json"],
+    )
+    guardrail_results.append(verify_result)
+    if verify_result["returncode"] != 0:
+        return 2
 
     # Run compliance checker for authoritative template_compliance
     compliance_errors = []
@@ -647,6 +938,7 @@ def main() -> int:
                     str(srs_path),
                     "--base-dir", str(module_root),
                     "--output", str(html_out),
+                    "--docsengine",
                 ],
                 capture_output=True, text=True, check=True,
             )
@@ -674,6 +966,7 @@ def main() -> int:
         "html_path": html_path_str,
         "html_error": html_error_str,
         "navigation_issues": nav_issues,
+        "guardrail_results": guardrail_results,
         "validation_errors": compliance_errors,
         "generated_at": now.isoformat(),
     }
