@@ -262,7 +262,7 @@
       "module_required": false,
       "mutable": true,
       "requires": ["intake"],
-      "outputs": ["project_home", "backbone", "backbone_index", "common_rules", "message_list", "shared_rule_message_index", "project_memory", "design_doc", "shared_shell_contract", "shared_shell_index"],
+      "outputs": ["project_home", "backbone", "backbone_index", "common_rules", "message_list", "shared_rule_message_index", "control_type_library", "project_memory", "design_doc", "shared_shell_contract", "shared_shell_index"],
       "notes": "System-level artifact. When UI-backed scope exists, backbone MUST create design_doc and shared_shell_contract covering ALL portals in the Portal Matrix. Module BAs must not create or modify these files."
     },
     "frd": {
