@@ -226,6 +226,7 @@ def auto_fill_placeholder(text: str, context: dict[str, str], module_name: str) 
     Fills project/module names, portal IDs, nav schemas, and module lists from backbone context.
     Does NOT fill screen-level or UC-level fields (those come from source files).
     """
+    from datetime import datetime as _dt
     fill_map = {
         "Tên dự án": context.get("project_name", ""),
         "Tên module": module_name,
@@ -239,6 +240,8 @@ def auto_fill_placeholder(text: str, context: dict[str, str], module_name: str) 
         "Danh sách module": context.get("modules", ""),
         "Module list": context.get("modules", ""),
         "Slug": context.get("slug", ""),
+        "YYYY-MM-DD": _dt.now().strftime("%Y-%m-%d"),
+        "v1.0": "1.0",
     }
     count = 0
 
@@ -605,12 +608,15 @@ def main() -> int:
     def _is_template_stub(line: str) -> bool:
         """Detect template placeholder/stub rows that should be stripped."""
         s = line.strip()
-        if not s.startswith("|"):
+        # Table stub rows
+        if s.startswith("|"):
+            if re.search(r"\[(?:TBD|placeholder|Tên|[A-Z][a-z]+ Name|.*example)\]", s, re.IGNORECASE):
+                return True
+            if re.search(r"\{[^}]+\}", s):
+                return True
             return False
-        # Stub rows: contain [placeholder], {param}, TBD, or are example-only
-        if re.search(r"\[(?:TBD|placeholder|Tên|[A-Z][a-z]+ Name|.*example)\]", s, re.IGNORECASE):
-            return True
-        if re.search(r"\{[^}]+\}", s):  # template params like {slug}, {date}
+        # Non-table template text with placeholders
+        if re.search(r"\[(?:TBD|placeholder|YYYY-MM-DD|v\d+\.\d+|điền từ backbone|Mục đích và phạm vi|mô tả trạng thái|Tên hành động|kết quả|khi nào)\]", s, re.IGNORECASE):
             return True
         return False
 
@@ -638,6 +644,9 @@ def main() -> int:
     if fr_content:
         replace_section("yeu-cau-chuc-nang", fr_content)
         compiled_sections.append("FR")
+
+    # Strip template placeholder sections that have no source content
+    replace_section("muc-dich-va-pham-vi", "")
 
     # NFR section
     nfr_content = extract_nfr_section(spec_content)
