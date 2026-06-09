@@ -1533,6 +1533,29 @@ check_source_of_truth_command() {
   python_guardrail_command "check-source-of-truth.py" "$@"
 }
 
+check_control_type_compliance_command() {
+  [[ "$#" -ge 1 ]] || fail "Usage: ba-kit check-control-type-compliance <path...> [--json]"
+  python_guardrail_command "check-control-type-compliance.py" "$@"
+}
+
+check_message_placement_command() {
+  [[ "$#" -ge 1 ]] || fail "Usage: ba-kit check-message-placement <path...> [--json]"
+  python_guardrail_command "check-message-placement.py" "$@"
+}
+
+validate_cr_coverage_command() {
+  python_guardrail_command "validate-cr-coverage.py" "$@"
+}
+
+check_terminology_command() {
+  [[ "$#" -ge 1 ]] || fail "Usage: ba-kit check-terminology <path...> [--json] [--strict] [--fix]"
+  python_guardrail_command "check-terminology-consistency.py" "$@"
+}
+
+check_freshness_command() {
+  python_guardrail_command "check-freshness.py" "$@"
+}
+
 guardrail_command() {
   local command_name="" slug="" date_token="" module_slug="" repo
 
@@ -2197,6 +2220,21 @@ main() {
       ;;
     check-screen-behaviour)
       check_screen_behaviour_command "$@"
+      ;;
+    check-control-type-compliance)
+      check_control_type_compliance_command "$@"
+      ;;
+    check-message-placement)
+      check_message_placement_command "$@"
+      ;;
+    validate-cr-coverage)
+      validate_cr_coverage_command "$@"
+      ;;
+    check-terminology)
+      check_terminology_command "$@"
+      ;;
+    check-freshness)
+      check_freshness_command "$@"
       ;;
     check-write-scope)
       check_write_scope_command "$@"

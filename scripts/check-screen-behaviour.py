@@ -25,10 +25,11 @@ BUSINESS_PATTERNS = [
     r"\bMSG-(ERR|SUC|WRN|INF)(?:-[A-Z0-9]+)*-\d{2,3}\b",
     r"\b(open|close|navigate|display|show|hide|enable|disable)\b",
     r"\b(modal|dialog|drawer|overlay|toast|banner|popup)\b",
-    r"\b(mở|đóng|hiển thị|bật|tắt|vào|quay về|điền|nhập|giới hạn|lưu|validate)\b",
+    r"\b(mở|đóng|hiển thị|bật|tắt|vào|quay về|điền|ấn|giới hạn|lưu|validate)\b",
+    r"^\(default\)",  # Inherits from Control Type Library
 ]
 REQUIRED_SECTIONS = ["## Fields", "## User Actions", "## States", "## ASCII Wireframe"]
-REQUIRED_COLUMNS = ["Field Name", "Display Rules", "Behaviour Rules", "Validation Rules"]
+REQUIRED_COLUMNS = ["Field ID", "Field Name", "Control Type", "Display Rules", "Behaviour Rules", "Validation Rules"]
 FORBIDDEN_COLUMNS = {"Type"}
 NAVIGATION_TERMS = (
     "navigate",
@@ -76,11 +77,15 @@ def check_behaviour(cells: list[str], columns: list[str], line_number: int) -> l
         return [
             issue(
                 "empty_behaviour",
-                "Behaviour Rules must describe user-visible behaviour in business language.",
+                "Behaviour Rules must describe user-visible behaviour in business language. Use '(default)' to inherit from Control Type Library.",
                 field_name,
                 line_number,
             )
         ]
+
+    # Skip validation for inherited default behaviour
+    if behaviour.startswith("(default)"):
+        return []
 
     issues: list[dict[str, Any]] = []
     for pattern in TECHNICAL_PATTERNS:

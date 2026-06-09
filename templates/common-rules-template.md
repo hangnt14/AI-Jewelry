@@ -11,9 +11,11 @@
 
 ## Common Rules
 
-| code | type | rule_statement | applies_to | owner | status | source | notes |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| CR-VAL-01 | VAL | [Canonical validation rule statement] | [module/screen/field scope] | Lead BA | active | [source] | [notes] |
+| code | type | rule_statement | applies_to | edge_cases | owner | status | source | notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| CR-VAL-01 | VAL | [Canonical validation rule statement] | [module/screen/field scope] | [edge case: điều kiện + kết quả mong đợi. Phân cách bởi dấu chấm.] | Lead BA | active | [source] | [notes] |
+| CR-DIS-01 | DIS | Hiện pagination khi danh sách > 10 items | Màn hình có `table`, danh sách, bảng | = 10 items: không pagination, hiện hết. 0 items: hiện empty state. | Lead BA | active | backbone | — |
+| CR-BEH-01 | BEH | Button submit của form disabled khi required field chưa điền | `button (primary)` trong form | Form không có required field: button luôn active. Form có lỗi validation: button disabled. | Lead BA | active | backbone | — |
 
 ## Usage Rules
 
