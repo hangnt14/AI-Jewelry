@@ -262,7 +262,7 @@ PREFLIGHT_ARGS=(
   --command "${COMMAND}"
   --slug "${SLUG}"
   --date "${DATE_TOKEN}"
-  --repo "${SOURCE_REPO}"
+  --repo "${PLAN_DIR%/plans/${SLUG}-${DATE_TOKEN}}"
 )
 if [[ -n "${MODULE:-}" ]]; then
   PREFLIGHT_ARGS+=(--module "${MODULE}")

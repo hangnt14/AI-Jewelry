@@ -186,19 +186,51 @@ def generate_backbone_index(plan_root: Path, paths: dict, slug: str, date: str, 
     source_hash = sha256_file(backbone_path)
     source_text = backbone_path.read_text(encoding="utf-8")
 
-    # Extract trace IDs from source: FR-xxx, ACT-xxx, NFR-xxx, SCR-xxx, US-xxx, UC-xxx
-    _ID_PATTERN = re.compile(r"\b(?:FR|ACT|NFR|SCR|US|UC)-[A-Za-z0-9-]+")
-    all_ids = sorted(set(_ID_PATTERN.findall(source_text)))
+    # Extract trace IDs from source — match all backbone ID families
+    _ID_PATTERNS = [
+        re.compile(r"\b(?:BG|ACT|PORTAL|F|FR|NFR|EP|R|SCR|MEM)-[A-Za-z0-9-]+\b"),
+        re.compile(r"\bA\d+\b"),
+    ]
+    all_ids = sorted(set(
+        token for pattern in _ID_PATTERNS for token in pattern.findall(source_text)
+    ))
+
+    # Per-section ID extraction: find IDs within each heading's section text
+    source_lines = source_text.splitlines()
+    heading_spans: list[tuple[int, str, int, int]] = []
+    for i, line in enumerate(source_lines):
+        m = re.match(r"^(#{1,6})\s+(.+?)\s*$", line)
+        if m:
+            level_h = len(m.group(1))
+            title_h = m.group(2)
+            heading_spans.append((level_h, title_h, i, len(source_lines)))
+    for j in range(len(heading_spans) - 1):
+        heading_spans[j] = (heading_spans[j][0], heading_spans[j][1], heading_spans[j][2], heading_spans[j+1][2])
+    if heading_spans:
+        heading_spans[-1] = (heading_spans[-1][0], heading_spans[-1][1], heading_spans[-1][2], len(source_lines))
+
+    def extract_ids_in_section(start_line: int, end_line: int) -> set[str]:
+        section_text = "\n".join(source_lines[start_line:end_line])
+        ids: set[str] = set()
+        for pattern in _ID_PATTERNS:
+            ids.update(pattern.findall(section_text))
+        return ids
 
     headings = read_headings(backbone_path)
     columns = INDEX_COLUMNS["backbone_index"]
     rows = []
     for level, title in headings:
         if level <= 3:
+            section_ids: set[str] = set()
+            for hlevel, htitle, start_idx, end_idx in heading_spans:
+                if hlevel == level and htitle == title:
+                    section_ids = extract_ids_in_section(start_idx, end_idx)
+                    break
+
             rows.append({
                 "Section": title,
                 "Anchor / Heading": title,
-                "Trace IDs": " ".join(all_ids) if all_ids else "",
+                "Trace IDs": " ".join(sorted(section_ids)) if section_ids else "",
                 "Module / Feature": module or title,
                 "Short Summary": "",
             })

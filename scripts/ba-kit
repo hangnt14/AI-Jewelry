@@ -1634,16 +1634,19 @@ guardrail_command() {
   [[ -n "${slug}" ]] || fail "guardrail requires --slug"
   [[ -n "${date_token}" ]] || fail "guardrail requires --date"
 
-  repo="$(resolve_registered_repo)"
+  local source_repo project_repo
+  source_repo="$(resolve_registered_repo)"
+  project_repo="$(project_root_path "${source_repo}" "${slug}" "${date_token}")"
+  project_repo="${project_repo%/plans/${slug}-${date_token}}"
   local args=(
     --command "${command_name}"
     --slug "${slug}"
     --date "${date_token}"
-    --repo "${repo}"
+    --repo "${project_repo}"
   )
   [[ -n "${module_slug}" ]] && args+=(--module "${module_slug}")
 
-  python3 "${repo}/scripts/guardrail-preflight.py" "${args[@]}"
+  python3 "${source_repo}/scripts/guardrail-preflight.py" "${args[@]}"
 }
 
 check_token_budget_command() {
@@ -1662,8 +1665,10 @@ check_token_budget_command() {
     esac
   done
 
-  [[ -z "${repo}" ]] && repo="$(resolve_registered_repo)"
-  python3 "${repo}/scripts/check-token-budget.py" "${repo}"
+  [[ -z "${repo}" ]] && repo="${PWD}"
+  local source_repo
+  source_repo="$(resolve_registered_repo)"
+  python3 "${source_repo}/scripts/check-token-budget.py" "${repo}"
 }
 
 validate_index_command() {
@@ -1705,9 +1710,13 @@ validate_index_command() {
   [[ -n "${slug}" ]] || fail "validate-index requires --slug"
   [[ -n "${date_token}" ]] || fail "validate-index requires --date"
 
-  repo="$(resolve_registered_repo)"
+  local source_repo project_repo
+  source_repo="$(resolve_registered_repo)"
+  project_repo="$(project_root_path "${source_repo}" "${slug}" "${date_token}")"
+  # Strip trailing plans/{slug}-{date} to get the repo root
+  project_repo="${project_repo%/plans/${slug}-${date_token}}"
   local args=(
-    --repo "${repo}"
+    --repo "${project_repo}"
     --index-key "${index_key}"
     --slug "${slug}"
     --date "${date_token}"
@@ -1715,7 +1724,7 @@ validate_index_command() {
   [[ -n "${module_slug}" ]] && args+=(--module "${module_slug}")
   [[ -n "${writeback}" ]] && args+=(--writeback)
 
-  python3 "${repo}/scripts/validate-index-quality.py" "${args[@]}"
+  python3 "${source_repo}/scripts/validate-index-quality.py" "${args[@]}"
 }
 
 next_command() {
@@ -1972,13 +1981,20 @@ context_budget_command() {
     esac
   done
 
-  repo="$(resolve_registered_repo)"
-  args=(--repo "${repo}" --command "${command_name}")
+  local source_repo project_repo
+  source_repo="$(resolve_registered_repo)"
+  if [[ -n "${slug}" ]] && [[ -n "${date_token}" ]]; then
+    project_repo="$(project_root_path "${source_repo}" "${slug}" "${date_token}")"
+    project_repo="${project_repo%/plans/${slug}-${date_token}}"
+  else
+    project_repo="${PWD}"
+  fi
+  args=(--repo "${project_repo}" --command "${command_name}")
   [[ -n "${slug}" ]] && args+=(--slug "${slug}")
   [[ -n "${date_token}" ]] && args+=(--date "${date_token}")
   [[ -n "${module_slug}" ]] && args+=(--module "${module_slug}")
 
-  python3 "${repo}/scripts/context-budget.py" "${args[@]}"
+  python3 "${source_repo}/scripts/context-budget.py" "${args[@]}"
 }
 
 design_snapshot_command() {
