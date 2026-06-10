@@ -11,7 +11,7 @@ changelog:
 
 > UC-level diagrams only. Module/system flow diagrams belong in `srs/flows.md`.
 
-## UC-{slug}: {use case title}
+## UC-{module}-{slug}: {use case title}
 
 ```mermaid
 sequenceDiagram

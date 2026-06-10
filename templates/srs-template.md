@@ -32,7 +32,7 @@ Mô tả các tương tác chính của hệ thống. Mỗi use case được co
 
 | Mã UC | Tên UC | Tác nhân chính | Trigger | Điều kiện tiên quyết | Hậu điều kiện |
 | --- | --- | --- | --- | --- | --- |
-| UC-{slug} | [Tên] | [Tác nhân] | [Trigger] | [ĐK] | [HK] |
+| UC-{module}-{slug} | [Tên] | [Tác nhân] | [Trigger] | [ĐK] | [HK] |
 
 ## Mô tả màn hình (Screen Descriptions)
 

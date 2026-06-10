@@ -22,4 +22,4 @@ stale_status: unknown
 
 | Screen ID | File | Portal ID | Nav Schema ID | Actor | Linked UCs | Linked Stories | ASCII Status | Stale Status |
 |---|---|---|---|---|---|---|---|---|
-| SCR-01 | `ascii-screen/{screen-slug}.md` | {PORTAL-ID} | {NAV-SCHEMA-ID} | {actor} | UC-{slug} | US-{module}-001 | pending | unknown |
+| SCR-01 | `ascii-screen/{screen-slug}.md` | {PORTAL-ID} | {NAV-SCHEMA-ID} | {actor} | UC-{module}-{slug} | US-{module}-001 | pending | unknown |

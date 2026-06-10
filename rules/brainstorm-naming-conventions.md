@@ -111,7 +111,7 @@ Mọi ID trong frontmatter `links:` hoặc body phải tuân format dưới. For
 | Business Rule | `BR-{feature}-{NNN}` | `BR-payment-001` | Per-feature, trong `srs/spec.md` Mục 4 |
 | Error Code | `E-{feature}-{NNN}` | `E-payment-001` | Per-feature, trong `srs/spec.md` Mục 5 |
 | User Story | `US-{module}-{NNN}` | `US-auth-001` | Per-module (`03_modules/{module}/userstories/us-{module}-{nnn}.md`) |
-| Use Case | `UC-{slug}` | `UC-checkout` | Per-feature folder, slug human-readable |
+| Use Case | `UC-{module}-{slug}` | `UC-auth-login` | Per-module folder, slug human-readable |
 | Acceptance Criterion | `AC-{module}-{NNN}` | `AC-auth-001` | Per-module, scope trong file user story |
 | Change Request | `CR-{YYYYMMDD}-{NNN}` | `CR-20260512-001` | Project-wide (`docs/changes/`) |
 | Decision | `D-{YYYY-MM-DD}-{slug}` | `D-2026-05-12-stripe-vs-momo` | Project-wide |

@@ -22,4 +22,4 @@ stale_status: unknown
 
 | UC ID | File | Actor | Trigger | Linked Stories | Linked Screens | Source Backbone IDs | Stale Status |
 |---|---|---|---|---|---|---|---|
-| UC-{slug} | `usecases/uc-{slug}.md` | {actor} | {trigger summary} | US-{module}-001 | SCR-01 | {backbone-id} | unknown |
+| UC-{module}-{slug} | `usecases/uc-{module}-{slug}.md` | {actor} | {trigger summary} | US-{module}-001 | SCR-01 | {backbone-id} | unknown |

@@ -1,7 +1,7 @@
 ---
 type: use-case
 module: "{module_slug}"
-usecase_id: "UC-{slug}"
+usecase_id: "UC-{module}-{slug}"
 slug: "{usecase-slug}"
 actor: "{actor}"
 status: draft
@@ -14,7 +14,7 @@ changelog:
   - {YYYY-MM-DD} | /srs | initial draft
 ---
 
-# UC-{slug}: {use case title}
+# UC-{module}-{slug}: {use case title}
 
 ## Actors
 
@@ -82,7 +82,7 @@ sequenceDiagram
 
 ## Trace
 
-- User stories: {US-NNN}
+- User stories: {US-{module}-NNN}
 - Backbone feature: {feature ID}
 - Screens: {SCR-01}
 

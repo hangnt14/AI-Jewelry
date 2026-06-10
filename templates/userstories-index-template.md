@@ -22,4 +22,4 @@ stale_status: unknown
 
 | Story ID | File | Actor | Feature / FR | Acceptance Criteria Count | Linked Use Cases | Linked Screens | Source Backbone IDs | Stale Status |
 |---|---|---|---|---|---|---|---|---|
-| US-{module}-001 | `userstories/us-{module}-{slug}.md` | {actor} | {FR-module-NNN} | {N} | {UC-slug} | {SCR-01} | {backbone-id} | unknown |
+| US-{module}-001 | `userstories/us-{module}-{slug}.md` | {actor} | {FR-module-NNN} | {N} | UC-{module}-{slug} | {SCR-01} | {backbone-id} | unknown |
