@@ -31,12 +31,16 @@ Stop when the requested option file does not exist, multiple options exist witho
   - Populate `paths.common_rules` with initial CR-* codes derived from backbone scope.
   - Populate `paths.message_list` with initial MSG-* codes for common messages.
   - Generate `paths.shared_rule_message_index` by running the validator with `--write-index`.
-- **When UI-backed scope exists:** create `paths.design_doc`, `paths.shared_shell_contract`, and `paths.control_type_library` during backbone. These are system-level artifacts owned by Lead BA.
+- **When UI-backed scope exists:** create `paths.design_doc`, `paths.shared_shell_contract`, and `paths.shared_shell_index` during backbone. These are system-level artifacts owned by Lead BA.
   - `paths.design_doc` must cover ALL portals from the backbone Portal Matrix, not just one module.
   - `paths.shared_shell_contract` must declare every nav schema, shell variant, and layout variant used by any portal.
   - Module BAs are PROHIBITED from creating new portals, new nav schemas, new shell variants, or new shared components in these files.
   - Module BAs MAY add menu items to an existing nav schema with explicit user confirmation, then flag in review packet.
   - If a module needs a portal not yet in DESIGN.md or shared-shell-contract.md, escalate to Lead BA via `impact`.
+- **UI Library Selection Gate:** `paths.control_type_library` MUST NOT be created in the same backbone run as DESIGN.md. After DESIGN.md is persisted and design direction approved, backbone MUST stop and prompt user to select a concrete UI library (name + version). Only on the next backbone run, after the library selection is confirmed in DESIGN.md, may `paths.control_type_library` be created with the correct baseline.
+  - If DESIGN.md has no library selection (TBD or empty) → stop with prompt to choose library.
+  - If DESIGN.md has library = `none` → gate passed, create control_type_library with baseline = `none`.
+  - If DESIGN.md has concrete library name + version → gate passed, create control_type_library with that baseline.
 - Initialize or refresh project memory from accepted intake/backbone decisions.
 - Compact memory (`paths.project_memory`) stores stable vocabulary, approved decisions, accepted assumptions, rejected assumptions, corrections, and push-back triggers.
 - Shard memory is optional. If present, `paths.memory_index` is a bounded navigator and must not become a second monolith.

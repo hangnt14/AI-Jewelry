@@ -56,9 +56,9 @@ Run Step 5 only.
 - `paths.message_list` — always; system-level shared message registry
 - `paths.shared_rule_message_index` — always; compiled CR/MSG cross-reference index
 - `paths.project_memory`
-- `paths.control_type_library` — when UI-backed scope exists
 - `paths.design_doc` — when UI-backed scope exists
 - `paths.shared_shell_contract` + `paths.shared_shell_index` — when UI-backed scope exists
+- `paths.control_type_library` — when UI-backed scope exists AND Step 5.1a library gate passed
 
 ## Step 5 - Build the requirements backbone
 
@@ -120,18 +120,54 @@ When the backbone Portal Matrix defines at least one portal (UI-backed scope exi
    - Do NOT restrict DESIGN.md to just one module — it is a system-level visual direction artifact.
    - Ask user to approve design direction (visual tone, colors, typography, component feel). Stop if unresolved.
 
-2. **`paths.control_type_library`** using `~/.claude/templates/control-type-library-template.md` (fallback: [../../../templates/control-type-library-template.md](../../../templates/control-type-library-template.md)).
+2. **`paths.shared_shell_contract`** using `~/.claude/templates/shared-shell-contract-template.md` (fallback: [../../../templates/shared-shell-contract-template.md](../../../templates/shared-shell-contract-template.md)).
+   - MUST declare ALL portals, nav schemas, shell variants, layout variants, and shared components.
+   - This is the machine-readable counterpart to DESIGN.md §2.
 
-   **Step 5.1a — Copy template:**
-   - Copy the template into the backbone directory.
+3. **`paths.shared_shell_index`** using `~/.claude/templates/shared-shell-index-template.md` (fallback: [../../../templates/shared-shell-index-template.md](../../../templates/shared-shell-index-template.md)).
+
+**Rule:** These files are system-level, owned by Lead BA. Module BAs MAY add menu items to existing nav schemas with user confirmation (flag in review packet). New portals, nav schemas, shell variants, or shared components require Lead BA via `impact`.
+
+### Step 5.1a — UI Library Selection Gate [BẮT BUỘC trước Step 5.2]
+
+**`control_type_library` MUST NOT be created until this gate is satisfied.**
+
+Sau khi DESIGN.md đã được tạo và user đã duyệt design direction ở Step 5.1, backbone PHẢI dừng và chờ user chốt thư viện UI cụ thể. Đây là khoảng nghỉ có chủ đích — user cần thời gian research, so sánh library, hoặc consult team trước khi quyết định.
+
+Gate logic:
+- Đọc `paths.design_doc`, kiểm tra section "UI Library" hoặc "Thư viện UI".
+- Nếu DESIGN.md chưa có library selection (field trống, ghi `TBD`, hoặc chỉ có proposal chưa chốt) → **DỪNG**. In message:
+
+  ```
+  ⏸️  DESIGN.md đã có design direction nhưng chưa chốt thư viện UI.
+
+  Chọn thư viện UI trước khi tạo control-type-library:
+  - Gợi ý: Shadcn UI, MUI, Ant Design, Chakra UI, Tailwind UI, Flowbite...
+  - Hoặc chọn "none" nếu không dùng thư viện nào.
+
+  Khi đã chốt: chạy lại backbone để tiếp tục tạo control-type-library.
+  ```
+
+- Nếu DESIGN.md đã có library selection (tên library + version cụ thể, không phải `TBD`) → gate passed. Tiếp tục Step 5.2.
+- Nếu library = `none` → gate passed. Tiếp tục Step 5.2 với baseline = `none`.
+
+Sau khi user chốt library và chạy lại backbone:
+- Backbone đọc lại DESIGN.md, phát hiện library đã được điền → skip Step 5.1 (files đã tồn tại), qua gate 5.1a, vào Step 5.2.
+
+### Step 5.2 — Persist Control Type Library [BẮT BUỘC khi có UI, sau Gate 5.1a]
+
+**Owner: Lead BA only. Module BA MUST NOT create or modify this file.**
+
+Chỉ chạy step này sau khi Step 5.1a gate passed (library đã chốt trong DESIGN.md).
+
+1. **Copy template:** `~/.claude/templates/control-type-library-template.md` (fallback: [../../../templates/control-type-library-template.md](../../../templates/control-type-library-template.md)) vào backbone directory.
    - File bắt đầu với baseline = `none`, 20 control type đầy đủ.
 
-   **Step 5.1b — Cập nhật baseline theo DESIGN.md:**
-   Ngay sau khi item 1 (DESIGN.md) đã chốt thư viện UI, thực hiện tuần tự:
+2. **Cập nhật baseline theo DESIGN.md library selection:**
 
    1. Đọc library docs (dùng `docs-seeker` skill hoặc WebFetch link docs từ DESIGN.md).
    2. Điền bảng Baseline trong control-type-library:
-      - `Thư viện UI`: tên library (vd `Shadcn UI`), hoặc `none` nếu không dùng.
+      - `Thư viện UI`: tên library từ DESIGN.md (vd `Shadcn UI`), hoặc `none` nếu không dùng.
       - `Phiên bản`: phiên bản đã chọn trong DESIGN.md.
       - `Docs tham chiếu`: link docs component của library.
    3. Nếu baseline = `none` → dừng. Giữ nguyên 20 control type.
@@ -149,14 +185,6 @@ When the backbone Portal Matrix defines at least one portal (UI-backed scope exi
    5. Không xóa heading hay cấu trúc section của control type. Chỉ xóa dòng behaviour cụ thể.
    6. Sau khi prune xong, file chỉ còn: baseline info + deviation behaviour + edge case.
    7. Module BA không sửa file này. Khi cần deviation mới → escalate lên Lead BA qua `impact`.
-
-3. **`paths.shared_shell_contract`** using `~/.claude/templates/shared-shell-contract-template.md` (fallback: [../../../templates/shared-shell-contract-template.md](../../../templates/shared-shell-contract-template.md)).
-   - MUST declare ALL portals, nav schemas, shell variants, layout variants, and shared components.
-   - This is the machine-readable counterpart to DESIGN.md §2.
-
-4. **`paths.shared_shell_index`** using `~/.claude/templates/shared-shell-index-template.md` (fallback: [../../../templates/shared-shell-index-template.md](../../../templates/shared-shell-index-template.md)).
-
-**Rule:** These files are system-level, owned by Lead BA. Module BAs MAY add menu items to existing nav schemas with user confirmation (flag in review packet). New portals, nav schemas, shell variants, or shared components require Lead BA via `impact`.
 
 Also refresh `paths.project_home` using `~/.claude/templates/project-home-template.md` (fallback: [../../../templates/project-home-template.md](../../../templates/project-home-template.md)) so non-technical BAs can resume without understanding slug/date/module internals.
 
