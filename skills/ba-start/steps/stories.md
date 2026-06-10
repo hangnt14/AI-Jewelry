@@ -32,7 +32,9 @@ Run Step 7 only.
 
 ## Prerequisites
 
-- Resolve slug, date, and module using the shared contract.
+- Resolve slug, date, and module using `ba-kit resolve --slug <slug> [--module <module>]`.
+  The CLI uses `find -type d` internally for correct directory discovery.
+  Do not use `Glob` — it only matches files, not directories.
 - Require `paths.backbone`.
 - Prefer `paths.backbone_index` for routing. If it is missing and the backbone is large, stop and ask to refresh the index.
 - If backbone is missing, print the exact missing path and stop.
@@ -68,7 +70,7 @@ Generation rules:
 - Story actor, goal, feature, and priority must trace to backbone module scope.
 
 Story item fields:
-- `story_id`: `US-{NNN}` (zero-padded, sequential within module)
+- `story_id`: `US-{module}-{NNN}` (zero-padded, sequential within module)
 - `slug`: stable kebab-case from story title
 - `actor`: from backbone actor registry
 - `priority`: P0 / P1 / P2 from backbone feature priority

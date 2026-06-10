@@ -3,6 +3,11 @@
 > Single source of truth cho mọi UI control type + default behaviour.
 > Mỗi screen canon kế thừa default behaviour từ đây. Chỉ mô tả thêm khi KHÁC default.
 > File này nằm trong `02_backbone/`, do Lead BA sở hữu.
+>
+> **Hai chế độ hoạt động:** xem mục [Baseline](#baseline).
+> - Baseline = `none`: file này là **source of truth đầy đủ**.
+> - Baseline = tên thư viện: file này là **deviation log**, chỉ ghi behaviour khác library default.
+> - Lead BA chốt baseline trong backbone Step 5.1, sau khi DESIGN.md đã có library. Module BA không sửa file này.
 
 ## Cách sử dụng
 
@@ -13,6 +18,38 @@ Trong screen canon (`ascii-screen/*.md`), cột Behaviour Rules:
 | `(default)` | Kế thừa toàn bộ behaviour từ file này |
 | `(default), thêm: {mô tả}` | Kế thừa + bổ sung edge case |
 | `**Khác default:** {mô tả}` | Override hoàn toàn |
+
+---
+
+## Baseline
+
+Trong backbone Step 5.1, sau khi `DESIGN.md` đã chốt thư viện UI, Lead BA điền bảng dưới:
+
+| Trường | Giá trị |
+|--------|---------|
+| Thư viện UI | `none` |
+| Phiên bản | — |
+| Docs tham chiếu | — |
+
+**Quy tắc theo baseline:**
+
+| Baseline | Ý nghĩa | Cách dùng file này |
+|----------|---------|-------------------|
+| `none` | Không dùng thư viện UI. | 20 control type bên dưới là **source of truth đầy đủ**. Mọi behaviour mặc định mô tả tại đây. |
+| `{tên thư viện}` (vd: Shadcn UI) | Có dùng thư viện UI. | 20 control type bên dưới CHỈ ghi **deviation** (khác biệt so với library default). Behaviour không có trong file này → ngầm hiểu theo library docs. |
+
+**Đối với Lead BA, trong backbone Step 5.1:**
+
+1. Đọc `DESIGN.md` → xác định thư viện UI (nếu có).
+2. Cập nhật bảng Baseline ở trên: điền tên thư viện, phiên bản, link docs.
+3. Nếu baseline là thư viện:
+   - Xóa các behaviour trùng với library default khỏi từng control type (giữ lại cấu trúc section, chỉ xóa dòng behaviour).
+   - Chỉ giữ lại các behaviour **khác** library default.
+   - Ví dụ: nếu Shadcn button đã có `disabled` state → không cần mô tả lại trong file này.
+4. Nếu baseline là `none`:
+   - Giữ nguyên toàn bộ 20 control type.
+   - Điều chỉnh behaviour theo đặc thù dự án nếu cần.
+5. Khi thư viện nâng cấp (version bump): review từng deviation, cập nhật nếu library đã thay đổi.
 
 ---
 
@@ -70,12 +107,12 @@ Trong screen canon (`ascii-screen/*.md`), cột Behaviour Rules:
 
 **Default Display:**
 - Label trên, placeholder trong ô
-- Width: toàn chiều rộng container
 
 **Default Behaviour:**
 - Ấn vào ô → viền sáng (focus)
-- Rời khỏi ô → tự động kiểm tra validation, hiện lỗi inline nếu có
-- Có thể có icon bên trái (tìm kiếm) hoặc phải (mắt hiện/ẩn mật khẩu, X xóa nội dung)
+- Rời khỏi ô → tự động kiểm tra, hiện lỗi inline dưới field nếu có
+- Khi nhiều lỗi → xét lỗi theo thứ tự FE trước (field gần đầu form báo trước)
+- Icon bên trái hiển thị khi field có chức năng tìm kiếm; icon bên phải hiển thị khi field hỗ trợ hiện/ẩn mật khẩu hoặc xóa nội dung
 
 **Default States:**
 | State | Hiển thị | Điều kiện |
@@ -84,7 +121,7 @@ Trong screen canon (`ascii-screen/*.md`), cột Behaviour Rules:
 | focused | Viền xanh, con trỏ nhấp nháy | Đang điền |
 | filled | Viền xám, có text | Đã điền, rời focus |
 | disabled | Mờ, không ấn được | Không đủ quyền / chờ điều kiện |
-| error | Viền đỏ + inline message dưới ô | Validation failed |
+| error | Viền đỏ + inline message dưới ô | Kiểm tra thất bại |
 | read-only | Không viền, text hiển thị như label | Chỉ xem |
 
 **Edge Case cần mô tả thêm:**
@@ -102,8 +139,8 @@ Trong screen canon (`ascii-screen/*.md`), cột Behaviour Rules:
 Kế thừa toàn bộ từ `text_input`.
 
 **Khác biệt:**
-- Nhiều dòng, có thể resize dọc (mặc định)
-- Có thể có đếm ký tự nếu có giới hạn
+- Nhiều dòng, resize dọc (mặc định)
+- Hiện đếm ký tự bên dưới khi có giới hạn ký tự
 
 **Edge Case cần mô tả thêm:**
 - Giới hạn ký tự cụ thể (vd: tối đa 500 ký tự)
@@ -130,7 +167,8 @@ Kế thừa toàn bộ từ `text_input`.
 - **Ấn 1 lần duy nhất** → disable ngay sau khi ấn (chống double-click)
 - Nếu hành động cần thời gian chờ → hiện loading state
 - Thành công → thực hiện outcome (mở màn, toast, đóng popup...)
-- Thất bại → hiện lỗi (toast/inline/banner), button trở về active
+- Thất bại → hiện lỗi dạng toast, button trở về active
+- Với button trong form: lỗi hiển thị inline dưới field tương ứng, không dùng toast
 
 **Default States:**
 | State | Hiển thị | Điều kiện |
@@ -142,7 +180,7 @@ Kế thừa toàn bộ từ `text_input`.
 
 **Default disabled condition cho button (primary) của form:**
 - Mọi field required chưa điền → disabled
-- Có field đang báo lỗi validation → disabled
+- Có field đang báo lỗi kiểm tra → disabled
 - Tất cả required đã điền + không có lỗi → active
 
 **Edge Case cần mô tả thêm:**
@@ -192,7 +230,7 @@ Kế thừa toàn bộ từ `text_input`.
 
 **Default Display:**
 - Ô vuông + label bên phải
-- Có thể đứng 1 mình hoặc trong group
+- Đứng 1 mình hoặc trong group
 
 **Default Behaviour:**
 - Ấn → toggle trạng thái (tích/bỏ tích)
@@ -300,7 +338,7 @@ Kế thừa toàn bộ từ `text_input`.
 **Default Display:**
 - Header row với tên cột, data rows bên dưới
 - Có đường kẻ phân cách hàng
-- Có checkbox chọn dòng nếu có bulk action
+- Có checkbox chọn dòng khi có bulk action
 
 **Default Behaviour:**
 - Danh sách > 10 items → tự động hiện pagination
@@ -313,8 +351,8 @@ Kế thừa toàn bộ từ `text_input`.
 | State | Hiển thị |
 |-------|---------|
 | populated | Danh sách có dữ liệu |
-| loading | Skeleton / spinner |
-| empty | "Chưa có dữ liệu" + CTA nếu có |
+| loading | Skeleton |
+| empty | "Chưa có dữ liệu" + CTA khi có hành động phù hợp |
 | error | "Không tải được dữ liệu" + nút thử lại |
 | with-selection | Hiện bulk action bar khi ≥ 1 dòng được chọn |
 
@@ -322,7 +360,7 @@ Kế thừa toàn bộ từ `text_input`.
 - Table không có pagination (luôn < 10 dòng)
 - Table có expandable row (ấn → mở chi tiết inline trong dòng)
 - Table có drag & drop sắp xếp lại hàng
-- Table có filter riêng cho từng cột
+- Table có bộ lọc riêng cho từng cột
 - Table có cột ẩn/hiện (column visibility toggle)
 - Số items mỗi trang khác mặc định (20, 50)
 - Cho phép user chọn số items/trang
@@ -334,7 +372,7 @@ Kế thừa toàn bộ từ `text_input`.
 **Mô tả:** Khu vực tải file lên.
 
 **Default Display:**
-- Khu vực thả file (đường viền đứt) hoặc nút "Tải lên"
+- Khu vực thả file (đường viền đứt) kèm nút "Tải lên"
 - Định dạng hỗ trợ: PDF, JPG, PNG, DOCX
 
 **Default Behaviour:**
@@ -404,14 +442,14 @@ Kế thừa toàn bộ từ `text_input`.
 **Default Display:**
 - Chính giữa màn hình, backdrop mờ phía sau
 - Có nút X góc phải trên
-- Có thể có nút chính (Lưu/Xác nhận) + nút phụ (Hủy)
+- Nút chính (Lưu/Xác nhận) + nút phụ (Hủy) hiển thị khi modal cần xác nhận hành động
 
 **Default Behaviour:**
 - Backdrop không cuộn được (scroll lock)
 - Ấn X → đóng, quay về màn cha, không lưu
 - Ấn ra ngoài (backdrop) → đóng, quay về màn cha, không lưu (giống X)
 - Phím Esc → đóng, giống X
-- Nút "Hủy" (nếu có) → giống X
+- Nút "Hủy" hiển thị khi modal có hành động hủy → giống X
 - Nút chính (Lưu/Xác nhận) → kiểm tra → lưu → đóng → quay về màn cha hoặc mở màn tiếp theo
 
 **Default States:**
@@ -462,7 +500,7 @@ Kế thừa toàn bộ từ `text_input`.
 
 **Default Display:**
 - Góc phải dưới màn hình
-- Icon + text + (tuỳ chọn) nút X
+- Icon + text. Nút X hiển thị khi toast cho phép user tự đóng
 
 **Default Behaviour:**
 - Xuất hiện: fade in (0.3s) → hiển thị N giây → fade out (0.3s)
@@ -491,10 +529,10 @@ Kế thừa toàn bộ từ `text_input`.
 
 ### 15. Banner (`banner`)
 
-**Mô tả:** Thanh thông báo ngang full-width.
+**Mô tả:** Thanh thông báo ngang.
 
 **Default Display:**
-- Thanh ngang full-width, trên cùng màn hình (dưới header nếu có)
+- Thanh ngang, trên cùng màn hình (dưới header khi có)
 - Icon + text + nút X bên phải
 
 **Default Behaviour:**
@@ -627,7 +665,7 @@ Kế thừa toàn bộ từ `text_input`.
 
 **Edge Case cần mô tả thêm:**
 - Cho phép ấn bước bất kỳ (non-linear)
-- Bước skip được (optional step)
+- Bước không bắt buộc (có thể bỏ qua)
 - Bước có điều kiện (chỉ hiện nếu đáp ứng điều kiện)
 - Stepper dọc thay vì ngang
 

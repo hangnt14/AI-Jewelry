@@ -71,13 +71,16 @@ Use the resolution order from `resolution.*`.
 
 - Prefer explicit `--slug`.
 - Otherwise inspect directories matching `patterns.project_dir` under `plans/`.
+  Use `bash ls -d plans/*-*` or `find plans/ -type d` for directory discovery.
+  The `Glob` tool only matches files — never use it for directory resolution.
 - Ignore legacy report trees.
 - If more than one slug exists, stop and ask.
 
 ### Date
 
 - Prefer explicit `--date`.
-- Otherwise derive the date from the resolved project directory name.
+- Otherwise derive the date from the resolved project directory name by applying `patterns.project_dir`.
+  Same tool rule as Slug: use `bash ls -d` or `find -type d` for directory discovery, never `Glob`.
 - If more than one dated set exists for the slug, stop and ask.
 
 ### Module

@@ -110,9 +110,9 @@ Mọi ID trong frontmatter `links:` hoặc body phải tuân format dưới. For
 | Non-Functional Requirement | `NFR-{feature}-{NNN}` | `NFR-payment-001` | Per-feature, trong `srs/spec.md` Mục 3 |
 | Business Rule | `BR-{feature}-{NNN}` | `BR-payment-001` | Per-feature, trong `srs/spec.md` Mục 4 |
 | Error Code | `E-{feature}-{NNN}` | `E-payment-001` | Per-feature, trong `srs/spec.md` Mục 5 |
-| User Story | `US-{NNN}` | `US-001` | Per-feature folder (`docs/payment/userstories/us-001.md`) — feature ngầm hiểu qua path |
-| Use Case | `UC-{slug}` | `UC-checkout` | Per-feature folder, slug human-readable |
-| Acceptance Criterion | `AC-{NNN}` | `AC-001` | Per-user-story (scope trong file `us-{NNN}.md`) |
+| User Story | `US-{module}-{NNN}` | `US-auth-001` | Per-module (`03_modules/{module}/userstories/us-{module}-{nnn}.md`) |
+| Use Case | `UC-{module}-{slug}` | `UC-auth-login` | Per-module folder, slug human-readable |
+| Acceptance Criterion | `AC-{module}-{NNN}` | `AC-auth-001` | Per-module, scope trong file user story |
 | Change Request | `CR-{YYYYMMDD}-{NNN}` | `CR-20260512-001` | Project-wide (`docs/changes/`) |
 | Decision | `D-{YYYY-MM-DD}-{slug}` | `D-2026-05-12-stripe-vs-momo` | Project-wide |
 | Blocker | `B-{YYYY-MM-DD}-{slug}` | `B-2026-05-12-vendor-delay` | Project-wide |
@@ -120,7 +120,7 @@ Mọi ID trong frontmatter `links:` hoặc body phải tuân format dưới. For
 ### Rules
 
 - **Feature prefix bắt buộc** cho BO/CAP/FR/NFR/BR/E. Mục đích: tránh collision khi `/gap` cross-feature aggregate (vd `FR-001` ambiguous khi 2 features).
-- **US/AC/UC scope qua path** (không cần feature prefix trong ID) vì luôn nằm trong folder feature.
+- **US/AC có module prefix** (`US-{module}-{NNN}`, `AC-{module}-{NNN}`) để tránh collision khi compile cross-module. Module ngầm hiểu qua folder cha, nhưng ID vẫn cần prefix vì traceability matrix và QC review là cross-module.
 - **NNN = 3 digit zero-pad** cho BO/CAP/FR/NFR/BR/E (vd `001`, `042`). NN cũng OK cho BO/CAP (`01`, `02`) vì thường ít hơn.
 - **CR/D/B prefix date** vì là sự kiện theo thời gian, ordering theo date.
 - ID không reuse khi delete — luôn increment max + 1.
@@ -129,6 +129,6 @@ Mọi ID trong frontmatter `links:` hoặc body phải tuân format dưới. For
 ### Cross-references
 
 Khi 1 doc reference ID của doc khác:
-- Frontmatter `links:` flat list với full path: `links: [docs/payment/srs/spec.md, docs/payment/userstories/us-001.md]`
+- Frontmatter `links:` flat list với full path: `links: [docs/payment/srs/spec.md, docs/payment/userstories/us-payment-001.md]`
 - Body inline reference: `[[docs/payment/srs/spec.md#FR-payment-001|FR-payment-001]]` (Obsidian-compatible anchor).
 - `/gap` parse cả 2 dạng để build relationship graph.

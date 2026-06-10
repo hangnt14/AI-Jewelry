@@ -35,6 +35,14 @@ VALIDATOR_NAME = "scripts/validate-index-quality.py"
 VALID_STALE_STATUS = {"current", "stale", "unknown"}
 MIGRATION_METADATA_FIELDS = {"validated_at", "validated_by"}
 
+# Prefixes allowed by backbone_index coverage_patterns (single source of truth: guardrail_common.py)
+_ALLOWED_ID_PREFIXES = ["BG", "ACT", "PORTAL", "F", "FR", "NFR", "EP", "R", "SCR", "MEM"]
+_ALLOWED_ID_PREFIXES_DISPLAY = ", ".join(_ALLOWED_ID_PREFIXES) + ", A{N}"
+
+
+def _allowed_prefixes_text() -> str:
+    return _ALLOWED_ID_PREFIXES_DISPLAY
+
 
 def issue(severity: str, code: str, message: str, *, row: int | None = None, field: str = "") -> dict[str, Any]:
     data: dict[str, Any] = {"severity": severity, "code": code, "message": message}
@@ -43,6 +51,42 @@ def issue(severity: str, code: str, message: str, *, row: int | None = None, fie
     if field:
         data["field"] = field
     return data
+
+
+def detect_format_siblings(missing_ids: list[str], indexed_ids: set[str]) -> list[dict[str, str]]:
+    """Detect source IDs whose normalized form matches an indexed ID — formatting inconsistency.
+
+    Example: source has FR-1, index has FR-01 — both normalize to prefix=FR num=1.
+    Returns list of dicts with keys: missing, indexed, prefix, num.
+    """
+    import re
+
+    id_pat = re.compile(r"^([A-Z]+)[-]?0*(\d+)$")
+    siblings: list[dict[str, str]] = []
+
+    # Build normalized lookup from indexed IDs
+    indexed_norm: dict[tuple[str, int], str] = {}
+    for iid in indexed_ids:
+        m = id_pat.match(iid)
+        if m:
+            prefix, num = m.groups()
+            indexed_norm[(prefix, int(num))] = iid
+
+    for mid in missing_ids:
+        m = id_pat.match(mid)
+        if not m:
+            continue
+        prefix, num = m.groups()
+        key = (prefix, int(num))
+        if key in indexed_norm:
+            siblings.append({
+                "missing": mid,
+                "indexed": indexed_norm[key],
+                "prefix": prefix,
+                "num": str(key[1]),
+            })
+
+    return siblings
 
 
 def update_metadata_table(index_text: str, updates: dict[str, str]) -> str:
@@ -184,7 +228,13 @@ def main() -> int:
         ids = row_ids(args.index_key, row)
         indexed_ids.update(ids)
         if not ids:
-            result["issues"].append(issue("error", "row_ids_missing", f"Row {idx} has no detectable trace or route IDs", row=idx))
+            raw_trace = strip_code(row.get("Trace IDs", ""))
+            import re as _re
+            raw_tokens = _re.findall(r"\b[A-Z][A-Za-z0-9][A-Za-z0-9-]*\b", raw_trace)
+            detail = ""
+            if raw_tokens:
+                detail = f" Trace IDs column contains: {', '.join(raw_tokens[:8])}. Allowed prefixes: {_allowed_prefixes_text()}."
+            result["issues"].append(issue("error", "row_ids_missing", f"Row {idx} has no detectable trace or route IDs.{detail}", row=idx))
 
         for field in INDEX_VALIDATION_RULES[args.index_key].get("count_fields", []):
             value = strip_code(row.get(field, ""))
@@ -235,6 +285,17 @@ def main() -> int:
                     f"Index does not cover source IDs: {', '.join(missing_source_ids[:20])}",
                 )
             )
+            # Detect format inconsistencies: FR-1 in source vs FR-01 in index
+            siblings = detect_format_siblings(missing_source_ids, indexed_ids)
+            if siblings:
+                examples = [f"{s['missing']} vs {s['indexed']}" for s in siblings[:5]]
+                result["issues"].append(
+                    issue(
+                        "warn",
+                        "format_sibling_detected",
+                        f"Source and index may use different ID formats for the same entities: {', '.join(examples)}. Normalize backbone.md to consistent format.",
+                    )
+                )
 
     errors = [item for item in result["issues"] if item["severity"] == "error"]
     warnings = [item for item in result["issues"] if item["severity"] == "warn"]

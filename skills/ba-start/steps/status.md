@@ -28,7 +28,9 @@ For UI-backed SRS modules, include canon source, compile, and Figma readiness si
 
 ## Prerequisites
 
-- Resolve slug and date using the shared contract.
+- Resolve slug and date using `ba-kit resolve --slug <slug>`.
+  The CLI uses `find -type d` internally for correct directory discovery.
+  Do not use `Glob` — it only matches files, not directories.
 - If slug or date resolution is ambiguous, stop and ask.
 
 ## Output Format

@@ -31,7 +31,9 @@ Impact analysis is read-only. Approved write mode is opt-in:
 
 ## Prerequisites
 
-- Resolve slug, date, and module scope through the shared contract.
+- Resolve slug, date, and module scope using `ba-kit resolve --slug <slug>`.
+  The CLI uses `find -type d` internally for correct directory discovery.
+  Do not use `Glob` — it only matches files, not directories.
 - Require change input: direct file path or pasted change text.
 - Require `paths.intake`. If missing, print exact path and stop.
 - Read `paths.backbone` when it exists.

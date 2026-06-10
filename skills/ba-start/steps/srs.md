@@ -31,7 +31,9 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the in
 
 ## Prerequisites
 
-- Resolve slug, date, and module using the shared contract.
+- Resolve slug, date, and module using `ba-kit resolve --slug <slug> [--module <module>]`.
+  The CLI uses `find -type d` internally for correct directory discovery.
+  Do not use `Glob` — it only matches files, not directories.
 - Require `paths.backbone`, `paths.backbone_index`, and `paths.userstories_index`.
 - For UI-backed modules: require `paths.design_doc` and `paths.shared_shell_contract` (created by Lead BA during backbone). If missing, emit `DESIGN_GAP` and stop — do NOT create them from SRS.
 - If a required artifact is missing, print the exact missing path, tell the user which subcommand to run first, and stop.

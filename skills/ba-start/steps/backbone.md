@@ -30,7 +30,9 @@ Run Step 5 only.
 
 ## Prerequisites
 
-- Resolve slug and date using the shared contract.
+- Resolve slug and date using `ba-kit resolve --slug <slug>`.
+  The CLI uses `find -type d` internally for correct directory discovery.
+  Do not use `Glob` — it only matches files, not directories.
 - Require `paths.intake`.
 - If intake is missing, print the exact missing path and stop.
 - Read `paths.plan` when it exists.
@@ -119,10 +121,34 @@ When the backbone Portal Matrix defines at least one portal (UI-backed scope exi
    - Ask user to approve design direction (visual tone, colors, typography, component feel). Stop if unresolved.
 
 2. **`paths.control_type_library`** using `~/.claude/templates/control-type-library-template.md` (fallback: [../../../templates/control-type-library-template.md](../../../templates/control-type-library-template.md)).
-   - Copy the template AS-IS into the backbone directory.
-   - This file defines 20 standard control types with default display, behaviour, states, and edge cases.
-   - Screen canon files reference these control types via the Control Type column.
-   - No customization needed during backbone creation — BA customizes per-project during module authoring.
+
+   **Step 5.1a — Copy template:**
+   - Copy the template into the backbone directory.
+   - File bắt đầu với baseline = `none`, 20 control type đầy đủ.
+
+   **Step 5.1b — Cập nhật baseline theo DESIGN.md:**
+   Ngay sau khi item 1 (DESIGN.md) đã chốt thư viện UI, thực hiện tuần tự:
+
+   1. Đọc library docs (dùng `docs-seeker` skill hoặc WebFetch link docs từ DESIGN.md).
+   2. Điền bảng Baseline trong control-type-library:
+      - `Thư viện UI`: tên library (vd `Shadcn UI`), hoặc `none` nếu không dùng.
+      - `Phiên bản`: phiên bản đã chọn trong DESIGN.md.
+      - `Docs tham chiếu`: link docs component của library.
+   3. Nếu baseline = `none` → dừng. Giữ nguyên 20 control type.
+   4. Nếu baseline = tên thư viện → so sánh từng control type với library default:
+
+      | Hành động | Điều kiện |
+      |-----------|-----------|
+      | Giữ nguyên section | Behaviour **khác** library default (deviation) |
+      | Xóa dòng behaviour đó | Behaviour **trùng** library default |
+      | Giữ nguyên section | Library **không có** control type đó |
+      | Giữ nguyên | Edge Case section — luôn giữ, đó là project-specific |
+
+      Ví dụ: Shadcn Button mặc định có `disabled` state → xóa dòng `disabled` trong Default States của Button. Shadcn không có Stepper → giữ nguyên toàn bộ Stepper section.
+
+   5. Không xóa heading hay cấu trúc section của control type. Chỉ xóa dòng behaviour cụ thể.
+   6. Sau khi prune xong, file chỉ còn: baseline info + deviation behaviour + edge case.
+   7. Module BA không sửa file này. Khi cần deviation mới → escalate lên Lead BA qua `impact`.
 
 3. **`paths.shared_shell_contract`** using `~/.claude/templates/shared-shell-contract-template.md` (fallback: [../../../templates/shared-shell-contract-template.md](../../../templates/shared-shell-contract-template.md)).
    - MUST declare ALL portals, nav schemas, shell variants, layout variants, and shared components.

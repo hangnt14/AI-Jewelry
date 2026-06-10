@@ -128,7 +128,10 @@ INDEX_VALIDATION_RULES = {
         "required_row_fields": ["Anchor / Heading", "Trace IDs", "Module / Feature"],
         "target_field": "Anchor / Heading",
         "id_fields": ["Trace IDs"],
-        "coverage_patterns": [r"\b(?:FR|ACT|NFR|SCR)-[A-Za-z0-9-]+\b"],
+        "coverage_patterns": [
+            r"\b(?:BG|ACT|PORTAL|F|FR|NFR|EP|R|SCR|MEM)-[A-Za-z0-9-]+\b",
+            r"\bA\d+\b",
+        ],
         "action_guardrail": {
             "required": True,
             "navigation_source": "backbone_index",

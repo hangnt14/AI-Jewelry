@@ -31,8 +31,8 @@ changelog:
 | Entry Conditions | {condition} |
 | Exit Conditions | {condition} |
 | Actor | {actor} |
-| Linked Use Cases | UC-{slug} |
-| Linked Stories | US-{NNN} |
+| Linked Use Cases | UC-{module}-{slug} |
+| Linked Stories | US-{module}-{NNN} |
 
 ## Fields
 

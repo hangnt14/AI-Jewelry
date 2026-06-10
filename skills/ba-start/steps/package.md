@@ -36,7 +36,9 @@ Run Step 12 only.
 
 ## Prerequisites
 
-- Resolve slug and date using the shared contract.
+- Resolve slug and date using `ba-kit resolve --slug <slug>`.
+  The CLI uses `find -type d` internally for correct directory discovery.
+  Do not use `Glob` — it only matches files, not directories.
 - Require at least one emitted downstream artifact for the selected mode.
 - If the engagement emitted any module SRS, require at least one module `paths.srs`.
 - If a module SRS exists in canon-first form, require `paths.srs_compile_receipt` and treat missing/stale receipt as a package blocker.

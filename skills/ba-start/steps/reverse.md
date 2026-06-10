@@ -32,7 +32,9 @@ If a claim requires runtime verification, mark it `unverifiable_in_v1` in the ev
 
 ### Prerequisites
 
-- Resolve slug and date using the shared contract.
+- Resolve slug and date using `ba-kit resolve --slug <slug>`.
+  The CLI uses `find -type d` internally for correct directory discovery.
+  Do not use `Glob` — it only matches files, not directories.
 - If slug or date is ambiguous, stop and ask.
 - If `paths.reverse_baseline_lock` already exists, print the path and ask whether to overwrite before proceeding.
 

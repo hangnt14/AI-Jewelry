@@ -14,7 +14,9 @@ Do not create or refresh legacy wireframe pack artifacts.
 
 ## Prerequisites
 
-- Resolve slug, date, and module using the shared contract.
+- Resolve slug, date, and module using `ba-kit resolve --slug <slug> [--module <module>]`.
+  The CLI uses `find -type d` internally for correct directory discovery.
+  Do not use `Glob` — it only matches files, not directories.
 - Require `paths.ascii_screen_index`, `paths.ascii_screen_root`, and `paths.srs_compile_receipt`.
 - If any are missing or stale, tell the user to run `ba-start srs --slug <slug> --module <module_slug>`.
 

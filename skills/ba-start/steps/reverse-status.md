@@ -18,7 +18,9 @@ Inspect the reverse lane and print a compact progress checklist. No mutation.
 
 ## Prerequisites
 
-- Resolve slug and date using the shared contract.
+- Resolve slug and date using `ba-kit resolve --slug <slug>`.
+  The CLI uses `find -type d` internally for correct directory discovery.
+  Do not use `Glob` — it only matches files, not directories.
 - If slug or date is ambiguous, stop and ask.
 - `paths.reverse_baseline_lock` must exist. If missing, print the exact path and tell the user to run `/ba-start reverse --slug <slug>` first.
 

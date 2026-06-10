@@ -124,3 +124,18 @@ Pass narrow packets: exact path, write scope, trace IDs, and targeted excerpts.
 Use `PROJECT-HOME.md` to resume. Lead with friendly labels, then show commands: tao du an moi -> intake; tiep tuc -> next; thay doi -> impact; handoff UI -> wireframes; ban giao -> package.
 
 Route module collaboration NLP to `ba-collab`. Commit/push/PR/merge require explicit approval.
+
+## Source Repo Fix Rule [CRITICAL]
+
+When fixing bugs or implementing features in THIS repository (BA-kit source), apply changes ONLY to files under this repo root. Do NOT apply fixes to installed locations:
+- `~/.claude/ba-kit/` — installed by `install.sh`
+- `~/.local/bin/ba-kit` — installed by `install.sh`
+- `~/.codex/ba-kit/` — installed by `scripts/install-codex-ba-kit.sh`
+- `~/.gemini/antigravity-cli/ba-kit/` — installed by `scripts/install-antigravity-ba-kit.sh`
+
+Installation pipeline:
+- `install.sh` → copies `scripts/ba-kit` → `~/.local/bin/ba-kit`
+- `install.sh` → calls `scripts/install-claude-code-ba-kit.sh` → copies `scripts/*.py` → `~/.claude/ba-kit/scripts/`, writes hooks to `~/.claude/ba-kit/hooks/`
+- Templates: `install.sh:164` → copies `templates/*` → `~/.claude/templates/`
+
+User runs `bash install.sh` to apply source fixes to their installation.

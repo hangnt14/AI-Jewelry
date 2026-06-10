@@ -27,6 +27,7 @@ Usage:
   ba-kit guardrail --command <command> --slug <slug> --date <YYMMDD-HHmm> [--module <module_slug>]
   ba-kit check-token-budget [--repo <path>]
   ba-kit validate-index --index-key <key> --slug <slug> --date <YYMMDD-HHmm> [--module <module_slug>] [--writeback]
+  ba-kit validate-shared-rule-message-registry [--slug <slug>] [--date <YYMMDD-HHmm>] [--module <module_slug>] [--write-index] [--json]
   ba-kit template-section <template> <group>
   ba-kit source-extract <file> [--slug <slug>] [--date <YYMMDD-HHmm>] [--chunk-chars <n>] [--copy-raw] [--promote]
   ba-kit context-budget [--command <command>] [--slug <slug>] [--date <YYMMDD-HHmm>] [--module <module_slug>]
@@ -53,6 +54,7 @@ Commands:
   guardrail       Run preflight guardrail verdict for a guarded BA command.
   check-token-budget  Validate file sizes against core/token-budget.md budgets.
   validate-index  Run producer-side index quality validation with optional writeback.
+  validate-shared-rule-message-registry  Validate backbone CR/MSG registries against module usage, with optional --write-index.
   template-section  Print only the requested template group from templates/manifest.json.
   source-extract  Extract a source file into staged cache and optionally promote it into 00_source.
   context-budget  Estimate runtime read-context bytes for a BA command.
@@ -1634,16 +1636,19 @@ guardrail_command() {
   [[ -n "${slug}" ]] || fail "guardrail requires --slug"
   [[ -n "${date_token}" ]] || fail "guardrail requires --date"
 
-  repo="$(resolve_registered_repo)"
+  local source_repo project_repo
+  source_repo="$(resolve_registered_repo)"
+  project_repo="$(project_root_path "${source_repo}" "${slug}" "${date_token}")"
+  project_repo="${project_repo%/plans/${slug}-${date_token}}"
   local args=(
     --command "${command_name}"
     --slug "${slug}"
     --date "${date_token}"
-    --repo "${repo}"
+    --repo "${project_repo}"
   )
   [[ -n "${module_slug}" ]] && args+=(--module "${module_slug}")
 
-  python3 "${repo}/scripts/guardrail-preflight.py" "${args[@]}"
+  python3 "${source_repo}/scripts/guardrail-preflight.py" "${args[@]}"
 }
 
 check_token_budget_command() {
@@ -1662,8 +1667,10 @@ check_token_budget_command() {
     esac
   done
 
-  [[ -z "${repo}" ]] && repo="$(resolve_registered_repo)"
-  python3 "${repo}/scripts/check-token-budget.py" "${repo}"
+  [[ -z "${repo}" ]] && repo="${PWD}"
+  local source_repo
+  source_repo="$(resolve_registered_repo)"
+  python3 "${source_repo}/scripts/check-token-budget.py" "${repo}"
 }
 
 validate_index_command() {
@@ -1705,9 +1712,13 @@ validate_index_command() {
   [[ -n "${slug}" ]] || fail "validate-index requires --slug"
   [[ -n "${date_token}" ]] || fail "validate-index requires --date"
 
-  repo="$(resolve_registered_repo)"
+  local source_repo project_repo
+  source_repo="$(resolve_registered_repo)"
+  project_repo="$(project_root_path "${source_repo}" "${slug}" "${date_token}")"
+  # Strip trailing plans/{slug}-{date} to get the repo root
+  project_repo="${project_repo%/plans/${slug}-${date_token}}"
   local args=(
-    --repo "${repo}"
+    --repo "${project_repo}"
     --index-key "${index_key}"
     --slug "${slug}"
     --date "${date_token}"
@@ -1715,7 +1726,61 @@ validate_index_command() {
   [[ -n "${module_slug}" ]] && args+=(--module "${module_slug}")
   [[ -n "${writeback}" ]] && args+=(--writeback)
 
-  python3 "${repo}/scripts/validate-index-quality.py" "${args[@]}"
+  python3 "${source_repo}/scripts/validate-index-quality.py" "${args[@]}"
+}
+
+validate_shared_rule_message_registry_command() {
+  local slug="" date_token="" module_slug="" write_index="" json_output=""
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --slug)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --slug"
+        slug="$2"
+        shift 2
+        ;;
+      --date)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --date"
+        date_token="$2"
+        shift 2
+        ;;
+      --module)
+        [[ "$#" -ge 2 ]] || fail "Missing value for --module"
+        module_slug="$2"
+        shift 2
+        ;;
+      --write-index)
+        write_index="1"
+        shift
+        ;;
+      --json)
+        json_output="1"
+        shift
+        ;;
+      *)
+        fail "Unsupported argument for 'validate-shared-rule-message-registry': $1"
+        ;;
+    esac
+  done
+
+  [[ -n "${slug}" ]] || fail "validate-shared-rule-message-registry requires --slug"
+  [[ -n "${date_token}" ]] || fail "validate-shared-rule-message-registry requires --date"
+
+  local source_repo project_repo
+  source_repo="$(resolve_registered_repo)"
+  project_repo="$(project_root_path "${source_repo}" "${slug}" "${date_token}")"
+  project_repo="${project_repo%/plans/${slug}-${date_token}}"
+
+  local args=(
+    --repo "${project_repo}"
+    --slug "${slug}"
+    --date "${date_token}"
+  )
+  [[ -n "${module_slug}" ]] && args+=(--module "${module_slug}")
+  [[ -n "${write_index}" ]] && args+=(--write-index)
+  [[ -n "${json_output}" ]] && args+=(--json)
+
+  python3 "${source_repo}/scripts/validate-shared-rule-message-registry.py" "${args[@]}"
 }
 
 next_command() {
@@ -1972,13 +2037,20 @@ context_budget_command() {
     esac
   done
 
-  repo="$(resolve_registered_repo)"
-  args=(--repo "${repo}" --command "${command_name}")
+  local source_repo project_repo
+  source_repo="$(resolve_registered_repo)"
+  if [[ -n "${slug}" ]] && [[ -n "${date_token}" ]]; then
+    project_repo="$(project_root_path "${source_repo}" "${slug}" "${date_token}")"
+    project_repo="${project_repo%/plans/${slug}-${date_token}}"
+  else
+    project_repo="${PWD}"
+  fi
+  args=(--repo "${project_repo}" --command "${command_name}")
   [[ -n "${slug}" ]] && args+=(--slug "${slug}")
   [[ -n "${date_token}" ]] && args+=(--date "${date_token}")
   [[ -n "${module_slug}" ]] && args+=(--module "${module_slug}")
 
-  python3 "${repo}/scripts/context-budget.py" "${args[@]}"
+  python3 "${source_repo}/scripts/context-budget.py" "${args[@]}"
 }
 
 design_snapshot_command() {
@@ -2302,6 +2374,9 @@ main() {
       ;;
     validate-index)
       validate_index_command "$@"
+      ;;
+    validate-shared-rule-message-registry)
+      validate_shared_rule_message_registry_command "$@"
       ;;
     template-section)
       template_section_command "$@"
