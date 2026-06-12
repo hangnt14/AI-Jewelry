@@ -71,80 +71,123 @@ If these directories do not exist → skip silently (no finding emitted). These 
 
 If `03_modules/{module_slug}/` exists but has no artifact files → emit one Info finding: "Module '{module_slug}' directory exists but contains no artifacts."
 
-## Step 2: First Pass — Collect ID Definitions
+## Step 2: First Pass — Build On-Disk ID Index (Zero Context)
 
-Scan all discovered files to build a global ID definition map. For each file, parse:
+**DO NOT load ID definitions into chat context.** Write them to disk and query from disk. The index file path: `{project_root}/shared/.audit-id-index.txt`.
 
-1. **Frontmatter IDs**: If frontmatter has explicit `id:` or `story_id:` fields
-2. **Body ID patterns**: Match regex patterns from `audit-rules.md` ID Pattern Regex section
-3. **Heading IDs**: Headings containing ID patterns like `## FR-payment-001`
+### 2a: Write ID Index to Disk (Bash, Zero Context)
 
-Store as: `{id: {file_path, line_number, type}}`
+Run a single Bash command to extract all ID definitions to a disk file:
 
-Also collect:
-- **Defined wikilinks**: All file paths are candidates for link targets
-- **Index file entries**: For cross-reference validation in Step 3
+```bash
+grep -rnoE "(FR-\w+-\d{2,3}|NFR-\w+-\d{2,3}|BR-\w+-\d{2,3}|E-\w+-\d{2,3}|UC-\w+-[\w-]+|US-\w+-\d{2,3}|CAP-\w+-\d{2}|BO-\w+-\d{2}|CR-\d{8}-\d{3}|MSG-(?:ERR|WRN|SUC|INF)-\d{2}|CR-(?:DIS|BEH|VAL|MIX)-\d{2})" \
+  {project_root}/ > {project_root}/shared/.audit-id-index.txt
+```
 
-## Step 3: Second Pass — Audit Each File
+The Bash output is just exit code (0/1) — zero context load. The index file contains lines like:
+```
+path/to/file.md:42:FR-admin-001
+path/to/file.md:15:UC-admin-login
+```
 
-For each file in manifest, run three check groups:
+Then get a count for reporting: `wc -l < {project_root}/shared/.audit-id-index.txt` → single number.
 
-### 3a: Frontmatter Check
+### 2b: Discovery — Files With IDs (Grep, Minimal Output)
 
-1. Parse YAML frontmatter (between opening `---` and closing `---`)
-2. If no frontmatter → Blocking: `B-{hash}` "Missing YAML frontmatter"
-3. If frontmatter exists but malformed YAML → Blocking: `B-{hash}` "Cannot parse frontmatter: {error}"
-4. Check required fields per `audit-rules.md` for this artifact type:
-   - Missing required field → Blocking
-   - Missing optional field → Info
-   - Wrong value for `type` field → Blocking
-5. Check `type` field matches expected value per `audit-rules.md`:
-   - `type` mismatch → Blocking: `B-{hash}` "Expected type '{expected}', got '{actual}'"
-6. Check naming convention (filename matches expected pattern) → Warning if deviation
+Use Grep with `output_mode: files_with_matches` to list which files contain IDs:
 
-### 3b: Template Section Check
+```
+Grep pattern: same ID regex as 2a
+output_mode: files_with_matches
+path: {project_root}
+```
 
-**Template-at-runtime approach**: For artifact types with a template reference in `audit-rules.md`:
+Output is file paths only (~1-2KB for large projects) — no line content. This tells which files define/reference IDs without loading the IDs themselves.
 
-1. Read the referenced template file from `templates/`
-2. Extract all `##` level headings from template (these are expected sections)
-3. For the target artifact, extract all `##` level headings
-4. Compare:
-   - Template section present in artifact → OK
-   - Template section missing in artifact → Blocking: `B-{hash}` "Missing mandatory section '{section_name}'"
-   - Artifact section not in template → Info: `I-{hash}` "Extra section '{section_name}' not in template"
+**For files <3KB**: Read fully to capture frontmatter `id:` and `story_id:` fields that regex may miss.
 
-**Skip for**: HTML files (compiled), machine_facing artifacts without templates, agent_facing artifacts (structure varies — only frontmatter check).
+### 2c: Collect Wikilinks & Markdown Links (files_with_matches First)
 
-### 3c: Cross-Reference Check
+1. **Wikilinks discovery**: Grep `\[\[` with `files_with_matches` → list of files with wikilinks (~500B)
+2. **Wikilinks content**: Grep `\[\[([^\]]+)\]\]` with `output_mode: content` on ONLY files from step 1
+3. **Markdown links discovery**: Grep `\[[^]]+\]\(` with `files_with_matches` → list
+4. **Markdown links content**: Grep `\[([^\]]+)\]\(([^)]+)\)` on ONLY files with links
+5. **Frontmatter links**: Grep `^links:` in first 30 lines of each file
 
-For each file, scan content for cross-references:
+### 2d: Build Resolved Link Map
 
-1. **Frontmatter `links:`**: Parse YAML list, resolve each path relative to project root, check if file exists.
-   - Missing target → Blocking
-2. **Wikilinks `[[path]]` / `[[path|text]]` / `[[path#anchor|text]]`**:
-   - Extract path before `#` or `|`
-   - Resolve relative to project root
-   - Check if file exists → Blocking if broken
-   - Check anchor if present → Info (P2)
-3. **ID references**: Match regex patterns from `audit-rules.md`
-   - Look up in Step 2 ID definition map
-   - Found → OK
-   - Not found → Warning
-   - Never referenced → Info (computed after all files scanned)
-4. **Index file entries**: Match `- [label](path)` patterns in index files
-   - Resolve path relative to index location
-   - Check if target file exists → Warning if broken
-5. **Markdown links `[text](url)`**:
-   - Skip `https?://` URLs
-   - Resolve relative paths, check if file exists → Warning if broken
-6. **Backbone module list**: In `backbone.md`, extract module names from relevant sections (e.g., module tables, lists)
-   - Verify `03_modules/{module_slug}/` directory exists → Blocking if missing
+For each extracted link path:
+1. Resolve relative to source file directory
+2. Check against file manifest (from Step 1) — does target exist on disk?
+3. Flag broken links immediately (Blocking for wikilinks, Warning for markdown links)
 
-## Step 4: Orphan ID Detection
+### Output of Step 2
 
-After all files scanned, for each ID in the Step 2 definition map:
-- If ID is defined but never referenced in any other file → Info: `I-{hash}` "ID '{id}' defined but never cross-referenced"
+After disk-index pass, produce:
+- `{project_root}/shared/.audit-id-index.txt` — on-disk ID index (query from Step 3c)
+- `{file → [link_path, resolved_target, exists?]}` link map (in context, compact)
+- `{file → index_entries}` for index files (in context, compact)
+
+## Step 3: Second Pass — Audit Each File (Output-Limited)
+
+For each file in manifest, run three check groups. **Apply output-limiting rules from SKILL.md Boundaries at every read.**
+
+### 3a: Frontmatter Check (Read: first 40 lines only)
+
+1. Read file with `offset=0, limit=40`. Frontmatter is always within first 20-30 lines.
+2. Parse YAML frontmatter (between opening `---` and closing `---`).
+3. If no `---` within first 40 lines → read next 40 lines (`offset=40, limit=40`). If still no frontmatter → Blocking.
+4. Run standard checks: required fields, `type` value, naming convention per `audit-rules.md`.
+5. Do NOT read rest of file.
+
+### 3b: Template Section Check (Read: TOC only, Grep for headings)
+
+**For user_facing artifacts with a template reference:**
+
+1. Grep template file (`templates/{template_name}`) for `^## ` headings → expected section set.
+2. Read artifact TOC: `offset=0, limit=80` → parse `## ` headings → actual section set.
+3. If artifact >80 lines and more headings expected, Grep artifact for `^## ` to get full heading list.
+4. Compare expected vs actual:
+   - Template section missing → Blocking
+   - Extra section → Info
+5. Only read the full section body when a discrepancy requires content-level verification (e.g., section exists but appears empty).
+
+**Skip for**: HTML files, machine_facing artifacts without templates, agent_facing artifacts.
+
+### 3c: Cross-Reference Check (Query On-Disk Index, Per-File)
+
+Leverage the on-disk ID index from Step 2a. Do NOT re-read files. Do NOT load the full index into context.
+
+**For each file being audited:**
+
+1. **Extract this file's ID references** via Grep (`output_mode: content`) — only IDs referenced in this one file. Per-file output is small (~5-15 lines).
+2. **For each referenced ID**, query the on-disk index:
+   ```bash
+   grep -c "ID_STRING" {project_root}/shared/.audit-id-index.txt
+   ```
+   - Result `> 0` → ID defined somewhere → OK
+   - Result `= 0` → Warning: "ID '{id}' referenced but not defined in any file"
+3. **Broken links**: Already resolved in Step 2d → emit findings from link map.
+4. **Index file entries**: Already parsed in Step 2d → check each `[label](path)` target exists.
+5. **Orphan IDs** (deferred to Step 4): Run once after all files scanned via Bash on index file.
+
+**Only read file content when**: A Grep match is ambiguous (e.g., ID appears in code block, not as reference) — then read the specific line range around the match to disambiguate.
+
+## Step 4: Orphan ID Detection (Bash on Disk Index, Zero Context)
+
+After all files audited in Step 3, detect IDs defined but never cross-referenced using the on-disk index:
+
+```bash
+# Extract all unique IDs from index, check if referenced more than once (definition only = orphan)
+cut -d: -f3 {project_root}/shared/.audit-id-index.txt | sort | uniq -c | awk '$1 == 1 {print $2}'
+```
+
+This runs entirely in Bash. Only the orphan ID list shows in context — typically <20 lines even for large projects. Each orphan → Info finding.
+
+Alternative approach if IDs defined with colon-prefix (e.g., `FR-admin-001:`):
+```bash
+grep -oE "PATTERN" {project_root}/shared/.audit-id-index.txt | sort | uniq -c | awk '$1 == 1 {print $2}'
+```
 
 ## Step 5: Classify & Assign Finding IDs
 
@@ -155,14 +198,37 @@ For each finding:
    - `location_key`: section name, field name, link path, or ID string
 3. Generate hash using available tools (Bash: `echo -n "string" | shasum -a 256 | cut -c1-6`)
 
-## Step 6: Write Report
+## Step 6: Write Report (Incremental)
 
-Write audit report to `paths.audit_report` path per `template/audit-report-template.md`:
-- Frontmatter: `type: audit-report`, `audit_version: 1`, `previous_audit: none`
-- Summary table: Blocking / Warning / Info counts
-- Findings grouped by severity, then by artifact path
-- Each finding: ID, severity, location, description, suggested fix
-- **Fix Commands**: Map every Blocking and Warning finding to an actionable command per `references/audit-rules.md` Finding-to-Fix-Command Mapping section, grouped into Direct Edit / Skill-Based / Manual Actions tables
+**DO NOT accumulate all findings in memory.** Write incrementally — append findings per file as they are discovered during Step 3, then write frontmatter + summary at end.
+
+### 6a: Initialize Report File
+
+Before starting Step 3 (per-file audit), create the report file with a placeholder:
+
+```
+Write paths.audit_report: "# Audit Report: {slug}\n\n<!-- Findings appended incrementally -->\n"
+```
+
+### 6b: Append Findings Per File
+
+After auditing each file in Step 3, immediately append findings to the report:
+
+```
+Edit paths.audit_report (append): findings for {file_path}
+```
+
+Group findings by severity within each file's section. Use format from `template/audit-report-template.md`. Findings are short (1-2 lines each) — append cost is minimal.
+
+### 6c: Finalize Report
+
+After all files audited and findings appended:
+1. Prepend frontmatter: `type: audit-report`, `audit_version: 1`, `previous_audit: none`, counts
+2. Prepend summary table
+3. Append `## Fix Commands` section — Map Blocking + Warning findings to commands per `references/audit-rules.md` Finding-to-Fix-Command Mapping. Generate commands per finding as they are appended in 6b, not all at end.
+4. Append footer: `*Audit generated by /ba-content-audit --slug {slug} on {iso_timestamp}*`
+
+**Fix Commands generation**: Produce the fix command for each Blocking/Warning finding in 6b (alongside the finding itself). Append to the relevant Fix Commands subsection (Direct Edit / Skill-Based / Manual Actions) in a separate section at the bottom of the report. This avoids re-holding all B+W findings at the end.
 
 ## Step 7: Print Chat Summary
 

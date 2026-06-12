@@ -10,25 +10,27 @@ Detailed step-by-step for re-audit when an existing `audit-report.md` is found.
 - `references/audit-rules.md` loaded (artifact rules)
 - `template/audit-report-template.md` loaded (output format)
 
-## Step 1: Load Existing Report
+## Step 1: Load Existing Report (Output-Limited)
 
-1. Read existing `audit-report.md` from `paths.audit_report`.
-2. Parse frontmatter:
-   - `audit_version`: current version number N
-   - `previous_audit`: timestamp of previous audit (if any)
-   - `total_findings`, `blocking`, `warning`, `info`
-3. Extract all existing finding IDs into a set `old_finding_ids`.
-4. Parse each finding row to extract: `{id, severity, file_path, location, description}`.
+**DO NOT read the full report.** Use output-limiting strategy to extract metadata + finding IDs only.
 
-## Step 2: Re-Scan All Artifacts
+1. Read frontmatter only: `offset=0, limit=50` on existing `audit-report.md`.
+   - Parse: `audit_version`, `previous_audit`, `total_findings`, `blocking`, `warning`, `info`.
+2. Grep for finding IDs to build `old_finding_ids` set:
+   - Pattern: `^\| (B|W|I)-[a-f0-9]{6} \|` — matches all finding rows in tables.
+   - Store `{id, severity}` pairs from Grep output.
+3. Grep for finding descriptions ONLY when needed during comparison (Step 3) — read the specific line range around a matched ID, not the full report.
+4. Do NOT read old finding descriptions, locations, or suggested fixes into context unless comparison requires them (e.g., severity bump from Warning to Blocking needs old severity).
 
-Run the full first-audit scan (Steps 1–4 from `first-audit-workflow.md`):
+## Step 2: Re-Scan All Artifacts (Output-Limited)
+
+Run the full first-audit scan (Steps 1–4 from `first-audit-workflow.md`) with all output-limiting rules in effect:
 1. Build file manifest
-2. First pass: collect ID definitions
-3. Second pass: audit each file (frontmatter, sections, cross-refs)
-4. Orphan ID detection
+2. First pass: On-disk ID index via Bash (zero context), `files_with_matches` for discovery
+3. Second pass: audit each file with offset+limit reads (frontmatter: 40 lines, sections: TOC + Grep, cross-refs: query on-disk index via `grep -c`)
+4. Orphan ID detection via Bash on disk index
 
-This produces a new set of findings with content-hash IDs.
+Findings appended incrementally to report per file (see Step 4b). Do NOT hold all findings in memory.
 
 ## Step 3: Compare & Classify
 
@@ -45,46 +47,25 @@ For each old finding NOT in new set:
 - **Finding resolved** → Move to "Resolved" section of report
   - Record: `{id, original_location, original_severity, resolution: "No longer detected — likely fixed"}`
 
-## Step 4: Assemble Report
+## Step 4: Assemble Report (Incremental)
 
-Write audit report with re-audit metadata:
+**Use same incremental strategy as first-audit Step 6.** Do NOT accumulate all findings in memory before writing.
 
-### Frontmatter
-```yaml
----
-type: audit-report
-project_slug: {slug}
-project_date: {date}
-audit_version: {N+1}
-audit_timestamp: {iso_timestamp}
-total_findings: {total}
-blocking: {blocking_count}
-warning: {warning_count}
-info: {info_count}
-previous_audit: {prev_timestamp}
-new_findings: {new_count}
-persistent_findings: {persistent_count}
-resolved_findings: {resolved_count}
----
-```
+### 4a: Initialize with Delta Header
 
-Note: `persistent_count = total_findings - new_count`. Computed after classification.
+Before re-scanning, create report file with delta metadata header (version N+1, previous timestamp).
 
-### Body Structure
+### 4b: Append Per File During Re-Scan
 
-1. **Summary** — updated counts
-2. **Delta Summary** — new section for re-audit:
-   ```
-   | Metric | Count |
-   |--------|-------|
-   | [NEW] findings | {N} |
-   | Persistent findings | {M} |
-   | Resolved since v{prev_version} | {K} |
-   ```
-3. **Blocking** — grouped by file, `[NEW]` flag on new ones
-4. **Warning** — grouped by file, `[NEW]` flag on new ones
-5. **Info** — grouped by file, `[NEW]` flag on new ones
-6. **Fix Commands** — Map every Blocking and Warning finding to an actionable command per `references/audit-rules.md` Finding-to-Fix-Command Mapping section, grouped into Direct Edit / Skill-Based / Manual Actions tables.
+As Step 2 re-scans each file, immediately append findings to report. Flag `[NEW]` or `Persistent` per Step 3 comparison. Append fix commands alongside each Blocking/Warning finding.
+
+### 4c: Finalize
+
+After all files re-scanned:
+1. Collect resolved findings (old IDs not in new set) → append `## Resolved` section
+2. Prepend final frontmatter with counts
+3. Prepend summary + delta summary tables
+4. Append footer with timestamp
 
 ## Step 5: Print Chat Summary
 
