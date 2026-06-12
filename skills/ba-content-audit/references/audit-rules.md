@@ -382,7 +382,11 @@ If no pattern matches, classify as **Direct Edit** with command `Edit {file_path
 | Missing project folder | Blocking: "No project found for slug {slug}" |
 | Project with intake + backbone only (no modules) | Audit what exists; Info: "No modules found — partial audit" |
 | Malformed YAML frontmatter | Blocking: "Cannot parse frontmatter" |
-| File > 10kB | Read anyway (audit overrides context budget for audit integrity) |
+| File < 3kB | Read fully — small enough, Grep overhead higher than read cost |
+| File 3–10kB | Read with `offset`+`limit` (<5kB per read). Frontmatter: first 40 lines. Sections: TOC-first (80 lines), then target sections. Cross-refs: Grep |
+| File > 10kB | Never read fully. Frontmatter: `offset=0, limit=40`. Sections: Grep `^## ` for headings list, then read only missing/present sections. Cross-refs: Grep for wikilinks/IDs/links, resolve against manifest. Content verification: `offset`+`limit` on specific line ranges |
+| ID-dense project (>50 ID definitions across all files) | Use on-disk indexing. Write all IDs to `shared/.audit-id-index.txt` via Bash `grep -rE`. Use `files_with_matches` for discovery. Cross-reference via `grep -c "ID"` against index file. Orphan detection via `sort \| uniq -c \| awk`. Zero context for ID collection. |
+| Project with >60 files or >2 modules | Multi-agent batched audit. Orchestrator builds manifest + global index (Steps 1-2), audits system files, then spawns one sub-agent per module. Each sub-agent gets fresh context (~200K), audits its module files, writes findings to `shared/.audit-module-{slug}.md`. Orchestrator merges module files into final report. Context per sub-agent: ~45% of budget. |
 | File with no frontmatter at all | Blocking: "Missing YAML frontmatter" |
 | File with unknown `type` value | Warning: "Unknown artifact type '{value}'" |
 | Compiled HTML with malformed structure | Warning: "HTML appears malformed" |

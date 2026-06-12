@@ -61,6 +61,10 @@ Read `template/audit-report-template.md` for output format.
 
 Detailed steps in the referenced workflow file. Overview:
 
+**Strategy selection** (both flows, `first-audit-workflow.md` Step 0):
+- ≤60 files, ≤2 modules → single-agent sequential audit
+- >60 files or >2 modules → multi-agent batched: orchestrator handles system files + index, spawns sub-agent per module (fresh context each), merges results
+
 **First audit** (`references/first-audit-workflow.md`):
 - Scan artifacts in lifecycle order
 - Per-file: frontmatter check, mandatory sections check, cross-reference check
@@ -68,8 +72,8 @@ Detailed steps in the referenced workflow file. Overview:
 - Write report per `template/audit-report-template.md`
 
 **Re-audit** (`references/re-audit-workflow.md`):
-- Load existing report
-- Re-scan all artifacts
+- Load existing report (frontmatter + Grep for IDs only, not full read)
+- Re-scan all artifacts (batched if large project)
 - Compare old vs new findings using content-hash IDs
 - Flag `[NEW]`, bump severity on persistent, move resolved to "Resolved" section
 - Overwrite report preserving trace
@@ -90,7 +94,19 @@ Detailed steps in the referenced workflow file. Overview:
 - **No external calls**: No MCP, no API, no network.
 - **.pen files skipped**: Pencil MCP-managed, encrypted — skip without reading.
 - **Empty modules**: Skip with Info finding.
-- **Large files**: Read anyway — audit integrity overrides context budget.
+- **Output-limiting strategy**:
+  - ID collection: Write to disk index via Bash (`grep -rE > .audit-id-index.txt`), zero context load. Use `files_with_matches` for discovery. Never load full ID map into context.
+  - Cross-reference check: Per-file Grep for IDs, then query on-disk index (`grep -c "ID" .audit-id-index.txt`). One line result per check.
+  - Orphan detection: Bash `sort | uniq -c | awk` on disk index, zero context.
+  - Frontmatter check: Read first 40 lines only (`offset=0, limit=40`) — frontmatter always at top.
+  - Template section check: Read TOC of template + artifact (first 80 lines) to get `##` headings; compare headings. Grep for missing sections if discrepancy flagged.
+  - Wikilink/link collection: `files_with_matches` first, then content Grep only for files with links.
+  - Full content read: Only when frontmatter/Grep/TOC indicate a finding requiring content-level verification. Even then, use `offset`+`limit` on files >200 lines.
+  - Files >10KB: Never read fully. Always use offset+limit (<5KB per read) or Grep.
+  - Never re-read same file section. Cross-reference findings to prior reads.
+  - Report writing: Append findings per file incrementally. Initialize report with placeholder, append each file's findings as discovered, prepend frontmatter + summary at end. Never accumulate all findings in memory.
+  - Re-audit existing report: Read frontmatter only (first 50 lines), Grep for finding IDs. Do NOT read full report.
+  - Temp index cleanup: Remove `.audit-id-index.txt` after report finalized.
 - **P2 artifacts deferred**: Tool-lanes, reverse, QC, memory-deep — not audited in v1.
 
 ## References
