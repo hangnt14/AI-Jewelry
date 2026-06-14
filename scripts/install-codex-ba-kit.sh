@@ -21,6 +21,29 @@ PYTHON3="$(find_python3)" || {
   exit 1
 }
 
+# Ensure python3 always resolves to a real interpreter — on Windows Git Bash
+# it may point to a non-functional Microsoft Store stub. Creates ~/bin/python3
+# wrapper if needed. macOS/Linux users get a no-op since python3 is standard.
+bootstrap_python3() {
+  if command -v python3 >/dev/null 2>&1 && python3 --version >/dev/null 2>&1; then
+    return 0
+  fi
+  mkdir -p "${HOME}/bin"
+  cat > "${HOME}/bin/python3" <<'WRAPEOF'
+#!/usr/bin/env bash
+exec "${_PYTHON_REAL}" "$@"
+WRAPEOF
+  sed -i "s|\${_PYTHON_REAL}|${PYTHON3}|g" "${HOME}/bin/python3"
+  chmod +x "${HOME}/bin/python3"
+  if ! "${HOME}/bin/python3" --version >/dev/null 2>&1; then
+    rm -f "${HOME}/bin/python3"
+    echo "WARNING: python3 bootstrap failed." >&2
+    return 1
+  fi
+  echo "Bootstrap: created python3 → ${PYTHON3}"
+}
+bootstrap_python3
+
 SOURCE_ROOT="${BA_KIT_CODEX_SOURCE_ROOT:-${ROOT_DIR}/codex}"
 SOURCE_SKILLS="${SOURCE_ROOT}/skills"
 SOURCE_AGENTS="${SOURCE_ROOT}/agents"

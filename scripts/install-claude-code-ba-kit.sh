@@ -21,6 +21,30 @@ PYTHON3="$(find_python3)" || {
   exit 1
 }
 
+# Ensure python3 always resolves to a real interpreter — on Windows Git Bash
+# it may point to a non-functional Microsoft Store stub. Creates ~/bin/python3
+# wrapper if needed. macOS/Linux users get a no-op since python3 is standard.
+bootstrap_python3() {
+  if command -v python3 >/dev/null 2>&1 && python3 --version >/dev/null 2>&1; then
+    return 0
+  fi
+  mkdir -p "${HOME}/bin"
+  cat > "${HOME}/bin/python3" <<'WRAPEOF'
+#!/usr/bin/env bash
+exec "${_PYTHON_REAL}" "$@"
+WRAPEOF
+  # Replace placeholder with the real Python we already found
+  sed -i "s|\${_PYTHON_REAL}|${PYTHON3}|g" "${HOME}/bin/python3"
+  chmod +x "${HOME}/bin/python3"
+  if ! "${HOME}/bin/python3" --version >/dev/null 2>&1; then
+    rm -f "${HOME}/bin/python3"
+    echo "WARNING: python3 bootstrap failed." >&2
+    return 1
+  fi
+  echo "Bootstrap: created python3 → ${PYTHON3}"
+}
+bootstrap_python3
+
 TARGET_HOME="${HOME}/.claude"
 TARGET_BA_KIT="${TARGET_HOME}/ba-kit"
 TARGET_SCRIPTS="${TARGET_BA_KIT}/scripts"
@@ -283,7 +307,19 @@ fi
 mkdir -p "${BA_KIT_STATE_DIR}"
 PREFLIGHT_OUT="${BA_KIT_STATE_DIR}/last-preflight.json"
 
-python3 "${HOME}/.claude/ba-kit/scripts/guardrail-preflight.py" \
+# Resolve Python (python3 may be a non-functional Windows Store stub)
+_PY=""
+for _c in python3 python; do
+  if command -v "${_c}" >/dev/null 2>&1 && "${_c}" --version >/dev/null 2>&1; then
+    _PY="${_c}"
+    break
+  fi
+done
+if [[ -z "${_PY}" ]]; then
+  exit 0
+fi
+
+"${_PY}" "${HOME}/.claude/ba-kit/scripts/guardrail-preflight.py" \
   "${PREFLIGHT_ARGS[@]}" \
   --output "${PREFLIGHT_OUT}" >/dev/null 2>&1 || true
 
@@ -292,7 +328,7 @@ if [[ ! -f "${PREFLIGHT_OUT}" ]]; then
 fi
 
 # Parse preflight JSON and emit verdict
-python3 - "${PREFLIGHT_OUT}" <<'PYEOF'
+"${_PY}" - "${PREFLIGHT_OUT}" <<'PYEOF'
 import json, sys, pathlib
 
 preflight = json.loads(pathlib.Path(sys.argv[1]).read_text(encoding="utf-8"))
@@ -379,6 +415,18 @@ write_audit_hook() {
 
 set -euo pipefail
 
+# Resolve Python (python3 may be a non-functional Windows Store stub)
+_PY=""
+for _c in python3 python; do
+  if command -v "${_c}" >/dev/null 2>&1 && "${_c}" --version >/dev/null 2>&1; then
+    _PY="${_c}"
+    break
+  fi
+done
+if [[ -z "${_PY}" ]]; then
+  exit 0
+fi
+
 PREFLIGHT_PATH="${HOME}/.claude/ba-kit/state/last-preflight.json"
 AUDIT_OUT="${HOME}/.claude/ba-kit/state/last-audit.json"
 
@@ -393,13 +441,13 @@ if [[ ! -f "${READS_MANIFEST}" ]]; then
   exit 0
 fi
 
-python3 "${HOME}/.claude/ba-kit/scripts/guardrail-audit.py" \
+"${_PY}" "${HOME}/.claude/ba-kit/scripts/guardrail-audit.py" \
   --preflight "${PREFLIGHT_PATH}" \
   --reads-manifest "${READS_MANIFEST}" \
   --output "${AUDIT_OUT}" >/dev/null 2>&1 || true
 
 if [[ -f "${AUDIT_OUT}" ]]; then
-  status="$(python3 -c "
+  status="$("${_PY}" -c "
 import json, pathlib
 d = json.loads(pathlib.Path('${AUDIT_OUT}').read_text())
 print(d.get('status', ''))
@@ -529,7 +577,19 @@ if [[ ! -f "${VIOLATIONS_FILE}" ]]; then
   exit 0
 fi
 
-python3 - "${VIOLATIONS_FILE}" <<'PYEOF'
+# Resolve Python (python3 may be a non-functional Windows Store stub)
+_PY=""
+for _c in python3 python; do
+  if command -v "${_c}" >/dev/null 2>&1 && "${_c}" --version >/dev/null 2>&1; then
+    _PY="${_c}"
+    break
+  fi
+done
+if [[ -z "${_PY}" ]]; then
+  exit 0
+fi
+
+"${_PY}" - "${VIOLATIONS_FILE}" <<'PYEOF'
 import json, sys, pathlib
 
 vf = pathlib.Path(sys.argv[1])
@@ -648,6 +708,18 @@ detect_plan_dir() {
 
 detect_plan_dir >/dev/null 2>&1 || exit 0
 
+# Resolve Python (python3 may be a non-functional Windows Store stub)
+_PY=""
+for _c in python3 python; do
+  if command -v "${_c}" >/dev/null 2>&1 && "${_c}" --version >/dev/null 2>&1; then
+    _PY="${_c}"
+    break
+  fi
+done
+if [[ -z "${_PY}" ]]; then
+  exit 0
+fi
+
 # ── extract target path from tool input ──────────────────────────────
 
 TOOL_INPUT="${1:-}"
@@ -661,7 +733,7 @@ if [[ -z "${TOOL_INPUT}" ]]; then
 fi
 
 # Extract file path from tool input
-TARGET_PATH="$(echo "${TOOL_INPUT}" | python3 -c "
+TARGET_PATH="$(echo "${TOOL_INPUT}" | "${_PY}" -c "
 import json, sys
 try:
     data = json.load(sys.stdin)
@@ -679,7 +751,7 @@ fi
 PREFLIGHT_PATH="${HOME}/.claude/ba-kit/state/last-preflight.json"
 DETECTED_CMD=""
 if [[ -f "${PREFLIGHT_PATH}" ]]; then
-  DETECTED_CMD="$(python3 -c "
+  DETECTED_CMD="$("${_PY}" -c "
 import json, pathlib
 d = json.loads(pathlib.Path('${PREFLIGHT_PATH}').read_text())
 print(d.get('command', ''))
@@ -914,7 +986,17 @@ VIOLATIONS_FILE="${STATE_DIR}/context-violations.jsonl"
 if [[ ! -f "${VIOLATIONS_FILE}" ]]; then
   exit 0
 fi
-python3 - "${VIOLATIONS_FILE}" <<'PYEOF'
+_PY=""
+for _c in python3 python; do
+  if command -v "${_c}" >/dev/null 2>&1 && "${_c}" --version >/dev/null 2>&1; then
+    _PY="${_c}"
+    break
+  fi
+done
+if [[ -z "${_PY}" ]]; then
+  exit 0
+fi
+"${_PY}" - "${VIOLATIONS_FILE}" <<'PYEOF'
 import json, sys, pathlib
 vf = pathlib.Path(sys.argv[1])
 lines = [l for l in vf.read_text(encoding="utf-8").strip().split("\n") if l]

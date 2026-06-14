@@ -33,6 +33,62 @@ MANAGED_SKILL_DIRS=(
   "qc-uc-review"
 )
 
+# ── python3 bootstrap (cross-platform) ───────────────────────────────
+# On macOS/Linux, python3 is the system Python 3 binary.
+# On Windows (Git Bash), python3 may resolve to a non-functional
+# Microsoft Store stub. This ensures python3 always points to a real
+# Python 3 interpreter so generated hooks and scripts work correctly.
+bootstrap_python3() {
+  # Already a working python3? Nothing to do.
+  if command -v python3 >/dev/null 2>&1 && python3 --version >/dev/null 2>&1; then
+    return 0
+  fi
+
+  local real_python=""
+  # Try common candidates
+  for _c in python py python3.12 python3.13 python3.14; do
+    if command -v "${_c}" >/dev/null 2>&1 && "${_c}" --version >/dev/null 2>&1; then
+      real_python="${_c}"
+      break
+    fi
+  done
+
+  # Scan Windows Python install paths as last resort
+  if [[ -z "${real_python}" ]]; then
+    for _p in /c/Python313/python /c/Python312/python /c/Python314/python; do
+      if [[ -x "${_p}" ]]; then
+        real_python="${_p}"
+        break
+      fi
+    done
+  fi
+
+  if [[ -z "${real_python}" ]]; then
+    echo "WARNING: python3 not found and no real Python detected." >&2
+    echo "BA-kit hooks requiring Python will not function." >&2
+    return 1
+  fi
+
+  mkdir -p "${HOME}/bin"
+  local wrapper="${HOME}/bin/python3"
+  cat > "${wrapper}" <<WRAPEOF
+#!/usr/bin/env bash
+# BA-kit python3 bootstrap wrapper
+exec ${real_python} "\$@"
+WRAPEOF
+  chmod +x "${wrapper}"
+
+  # Verify the wrapper works
+  if ! "${wrapper}" --version >/dev/null 2>&1; then
+    echo "WARNING: python3 wrapper created but non-functional." >&2
+    rm -f "${wrapper}"
+    return 1
+  fi
+
+  echo "Bootstrap: created python3 → ${real_python}"
+  return 0
+}
+
 cleanup_managed_skill_dirs() {
   local pattern path
 
@@ -176,6 +232,8 @@ echo "Installed agents to ${AGENTS_TARGET}"
 echo "Installed templates to ${TEMPLATES_TARGET}"
 echo "Installed BA core to ${CORE_TARGET}"
 echo "Installed update CLI to ${LOCAL_BIN_TARGET}/ba-kit"
+
+bootstrap_python3
 
 if [[ -f "${ROOT_DIR}/scripts/install-claude-code-ba-kit.sh" ]]; then
   echo ""
