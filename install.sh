@@ -76,7 +76,7 @@ cleanup_previous_install() {
   cleanup_managed_agent_files
   cleanup_managed_template_files
   rm -rf "${RULES_TARGET}" "${CORE_TARGET}"
-  rm -f "${TARGET_HOME}/core"
+  rm -rf "${TARGET_HOME}/core"
 }
 
 cleanup_previous_agy_install() {
@@ -86,7 +86,7 @@ cleanup_previous_agy_install() {
   rm -rf "${target_home}/skills"/brainstorm 2>/dev/null || true
   rm -rf "${target_home}/skills"/reverse-web 2>/dev/null || true
   rm -rf "${target_home}/skills"/qc-uc-review 2>/dev/null || true
-  rm -f "${target_home}/core"
+  rm -rf "${target_home}/core"
   for agent_path in "${ROOT_DIR}"/agents/*; do
     [[ -f "${agent_path}" ]] || continue
     rm -f "${target_home}/agents/$(basename "${agent_path}")"
