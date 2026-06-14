@@ -511,11 +511,24 @@ set -euo pipefail
 BA_KIT_HOOK_HOME="${HOME}/.codex/ba-kit"
 STATE_DIR="${BA_KIT_HOOK_HOME}/state"
 mkdir -p "${STATE_DIR}"
+
+# Resolve Python (python3 may be a non-functional Windows Store stub; 'python' is common on Windows)
+_PY=""
+for _c in python3 python; do
+  if command -v "${_c}" >/dev/null 2>&1 && "${_c}" --version >/dev/null 2>&1; then
+    _PY="${_c}"
+    break
+  fi
+done
+if [[ -z "${_PY}" ]]; then
+  exit 0
+fi
+
 TOOL_DATA="$(cat - 2>/dev/null || echo "{}")"
 if [[ -z "${TOOL_DATA}" ]] || [[ "${TOOL_DATA}" == "{}" ]]; then
   exit 0
 fi
-python3 "${BA_KIT_HOOK_HOME}/scripts/context-preflight-guard.py" <<< "${TOOL_DATA}" 2>/dev/null
+"${_PY}" "${BA_KIT_HOOK_HOME}/scripts/context-preflight-guard.py" <<< "${TOOL_DATA}" 2>/dev/null
 PREFLIGHT_EXIT=$?
 if [[ ${PREFLIGHT_EXIT} -eq 1 ]]; then
   exit 1
