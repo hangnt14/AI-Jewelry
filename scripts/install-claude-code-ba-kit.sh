@@ -4,10 +4,22 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-if ! command -v python3 >/dev/null 2>&1; then
-  echo "ERROR: python3 is required but not found in PATH" >&2
+find_python3() {
+  for candidate in python3 python py; do
+    if command -v "${candidate}" >/dev/null 2>&1 \
+       && "${candidate}" -c "import sys; assert sys.version_info >= (3,6)" >/dev/null 2>&1; then
+      printf '%s\n' "${candidate}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+PYTHON3="$(find_python3)" || {
+  echo "ERROR: Python 3.6+ is required but not found. Install from https://python.org" >&2
+  echo "  On Windows: disable App Execution Aliases for Python in Settings > Apps > Advanced app settings" >&2
   exit 1
-fi
+}
 
 TARGET_HOME="${HOME}/.claude"
 TARGET_BA_KIT="${TARGET_HOME}/ba-kit"
@@ -686,7 +698,7 @@ register_hooks() {
     echo '{}' > "${SETTINGS_FILE}"
   fi
 
-  python3 - "${SETTINGS_FILE}" "${TARGET_HOOKS}" <<'PYEOF'
+  "${PYTHON3}" - "${SETTINGS_FILE}" "${TARGET_HOOKS}" <<'PYEOF'
 import json, pathlib, sys
 
 settings_path = pathlib.Path(sys.argv[1])

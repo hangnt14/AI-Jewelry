@@ -3,6 +3,24 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+find_python3() {
+  for candidate in python3 python py; do
+    if command -v "${candidate}" >/dev/null 2>&1 \
+       && "${candidate}" -c "import sys; assert sys.version_info >= (3,6)" >/dev/null 2>&1; then
+      printf '%s\n' "${candidate}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+PYTHON3="$(find_python3)" || {
+  echo "ERROR: Python 3.6+ is required but not found. Install from https://python.org" >&2
+  echo "  On Windows: disable App Execution Aliases for Python in Settings > Apps > Advanced app settings" >&2
+  exit 1
+}
+
 SOURCE_ROOT="${BA_KIT_CODEX_SOURCE_ROOT:-${ROOT_DIR}/codex}"
 SOURCE_SKILLS="${SOURCE_ROOT}/skills"
 SOURCE_AGENTS="${SOURCE_ROOT}/agents"
@@ -603,7 +621,7 @@ register_codex_hooks() {
     echo '{"hooks":{}}' > "${HOOKS_FILE}"
   fi
 
-  python3 - "${HOOKS_FILE}" "${HOOK_TARGET}" <<'PYEOF'
+  "${PYTHON3}" - "${HOOKS_FILE}" "${HOOK_TARGET}" <<'PYEOF'
 import json, pathlib, sys
 
 hooks_path = pathlib.Path(sys.argv[1])
