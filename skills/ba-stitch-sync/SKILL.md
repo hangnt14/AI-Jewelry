@@ -504,34 +504,10 @@ For each eligible screen:
 
       In the prompt, state the widget type explicitly using Field Table terms: "The project list is a TABLE with columns: Mã dự án, Tên dự án, Khách hàng, % hoàn thành." Do NOT say "a list of projects" if the Field Table says "table".
 
-   f3. **State descriptions in base prompt (NEW — required for screens with >1 state):**
-      After the base wireframe and layout descriptions, append a `## Screen States` block. This block tells Stitch what states exist and what changes visually in each, without asking it to generate all states simultaneously. The block is for context — actual state variant generation happens in Step 2.6a.
+   f3. **State descriptions — DO NOT include in base prompt:**
+      Do NOT include state descriptions or state ASCII wireframes in the `generate_screen_from_text` prompt. The base prompt must describe ONLY the default state. Stitch's model interprets all prompt content as instructions — including state descriptions triggers Stitch to generate all states as separate screens in the same call (using `figaro_agent`), bypassing the `generate_variants` path.
 
-      Structure:
-      ```
-      ## Screen States
-      This screen has {N} visual states in addition to the default state shown above:
-
-      1. **{State Name}** — triggers when {trigger condition}.
-         Visual changes from default:
-         - {specific element change}: e.g., "Red error message 'Email không hợp lệ.' appears inline below the Email field"
-         - {specific element change}: e.g., "Email field border turns red"
-         - {specific element change}: e.g., "A red banner appears at the top of the content area: 'Vui lòng kiểm tra lại thông tin.'"
-         {State-specific ASCII wireframe}
-
-      2. **{State Name}** — triggers when {trigger condition}.
-         ...
-      ```
-
-      **State prompt rules:**
-      - **Refer to resolved message TEXT, not codes.** "Show 'Email hoặc mật khẩu không đúng.' below the Password field" — NOT "show MSG-ERR-01".
-      - **Specify surface EXACTLY.** "Inline: red text below the {field_name} field." or "Toast: top-right corner, auto-dismiss after 5 seconds, red background, text: '{message_text}'." or "Banner: full-width bar at top of content area, red background, white text: '{message_text}'. Dismissible with X button."
-      - **Describe feedback styling** from Step 2.2b if available, otherwise use explicit directives: "Toast position: top-right. Auto-dismiss: 5 seconds. Background: red. Text: white."
-      - **Disabled/Read-only states:** "All input fields are grayed out and non-interactive. Labels remain visible. Submit button is disabled (gray, no hover effect)."
-      - **Empty states:** "The data table is replaced by an empty-state message centered in the content area: 'Chưa có dữ liệu.' Do NOT add illustrations, icons, or complex graphics — text only unless the wireframe explicitly shows an icon."
-      - **Loading states:** "The main content area shows a loading indicator (spinner or skeleton) centered vertically and horizontally. Navigation remains visible and interactive."
-      - **Copy the state-specific ASCII wireframe** from the screen canon file into this block. This gives Stitch exact visual reference for each state.
-      - **Include resolved messages inline** — the prompt must contain the FULL error text for every state, not a reference to it.
+      State generation is handled exclusively in Step 2.6a via `generate_variants`, which starts from the base screen and preserves structural identity. The base prompt should just note: "This screen has {N} additional visual states that will be generated separately."
 
    g. **Branding & chrome elements (from DESIGN.md — resolve "UNSPECIFIED" to explicit bans):**
       These are shell-level elements that stay the same across all screens. They are NOT part of individual screen wireframes — they come from the shared_shell_contract and DESIGN.md.
@@ -571,11 +547,15 @@ For each eligible screen:
       - Do NOT translate labels from one language to another — use exact wording from the wireframe.
       - Do NOT change numeric values — use exact numbers from the wireframe.
 
-   i. **Consistency directive:**
-      "CRITICAL: Every screen in the 'Ứng dụng quản lý kho' portal must have the exact same navigation menu — same items, same order, same labels. Do NOT add, remove, rename, or reorder any menu item. The navigation must be pixel-identical across all screens in this portal."
+   i. **Consistency directive (navigation + branding):**
+      "CRITICAL: Every screen in the 'Ứng dụng quản lý kho' portal must have the exact same navigation menu — same items, same order, same labels. Do NOT add, remove, rename, or reorder any menu item.
+      Branding must also be identical across all screens: same app name text, same logo treatment (or none), same header layout, same footer. Do NOT change the brand display between screens — if one screen has text-only '{app_name}' branding, every screen must use text-only '{app_name}' in the same position and style."
 
    j. **Cross-screen anchor (if applicable):**
-      If other screens in this portal were already generated: "The following screens were already generated with this exact navigation and must be matched: 'Trang tổng quan'."
+      If other screens in this portal were already generated: "The following screens were already generated with this exact branding and navigation and must be matched:
+      - Branding: '{app_name}' as {text-only | logo description} at {position}
+      - Screens: 'Trang tổng quan', 'Danh sách kho hàng'."
+      If this is the FIRST screen in the portal: "This is the first screen generated for the 'Ứng dụng quản lý kho' portal. All subsequent screens must match your branding and navigation exactly."
 
 5a. **PROMPT SANITIZER GATE (HARD — before EVERY MCP call):**
 
@@ -682,8 +662,21 @@ After base (default) screen is generated successfully, generate a state variant 
    - Inline error: red text, red field border, error icon if specified in DESIGN.md §5
 
    Do NOT describe layout, navigation, chrome, or zones — these are inherited from the base screen.
-   Do NOT add any UI element not explicitly listed above. Do NOT invent extra error messages, extra fields, or extra controls.
+   Do NOT add any UI element not explicitly listed above.
+
+   **Anti-hallucination bans (state-specific):**
+   The base screen defines the entire visual identity. Only the changes listed above may be applied. Everything else MUST remain identical to the base screen:
+   - Do NOT change the brand name or page title. Use the exact same text as the base screen.
+   - Do NOT add or change any logo, brand icon, or decorative icon. Input fields must keep the exact same icon set as the base — no new mail/lock/user icons unless the base already has them.
+   - Do NOT change any button text, label text, or link text. Buttons/links must use the exact same wording as the base screen.
+   - Do NOT add new links, buttons, or navigation items beyond those on the base screen. If the base has no "Đăng ký ngay" or "Điều khoản" link, do not invent them.
+   - Do NOT change border radius (rounded), card styling, input border width, padding, or any visual styling. The only allowed styling changes are those explicitly described above (e.g., red border on a specific error field).
+   - Do NOT pre-fill any input field with invented values. Fields must remain empty (or show their placeholder text) unless the state wireframe explicitly shows a value.
+   - Do NOT add, remove, or reorder any form field. The field set must be identical to the base screen.
+   - Do NOT translate labels or text from one language to another. Use exact wording from the base screen.
    ```
+   ```
+   These bans prevent Stitch from re-interpreting the screen identity during variant generation. Every state must look like the base screen plus ONLY the documented state changes.
 
 2. **Resolve ALL MSG-* codes to text before building state prompt:**
    - Scan the state description from screen canon for `MSG-*` references.
@@ -711,23 +704,34 @@ After base (default) screen is generated successfully, generate a state variant 
        creativeRange: REFINE,
        aspects: [TEXT_CONTENT],
        variantCount: 1
-     },
-     deviceType: <resolved_device>,
-     designSystem: <assetId>
+     }
    )
    ```
    - `selectedScreenIds` is the Stitch screen ID from the base (default) generation.
    - `creativeRange: REFINE` → minimal changes, preserve base structure.
    - `aspects: [TEXT_CONTENT]` → only text-level changes (error messages, labels, notifications).
    - `variantCount: 1` → generate exactly one variant per state.
+   - **IMPORTANT:** Do NOT pass `deviceType` or `designSystem` — `generate_variants` does not accept these parameters. The device type and design system are inherited from the base screen.
 
-5. **VALIDATE response:**
-   - Response is an array of generated variant screen objects.
-   - Extract the variant screen ID from the first element.
-   - If response is null/empty/undefined → mark state as `failed`, record "generate_variants returned no variant", continue.
+5. **VALIDATE response (chat-structured, NOT a flat array):**
+   `generate_variants` returns a chat-structured response, not a simple array of screen IDs. The structure is:
+   ```json
+   {
+     "outputComponents": [
+       {"design": {"screens": [{"id": "...", ...}]}, "title": "..."},
+       {"text": "..."},
+       {"suggestion": "..."}
+     ],
+     "sessionId": "..."
+   }
+   ```
+   - **Extract variant screen ID:** `outputComponents[0].design.screens[0].id`.
+   - **Interactive/clarification mode:** If `outputComponents[0]` has NO `design` field (only `text` + `suggestion`) → Stitch asked for clarification instead of generating. Prompt may not match base screen content. Mark state as `failed`, record "Stitch entered clarification mode — prompt content may not align with base screen".
+   - If `outputComponents` is empty or null → mark state as `failed`, record "generate_variants returned no output components", continue.
    - If timeout (no response after 5 minutes) → mark as `failed`, record "timeout", continue.
    - If error code `RATE_LIMITED` → **BLOCK** state generation. "Stitch daily quota exceeded during state generation. Default screens already saved."
-   - If variant screen ID equals base screen ID → WARN "State variant returned same ID as base. Stitch may not have applied state changes. Marking as uncertain." → mark state as `uncertain`.
+   - If extracted variant screen ID equals base screen ID → WARN "State variant returned same ID as base. Stitch may not have applied state changes." → mark state as `uncertain`.
+   - Record `sessionId` alongside the variant screen ID for debugging.
 
 6. **Record state in stitch-screen-map.json:**
    Append to the screen's entry:
@@ -735,11 +739,12 @@ After base (default) screen is generated successfully, generate a state variant 
    {ba_screen_id: {
      default: {stitch_screen_id, generated_at, status: "ok"},
      states: {
-       "error": {stitch_screen_id, generated_at, status: "ok"},
-       "empty": {stitch_screen_id, generated_at, status: "ok"}
+       "error": {stitch_screen_id, session_id, generated_at, status: "ok"},
+       "empty": {stitch_screen_id, session_id, generated_at, status: "ok"}
      }
    }}
    ```
+   - `session_id`: the `sessionId` field from `generate_variants` response — recorded for debugging interactive/clarification failures.
    - Write `paths.stitch_screen_map` after EACH state variant (same incremental-write pattern as base screens).
 
 7. **Print progress:**

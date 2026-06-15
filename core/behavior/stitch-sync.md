@@ -69,9 +69,9 @@ For each eligible screen:
    - **Field table priority:** the Field Table defines the widget STRUCTURE (table, cards, form fields, dropdown). The ASCII wireframe defines approximate LAYOUT POSITIONS. When they conflict on structure → field table wins. Example: if field table says "Project list | table" but wireframe shows card bullets, render a TABLE placed where the wireframe shows the list zone.
    - Branding/chrome: extract app_name, logo, user_area, footer from DESIGN.md. If absent → explicitly ban each: "NO logo", "NO user avatar". **Per-zone negative space:** after describing what IS in each zone, explicitly list what MUST NOT be there. Topbar: "NO search bar, NO notification bell, NO help icon, NO settings gear." Sidebar footer: "NO user avatar, NO user name, NO profile section." Content header: "NO breadcrumbs unless wireframe shows them."
    - Anti-hallucination: "Do NOT add any UI element not explicitly described. No invented logos, avatars, breadcrumbs, or extra menu items." **Reinforce with per-zone bans:** every zone description in the prompt must end with an explicit "Do NOT add X, Y, Z here" list covering the most common Stitch inventions for that zone type (search bars in topbar, notification icons, user profile sections, empty-state illustrations, extra filter controls).
-   - Consistency directive: "Every screen in this portal must have the exact same navigation menu — same items, same order, same labels. Do not add, remove, rename, or reorder any menu item."
-   - Cross-screen: reference already-generated screens by display name, not by ID.
-7. **States in prompt:** for screens with >1 state, append a `## Screen States` block describing each non-default state: trigger condition, visual differences (exact element changes, resolved message text, surface type), and state-specific ASCII wireframe. Error messages must be resolved FULL text, not MSG-* codes. Surface must be explicit: inline below field, toast (position + auto-dismiss), banner (position + dismissible), dialog (overlay + close behavior).
+   - Consistency directive: "Every screen in this portal must have the exact same branding and navigation. Branding: same app name, same logo treatment, same header, same footer across every screen. Navigation: same items, same order, same labels. Do not add, remove, rename, or reorder any menu item."
+   - Cross-screen: reference already-generated screens by display name, not by ID. Include first-screen anchor: if this is the first screen generated for this portal, state "This is the first screen. All subsequent screens must match your branding and navigation exactly."
+7. **States — DO NOT include in base prompt:** Do NOT append state descriptions or state ASCII wireframes to the `generate_screen_from_text` prompt. Describe ONLY the default state. Including state descriptions causes Stitch to generate all states at once in the same call, bypassing `generate_variants`. State generation is handled exclusively in the State Variant Generation section below.
 8. **Prompt Sanitizer Gate (HARD):** Before calling `generate_screen_from_text`, scan the built prompt for leaked BA-kit ID patterns (`PORTAL-`, `NAV-`, `SCR-`, `UC-`, `FR-`, `MSG-`, `CR-`, etc.) and empty resolved values. If any leak detected or lookup incomplete → block that screen, do NOT call Stitch. If all screens fail the gate → block entire Phase 2.
 9. Call `generate_screen_from_text(projectId, prompt, deviceType=<resolved_device>, designSystem=<assetId>)`.
 10. Record `{ba_screen_id: {default: {stitch_screen_id, generated_at, status}, states: {}}}` in `paths.stitch_screen_map`.
@@ -79,17 +79,25 @@ For each eligible screen:
 ### State Variant Generation
 
 After base screen generated successfully, for each non-default state documented in the screen canon:
-1. Build a state-specific delta prompt: describe ONLY what changes from the base screen (error messages, toast, banner, disabled controls). Do NOT repeat layout, nav, chrome, or zones — these are inherited from the base.
+1. Build a state-specific delta prompt: describe ONLY what changes from the base screen (error messages, toast, banner, disabled controls). Do NOT repeat layout, nav, chrome, or zones — these are inherited from the base. Include anti-hallucination bans: do not change brand name, button text, link text, icons, border radius, input styling, or pre-filled values. Only the documented state changes may differ from the base.
 2. Resolve ALL MSG-* codes to canonical text. The literal string `MSG-` must NOT appear in the prompt.
 3. Specify exact feedback surface and styling: inline (below field, red text + red border), toast (position, color, auto-dismiss duration, text), banner (position, dismissible, color, text), dialog (overlay, close behavior).
 4. Include state-specific ASCII wireframe from screen canon.
 5. Run state prompt sanitizer gate: no IDs, no unresolved MSG-* codes, non-empty values, no structural changes.
-6. Call `generate_variants(projectId, selectedScreenIds=[base_stitch_screen_id], prompt, variantOptions={creativeRange: REFINE, aspects: [TEXT_CONTENT], variantCount: 1}, deviceType, designSystem=<assetId>)`.
+6. Call `generate_variants(projectId, selectedScreenIds=[base_stitch_screen_id], prompt, variantOptions={creativeRange: REFINE, aspects: [TEXT_CONTENT], variantCount: 1})`.
    - `creativeRange: REFINE` → minimal changes, preserve base structure.
    - `aspects: [TEXT_CONTENT]` → only text-level changes applied. Layout, nav, chrome inherited from base.
    - `variantCount: 1` → exactly one variant per state.
-7. If variant screen ID equals base screen ID → mark as `uncertain` (Stitch may not have applied changes).
-8. Record state variant: `{ba_screen_id: {default: {...}, states: {state_name: {stitch_screen_id, generated_at, status}}}}`.
+   - NOTE: `deviceType` and `designSystem` are NOT accepted by `generate_variants`. Do not pass them.
+7. **Validate response — `generate_variants` returns a chat-structured response, not a flat array:**
+   - Response object has `outputComponents: [...]` and `sessionId`.
+   - Extract variant screen ID from `outputComponents[0].design.screens[0].id`.
+   - If `outputComponents[0]` has no `design` field → tool entered interactive/clarification mode. Mark state as `failed`, record "Stitch asked for clarification — prompt may not match base screen content".
+   - If `outputComponents` is empty → mark state as `failed`, record "generate_variants returned no output components".
+   - If timeout → mark as `failed`, record "timeout".
+   - If error code `RATE_LIMITED` → BLOCK state generation.
+   - If extracted variant screen ID equals base screen ID → mark as `uncertain` (Stitch may not have applied changes).
+8. Record state variant: `{ba_screen_id: {default: {...}, states: {state_name: {stitch_screen_id, session_id, generated_at, status}}}}`.
 9. Incremental write to `paths.stitch_screen_map` after EACH state variant.
 10. Do not retry failed state variants — `generate_variants` is non-deterministic on retry.
 
