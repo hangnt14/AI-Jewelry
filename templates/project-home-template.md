@@ -24,6 +24,12 @@
 | Handoff UI | [recommended | in-progress | completed | skipped | not-needed] | Có cần gói constraint để user tự vẽ mockup không |
 | Gói bàn giao HTML | [recommended | in-progress | completed | skipped | not-needed] | Có bản stakeholder review trong browser chưa |
 
+## 1a. Danh Sách Module
+
+| Module ID | Tên module | Module BA | Trạng thái | Ghi chú |
+| --- | --- | --- | --- | --- |
+| MOD-01 | [Tên module] | [@BA-handle hoặc TBD] | [recommended / in-progress / completed] | [Ghi chú] |
+
 ## 2. Bước Tiếp Theo Được Khuyến Nghị
 
 **Nên làm tiếp:** [Mô tả bằng ngôn ngữ BA]
