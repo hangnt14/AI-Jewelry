@@ -104,6 +104,9 @@ After every MCP call that returns an ID (screen ID, asset ID, project ID):
 - **VALIDATE:** Check response is an array (not null, not error object).
   If response is not iterable → WARN "Unexpected response from list_design_systems" + treat as no existing DS.
 - If existing DS found:
+  - **Disk cross-check:** Check if `paths.stitch_design_system_id` exists on disk.
+    - If file exists → read it, validate `asset_id` field is non-empty.
+    - If file MISSING → **BLOCK** "Design system exists on Stitch server but local asset ID file not found at {path}. Another BA created this design system — run `git pull` to fetch stitch-design-system-id.json, then retry."
   - Show: "Design system already exists (created {date}). Reuse / Refresh / Abort?"
   - **Refresh: Full regeneration.** Destroy old design system, regenerate ALL screens.
     Existing stitch-screen-map.json is invalidated. User warned about re-generation cost.
@@ -613,6 +616,7 @@ For each eligible screen:
    - Write `paths.stitch_screen_map` AFTER EACH screen (not batch at end) — prevents data loss on mid-phase failure.
    - Re-read the file to confirm write succeeded.
 9. Print progress: "[{N}/{total}] {screen_name} → {stitch_screen_id} ✓" or "✗ {error}"
+10. **CRITICAL — BEFORE moving to next screen:** if this screen's base generation succeeded and it has non-default states (collected in sub-step 3), **MUST execute Step 2.6a for THIS screen now.** Do NOT skip to next screen without attempting state variant generation.
 
 ### Step 2.6a: Generate State Variants
 
