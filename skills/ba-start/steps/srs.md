@@ -34,6 +34,7 @@ Run Steps 8-11 only. This path stays split so SRS execution can load only the in
 - Resolve slug, date, and module using `ba-kit resolve --slug <slug> [--module <module>]`.
   The CLI uses `find -type d` internally for correct directory discovery.
   Do not use `Glob` — it only matches files, not directories.
+- **[CWD GATE]** After resolve, verify shell CWD is the project root. Run `cd "$(ba-kit resolve --slug <slug> --date <date> [--module <module>] 2>/dev/null | awk '/^Project root:/ {print $3}')"` if CWD is not already there. `paths.design_doc` (`designs/{slug}/DESIGN.md`) and `paths.shared_shell_contract` (`plans/{slug}-{date}/02_backbone/shared-shell-contract.md`) are relative to the project root — a stale CWD from a previous step (e.g., stranded in `userstories/`) will cause false `DESIGN_GAP` failures.
 - Require `paths.backbone`, `paths.backbone_index`, and `paths.userstories_index`.
 - For UI-backed modules: require `paths.design_doc` and `paths.shared_shell_contract` (created by Lead BA during backbone). If missing, emit `DESIGN_GAP` and stop — do NOT create them from SRS.
 - If a required artifact is missing, print the exact missing path, tell the user which subcommand to run first, and stop.

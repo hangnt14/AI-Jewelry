@@ -102,3 +102,5 @@ ba-kit validate-index --index-key userstories_index --slug <slug> --date <date> 
 - PostToolUse hook (`guardrail-index-validation-hook.sh`) sẽ tự chạy lại validator như fallback, nhưng agent PHẢI gọi inline trước.
 
 Không được bỏ qua bước này với lý do "để sau", "index nhỏ", hay "sẽ validate sau".
+
+**[CWD RESTORE — MANDATORY]** After stories generation and validation complete, restore shell CWD to the project root. Run `ba-kit resolve --slug <slug> --date <date> [--module <module>]` and `cd` to the `Project root:` path it prints. Do NOT leave the shell stranded in `userstories/` or any module subdirectory — downstream steps (`srs`, `frd`, `package`) resolve `paths.design_doc` and `paths.shared_shell_contract` from the project root.
