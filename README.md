@@ -1,4 +1,4 @@
-## BA-kit
+# BA-kit Course
 
 <div align="center">
 
@@ -19,7 +19,7 @@
 
 </div>
 
-BA-kit là playbook Business Analysis cho Claude Code, Codex, và Antigravity. Repo này biến agent thành một BA workstation có lifecycle rõ ràng, artifact có cấu trúc, collaboration theo module, và handoff đủ chuẩn cho stakeholder/engineering.
+BA-kit Course là phiên bản đầy đủ nhất — playbook Business Analysis cho Claude Code, Codex, và Antigravity. Repo này biến agent thành một BA workstation có lifecycle rõ ràng, artifact có cấu trúc, collaboration theo module, và handoff đủ chuẩn cho stakeholder/engineering. Dành cho học viên khoá học BA-kit.
 
 
 
@@ -470,6 +470,35 @@ ba-kit update
 ```
 
 `ba-kit doctor` kiểm tra runtime readiness. `ba-kit install-plantuml` auto cài PlantUML local bằng package manager phù hợp để HTML packaging ưu tiên render diagram tại máy. `ba-kit update` fast-forward source repo và reinstall các runtime đã cài.
+
+## BA-kit Editions
+
+BA-kit có 3 phiên bản, mỗi bản phục vụ một đối tượng khác nhau:
+
+| | Solo Basic (free) | Solo Pro (paid) | BA-kit Course (repo này) |
+|---|---|---|---|
+| **Đối tượng** | BA mới, dự án nhỏ | BA solo chuyên nghiệp | Học viên khoá học |
+| **Skills** | 5 | 8 | 14 |
+| **Cài đặt** | Copy thủ công | `install.sh` + CLI | `install.sh` + CLI |
+| **Scripts / Hooks** | ❌ | ✅ | ✅ |
+| **Lifecycle** | Cơ bản | Đầy đủ | Đầy đủ |
+| **Templates** | Đầy đủ | Đầy đủ | Đầy đủ |
+| **Stitch sync** | ❌ | ✅ | ✅ |
+| **Content audit** | ❌ | ✅ | ✅ |
+| **Auto index / guardrails** | ❌ (thủ công) | ✅ (cơ bản) | ✅ (đầy đủ) |
+| **Self-update** | ❌ | ✅ | ✅ |
+| **Figma sync** | ❌ | ❌ | ✅ |
+| **QC review** | ❌ | ❌ | ✅ |
+| **Multi-BA collab** | ❌ | ❌ | ✅ |
+| **Reverse engineering** | ❌ | ❌ | ✅ |
+| **Notion publish** | ❌ | ❌ | ✅ |
+| **QC export bridge** | ❌ | ❌ | ✅ |
+| **Context budget (full)** | ❌ | ❌ | ✅ |
+| **Tool lanes** | ❌ | ❌ | ✅ |
+| **Project memory shards** | ❌ | ❌ | ✅ |
+| **Ghi đè khi cài** | Bị Solo Pro/Course ghi đè | Bị Course ghi đè | Không bị ghi đè |
+
+`install.sh` của bản cao hơn sẽ ghi đè bản thấp hơn nếu cùng installed location.
 
 ## Đọc Tiếp
 
