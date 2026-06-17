@@ -36,7 +36,7 @@ VALID_STALE_STATUS = {"current", "stale", "unknown"}
 MIGRATION_METADATA_FIELDS = {"validated_at", "validated_by"}
 
 # Prefixes allowed by backbone_index coverage_patterns (single source of truth: guardrail_common.py)
-_ALLOWED_ID_PREFIXES = ["BG", "ACT", "PORTAL", "F", "FR", "NFR", "EP", "R", "SCR", "MEM"]
+_ALLOWED_ID_PREFIXES = ["BG", "ACT", "PORTAL", "F", "MOD", "FR", "NFR", "EP", "R", "SCR", "MEM"]
 _ALLOWED_ID_PREFIXES_DISPLAY = ", ".join(_ALLOWED_ID_PREFIXES) + ", A{N}"
 
 

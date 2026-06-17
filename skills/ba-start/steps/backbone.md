@@ -33,6 +33,7 @@ Run Step 5 only.
 - Resolve slug and date using `ba-kit resolve --slug <slug>`.
   The CLI uses `find -type d` internally for correct directory discovery.
   Do not use `Glob` — it only matches files, not directories.
+- **[CWD GATE]** After resolve, cd to the project root (`Project root:` line from `ba-kit resolve` output). All artifact paths in `contract.yaml` are relative to the project root. Backbone creates system-level artifacts (`design_doc`, `shared_shell_contract`) under the project root — a stale CWD will place them in the wrong location.
 - Require `paths.intake`.
 - If intake is missing, print the exact missing path and stop.
 - Read `paths.plan` when it exists.

@@ -30,6 +30,7 @@ Run Step 6 only.
 - Resolve slug, date, and module using `ba-kit resolve --slug <slug> [--module <module>]`.
   The CLI uses `find -type d` internally for correct directory discovery.
   Do not use `Glob` — it only matches files, not directories.
+- **[CWD GATE]** After resolve, cd to the project root (`Project root:` line from `ba-kit resolve` output). All artifact paths in `contract.yaml` are relative to the project root. A stale CWD from a previous step will cause false prerequisite failures.
 - Require `paths.backbone`.
 - Prefer `paths.backbone_index` for routing. If it is missing and the backbone is large, stop and ask to refresh the index.
 - If backbone is missing, print the exact missing path and stop.

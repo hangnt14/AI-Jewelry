@@ -25,8 +25,8 @@ def render_path(template: str, *, slug: str, date: str, module: str = "") -> str
     )
 
 
-def read_contract(repo: Path) -> dict:
-    return json.loads((repo / "core" / "contract.yaml").read_text(encoding="utf-8"))
+def read_contract(ba_source: Path) -> dict:
+    return json.loads((ba_source / "core" / "contract.yaml").read_text(encoding="utf-8"))
 
 
 def infer_from_module_root(module_root: Path) -> tuple[Path, str, str, str]:
@@ -187,15 +187,18 @@ def main() -> int:
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
+    # BAkit source dir: where core/contract.yaml lives. Default to script's own parent repo.
+    ba_source = Path(__file__).resolve().parent.parent
+
     if args.module_root:
         repo, slug, date, module = infer_from_module_root(args.module_root)
     else:
-        repo = Path(args.repo or ".").resolve()
+        repo = Path(args.repo).resolve() if args.repo else Path.cwd()
         slug, date, module = args.slug, args.date, args.module
     if not slug or not date:
         raise SystemExit("--slug and --date are required unless --module-root is provided")
 
-    paths = read_contract(repo)["paths"]
+    paths = read_contract(ba_source)["paths"]
     common_rules = repo / render_path(paths["common_rules"], slug=slug, date=date)
     message_list = repo / render_path(paths["message_list"], slug=slug, date=date)
     index_path = repo / render_path(paths["shared_rule_message_index"], slug=slug, date=date)

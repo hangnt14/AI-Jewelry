@@ -39,6 +39,14 @@ Chốt ở cấp hệ thống trước khi viết screen spec theo module. Đây
 | --- | --- | --- | --- | --- | --- |
 | F-01 | [Tính năng] | [Mô tả] | [Must / Should / Could] | [Yes / No] | [Ghi chú] |
 
+## Danh sách module (Module List)
+
+> Module = đơn vị phân hệ để phân công và tác nghiệp song song. Mỗi module có thư mục riêng trong `03_modules/` với FRD, user stories, SRS, screen riêng. Module BA chỉ làm việc trên module được giao.
+
+| Module ID | Tên module | Mô tả | Tính năng bao phủ (F-*) | Module BA được giao | Portal áp dụng | Trạng thái |
+| --- | --- | --- | --- | --- | --- | --- |
+| MOD-01 | [Tên module] | [Mô tả ngắn] | [F-01, F-02] | [@BA-handle hoặc TBD] | [PORTAL-CSR] | [recommended / in-progress / completed] |
+
 ## Backbone yêu cầu chức năng (Functional Backbone)
 
 | FR ID | Yêu cầu | Giá trị kinh doanh | Nguồn | Tiêu chí chấp nhận tóm tắt |
