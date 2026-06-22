@@ -29,7 +29,6 @@ import zlib
 from datetime import datetime
 from html import escape
 from pathlib import Path
-from typing import Optional
 
 # Minimal markdown-to-html without external deps.
 # Handles: headings, tables, bold, italic, code blocks, nested lists, blockquotes, links, images.
@@ -94,7 +93,7 @@ DISPLAY_LABELS = {
 }
 
 
-def normalize_label(label: str) -> Optional[str]:
+def normalize_label(label: str) -> str | None:
     """Map raw metadata labels to shared metadata keys."""
     normalized = re.sub(r"\([^)]*\)", "", label).strip().lower()
     for key, aliases in METADATA_ALIASES.items():
@@ -240,7 +239,7 @@ def render_document_shell(md: str, md_path: Path) -> tuple[str, str]:
     return doc_type, shell
 
 
-def resolve_asset_path(asset_path: str, base_dir: Path) -> tuple[Optional[Path], Optional[str]]:
+def resolve_asset_path(asset_path: str, base_dir: Path) -> tuple[Path | None, str | None]:
     """Resolve an asset path only when it stays inside the allowed base directory."""
     resolved_base = base_dir.resolve()
     candidate = Path(asset_path.strip())
@@ -300,7 +299,7 @@ def encode_plantuml(source: str) -> str:
     return "".join(encoded)
 
 
-def normalize_plantuml_server(server: Optional[str]) -> Optional[str]:
+def normalize_plantuml_server(server: str | None) -> str | None:
     """Return a normalized PlantUML server URL with a trailing slash."""
     if not server:
         return None
@@ -310,7 +309,7 @@ def normalize_plantuml_server(server: Optional[str]) -> Optional[str]:
     return normalized if normalized.endswith("/") else f"{normalized}/"
 
 
-def install_local_plantuml() -> tuple[Optional[str], Optional[str]]:
+def install_local_plantuml() -> tuple[str | None, str | None]:
     """Attempt to install PlantUML locally using the repo helper script."""
     installer = REPO_ROOT / "scripts" / "install-plantuml.sh"
     if not installer.exists():
@@ -335,7 +334,7 @@ def install_local_plantuml() -> tuple[Optional[str], Optional[str]]:
     return installed, None
 
 
-def resolve_plantuml_command(plantuml_command: Optional[str], auto_install: bool) -> tuple[Optional[str], Optional[str]]:
+def resolve_plantuml_command(plantuml_command: str | None, auto_install: bool) -> tuple[str | None, str | None]:
     """Resolve a local PlantUML executable, optionally auto-installing it first."""
     candidate = None
     if plantuml_command:
@@ -351,7 +350,7 @@ def resolve_plantuml_command(plantuml_command: Optional[str], auto_install: bool
     return None, "Local `plantuml` executable not found"
 
 
-def render_plantuml_locally(source: str, plantuml_command: Optional[str]) -> tuple[Optional[str], Optional[str]]:
+def render_plantuml_locally(source: str, plantuml_command: str | None) -> tuple[str | None, str | None]:
     """Render PlantUML using a local executable when available."""
     executable = plantuml_command
     if not executable:
@@ -377,7 +376,7 @@ def render_plantuml_locally(source: str, plantuml_command: Optional[str]) -> tup
     return svg, None
 
 
-def render_plantuml(source: str, plantuml_server: Optional[str], plantuml_command: Optional[str]) -> str:
+def render_plantuml(source: str, plantuml_server: str | None, plantuml_command: str | None) -> str:
     """Render a PlantUML fenced block without leaking to third-party services by default."""
     diagram = source.strip()
     if not diagram:
@@ -417,8 +416,8 @@ def md_to_html(
     md: str,
     base_dir: Path,
     *,
-    plantuml_server: Optional[str] = None,
-    plantuml_command: Optional[str] = None,
+    plantuml_server: str | None = None,
+    plantuml_command: str | None = None,
 ) -> str:
     """Convert markdown to HTML with embedded images."""
     lines = md.split("\n")
@@ -1376,7 +1375,7 @@ def wrap_docsengine(html_path: Path) -> Path:
     return html_path
 
 
-def convert(md_path: Path, *, base_dir: Optional[Path] = None, editor_enabled: bool = False, output: Optional[Path] = None) -> Path:
+def convert(md_path: Path, *, base_dir: Path | None = None, editor_enabled: bool = False, output: Path | None = None) -> Path:
     """Convert any BA markdown to HTML with embedded images and Mermaid support."""
     if base_dir is None:
         base_dir = default_base_dir(md_path)
@@ -1459,7 +1458,7 @@ def convert(md_path: Path, *, base_dir: Optional[Path] = None, editor_enabled: b
     return out_path
 
 
-def aggregate_modules(modules_dir: Path, base_dir: Optional[Path], editor_enabled: bool = False):
+def aggregate_modules(modules_dir: Path, base_dir: Path | None, editor_enabled: bool = False):
     """Aggregate FRD and SRS modules into unified HTML files."""
     compiled_dir = modules_dir.parent / "04_compiled"
     compiled_dir.mkdir(parents=True, exist_ok=True)
