@@ -37,10 +37,6 @@ designs/**/stitch-state.json
 docs/superpowers/
 
 # BA-kit Central License Server (proprietary infra, not distributed)
-/server/worker.js
-/server/d1-schema.sql
-/server/wrangler.toml
-/server/package.json
 /server/.wrangler/
 
 # Local dev state
