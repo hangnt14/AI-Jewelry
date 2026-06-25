@@ -806,9 +806,18 @@ if not isinstance(settings, dict):
 
 hooks = settings.setdefault("hooks", {})
 
-# UserPromptSubmit — preflight
+# UserPromptSubmit — license heartbeat (runs BEFORE preflight)
 ups_hooks = hooks.setdefault("UserPromptSubmit", [])
-# Remove any existing ba-kit UserPromptSubmit hooks
+ups_hooks[:] = [h for h in ups_hooks if "license-heartbeat-hook.sh" not in str(h)]
+ups_hooks.insert(0, {
+    "matcher": "",
+    "hooks": [{
+        "type": "command",
+        "command": f"bash \"{hooks_dir}/license-heartbeat-hook.sh\""
+    }]
+})
+
+# Remove any existing ba-kit UserPromptSubmit preflight hooks
 ups_hooks[:] = [h for h in ups_hooks if "guardrail-preflight-hook.sh" not in str(h)]
 ups_hooks.append({
     "matcher": "",
@@ -1128,6 +1137,46 @@ install_guardrail_docs
 echo "Installed guardrail docs to ${TARGET_DOCS}"
 
 install_core_assets
+
+# ── license scripts ──────────────────────────────────────────────────
+
+install_license_scripts() {
+  ensure_dir "${TARGET_SCRIPTS}"
+  cp "${ROOT_DIR}/scripts/license-register.sh" "${TARGET_SCRIPTS}/license-register.sh"
+  cp "${ROOT_DIR}/scripts/license-heartbeat.sh" "${TARGET_SCRIPTS}/license-heartbeat.sh"
+  cp "${ROOT_DIR}/scripts/license-reauth.sh" "${TARGET_SCRIPTS}/license-reauth.sh"
+  cp "${ROOT_DIR}/scripts/ba-kit-dashboard.py" "${TARGET_SCRIPTS}/ba-kit-dashboard.py"
+  chmod +x "${TARGET_SCRIPTS}/license-register.sh"
+  chmod +x "${TARGET_SCRIPTS}/license-heartbeat.sh"
+  chmod +x "${TARGET_SCRIPTS}/license-reauth.sh"
+}
+
+write_license_heartbeat_hook() {
+  cat > "${TARGET_HOOKS}/license-heartbeat-hook.sh" <<'HOOKEOF'
+#!/usr/bin/env bash
+# BA-kit License Heartbeat Hook — UserPromptSubmit
+set -euo pipefail
+HEARTBEAT_SCRIPT="${HOME}/.claude/ba-kit/scripts/license-heartbeat.sh"
+if [[ ! -f "${HEARTBEAT_SCRIPT}" ]]; then
+  exit 0
+fi
+OUTPUT=$(bash "${HEARTBEAT_SCRIPT}" 2>&1) || HEARTBEAT_EXIT=$?
+if [[ ${HEARTBEAT_EXIT:-0} -eq 1 ]]; then
+  echo ""
+  echo "⛔️  BA-KIT LICENSE CHECK FAILED"
+  echo "${OUTPUT}"
+  echo ""
+  echo "Run: ba-kit reauth"
+  echo ""
+fi
+exit 0
+HOOKEOF
+  chmod +x "${TARGET_HOOKS}/license-heartbeat-hook.sh"
+}
+
+install_license_scripts
+write_license_heartbeat_hook
+echo "Installed license scripts to ${TARGET_SCRIPTS}"
 
 write_preflight_hook
 write_audit_hook
