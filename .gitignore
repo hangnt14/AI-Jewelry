@@ -36,6 +36,13 @@ designs/**/stitch-state.json
 # Local Superpowers planning artifacts
 docs/superpowers/
 
-# Environment files
-.env
-.env.*
+# BA-kit Central License Server (proprietary infra, not distributed)
+/server/worker.js
+/server/d1-schema.sql
+/server/wrangler.toml
+/server/package.json
+/server/.wrangler/
+
+# Local dev state
+.wrangler/
+data/lme.db*

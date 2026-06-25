@@ -131,8 +131,19 @@ cleanup_previous_install() {
   cleanup_managed_skill_dirs
   cleanup_managed_agent_files
   cleanup_managed_template_files
+  # Preserve license file across cleanup
+  local license_backup=""
+  local license_file="${HOME}/.claude/ba-kit/.license"
+  if [[ -f "${license_file}" ]]; then
+    license_backup="$(cat "${license_file}")"
+  fi
   rm -rf "${RULES_TARGET}" "${CORE_TARGET}"
   rm -rf "${TARGET_HOME}/core"
+  if [[ -n "${license_backup}" ]]; then
+    mkdir -p "$(dirname "${license_file}")"
+    echo "${license_backup}" > "${license_file}"
+    chmod 600 "${license_file}"
+  fi
 }
 
 cleanup_previous_agy_install() {
@@ -303,4 +314,169 @@ fi
 write_manifest
 echo ""
 echo "BA-kit installation complete."
+
+# ── License registration ────────────────────────────────────────────
+LICENSE_FILE="${HOME}/.claude/ba-kit/.license"
+LICENSE_REGISTER_SCRIPT="${ROOT_DIR}/scripts/license-register.sh"
+if [[ -f "${LICENSE_REGISTER_SCRIPT}" ]]; then
+  # ── Check existing license (skip prompts on update) ──────────────────
+  existing_user=""
+  existing_install_id=""
+  if [[ -f "${LICENSE_FILE}" ]]; then
+    existing_user="$(python3 -c "import json,pathlib; print(json.loads(pathlib.Path('${LICENSE_FILE}').read_text()).get('github_user',''))" 2>/dev/null || echo "")"
+    existing_install_id="$(python3 -c "import json,pathlib; print(json.loads(pathlib.Path('${LICENSE_FILE}').read_text()).get('install_id',''))" 2>/dev/null || echo "")"
+  fi
+
+  if [[ -n "${existing_user}" ]]; then
+    # ── Detect incomplete license (has github_user but missing install_id) ─
+    if [[ -z "${existing_install_id}" ]]; then
+      echo ""
+      echo "═══════════════════════════════════════════════════════════════"
+      echo "  ⚠️  BA-kit chưa được kích hoạt đầy đủ"
+      echo "  Tài khoản: @${existing_user}"
+      echo "  Thiếu install_id — cần đăng ký lại để hoàn tất."
+      echo "═══════════════════════════════════════════════════════════════"
+      echo ""
+
+      # Carry forward existing org_token/org_url so user doesn't re-enter them
+      saved_org_token="$(python3 -c "import json,pathlib; print(json.loads(pathlib.Path('${LICENSE_FILE}').read_text()).get('org_token',''))" 2>/dev/null || echo "")"
+      saved_org_url="$(python3 -c "import json,pathlib; print(json.loads(pathlib.Path('${LICENSE_FILE}').read_text()).get('org_url',''))" 2>/dev/null || echo "")"
+      rm -f "${LICENSE_FILE}"
+
+      if [[ -n "${saved_org_token}" ]] && [[ -n "${saved_org_url}" ]]; then
+        ORG_TOKEN="${saved_org_token}" ORG_URL="${saved_org_url}" bash "${LICENSE_REGISTER_SCRIPT}" || true
+      else
+        bash "${LICENSE_REGISTER_SCRIPT}" || true
+      fi
+    else
+      echo ""
+      echo "═══════════════════════════════════════════════════════════════"
+      echo "  ✅  BA-kit đã được kích hoạt"
+      echo "  Tài khoản: @${existing_user}"
+      echo "═══════════════════════════════════════════════════════════════"
+      echo ""
+
+      read -r -p "  Cập nhật lại thông tin doanh nghiệp? [c/K] " UPDATE_ORG
+      if [[ "${UPDATE_ORG}" =~ ^[Cc]$ ]]; then
+        echo ""
+        read -r -p "  Nhập mã doanh nghiệp (do quản lý cấp): " ORG_TOKEN_INPUT
+        read -r -p "  Nhập địa chỉ máy chủ doanh nghiệp (ví dụ: https://ba.congty.com): " ORG_URL_INPUT
+        if [[ -n "${ORG_TOKEN_INPUT}" ]] && [[ -n "${ORG_URL_INPUT}" ]]; then
+          python3 -c "
+import json, pathlib
+lic = json.loads(pathlib.Path('${LICENSE_FILE}').read_text())
+lic['org_token'] = '${ORG_TOKEN_INPUT}'
+lic['org_url'] = '${ORG_URL_INPUT}'
+pathlib.Path('${LICENSE_FILE}').write_text(json.dumps(lic, indent=2))
+"
+          echo "  ✅ Đã cập nhật thông tin doanh nghiệp."
+        else
+          echo "  ⚠️  Thiếu thông tin, giữ nguyên."
+        fi
+      fi
+    fi
+  else
+  # ── First-time license registration ──────────────────────────────────
+  echo ""
+  echo "═══════════════════════════════════════════════════════════════"
+  echo "  🔐  Kích hoạt bản quyền BA-kit"
+  echo ""
+  echo "  BA-kit cần xác nhận bạn có quyền truy cập vào"
+  echo "  kho mã nguồn BA-kit (bakit-org/bakit) qua GitHub."
+  echo "═══════════════════════════════════════════════════════════════"
+  echo ""
+
+  read -r -p "  Kích hoạt ngay bây giờ? [C/k] " REPLY
+  if [[ "${REPLY}" =~ ^[Kk]$ ]]; then
+    echo ""
+    echo "  ⚠️  Bỏ qua kích hoạt. BA-kit sẽ hoạt động thử trong 7 ngày."
+    echo "  Sau đó bạn cần kích hoạt để tiếp tục dùng."
+    echo "  Để kích hoạt sau: mở terminal và chạy lệnh:"
+    echo "    ba-kit reauth"
+    echo ""
+  else
+    # ── Enterprise config prompt ────────────────────────────────────
+    echo ""
+    echo "  ───────────────────────────────────────────────────────────"
+    echo "  Bạn có làm việc trong doanh nghiệp/tổ chức không?"
+    echo ""
+    echo "  Nếu có, quản lý dự án sẽ cấp cho bạn:"
+    echo "    • Mã doanh nghiệp (mã DN)"
+    echo "    • Địa chỉ máy chủ doanh nghiệp"
+    echo ""
+    echo "  Nếu bạn là BA độc lập (không thuộc tổ chức nào),"
+    echo "  chọn 'k' để bỏ qua bước này."
+    echo "  ───────────────────────────────────────────────────────────"
+    echo ""
+    read -r -p "  Bạn có mã doanh nghiệp không? [c/K] " HAS_ORG
+
+    org_url=""
+    org_token=""
+
+    if [[ "${HAS_ORG}" =~ ^[Cc]$ ]]; then
+      echo ""
+      read -r -p "  Nhập mã doanh nghiệp (do quản lý cấp): " ORG_TOKEN_INPUT
+      read -r -p "  Nhập địa chỉ máy chủ doanh nghiệp (ví dụ: https://ba.congty.com): " ORG_URL_INPUT
+
+      if [[ -n "${ORG_TOKEN_INPUT}" ]]; then
+        org_token="${ORG_TOKEN_INPUT}"
+      fi
+      if [[ -n "${ORG_URL_INPUT}" ]]; then
+        org_url="${ORG_URL_INPUT}"
+      fi
+
+      if [[ -n "${org_token}" ]] && [[ -n "${org_url}" ]]; then
+        echo ""
+        echo "  ✅ Đã nhận thông tin doanh nghiệp."
+      else
+        echo ""
+        echo "  ⚠️  Thiếu thông tin. Tiếp tục với tư cách BA độc lập."
+        org_url=""
+        org_token=""
+      fi
+    fi
+
+    # ── Run registration ───────────────────────────────────────────
+    echo ""
+    echo "  ───────────────────────────────────────────────────────────"
+    echo "  Bắt đầu kích hoạt bản quyền..."
+    echo "  ───────────────────────────────────────────────────────────"
+    echo ""
+
+    if [[ -n "${org_url}" ]] && [[ -n "${org_token}" ]]; then
+      ORG_TOKEN="${org_token}" ORG_URL="${org_url}" bash "${LICENSE_REGISTER_SCRIPT}" || {
+        rc=$?
+        echo ""
+        if [[ ${rc} -eq 2 ]]; then
+          echo "  ❌  Tài khoản GitHub của bạn chưa được cấp quyền truy cập"
+          echo "  vào kho mã nguồn BA-kit (bakit-org/bakit)."
+          echo "  Liên hệ quản lý dự án để được cấp quyền."
+          echo "  Sau đó chạy lại lệnh: ba-kit reauth"
+        else
+          echo "  ⚠️  Kích hoạt chưa hoàn tất."
+          echo "  BA-kit sẽ hoạt động thử. Chạy lại lệnh sau:"
+          echo "    ba-kit reauth"
+        fi
+        echo ""
+      }
+    else
+      bash "${LICENSE_REGISTER_SCRIPT}" || {
+        rc=$?
+        echo ""
+        if [[ ${rc} -eq 2 ]]; then
+          echo "  ❌  Tài khoản GitHub của bạn chưa được cấp quyền truy cập"
+          echo "  vào kho mã nguồn BA-kit (bakit-org/bakit)."
+          echo "  Liên hệ quản lý dự án để được cấp quyền."
+          echo "  Sau đó chạy lại lệnh: ba-kit reauth"
+        else
+          echo "  ⚠️  Kích hoạt chưa hoàn tất."
+          echo "  BA-kit sẽ hoạt động thử. Chạy lại lệnh sau:"
+          echo "    ba-kit reauth"
+        fi
+        echo ""
+      }
+    fi
+  fi
+  fi  # end first-time else block
+fi
 
