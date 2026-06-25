@@ -36,6 +36,7 @@ Usage:
   ba-kit chunk-write --file <target_file>
   ba-kit status [--slug <slug>] [--date <YYMMDD-HHmm>] [--module <module_slug>]
   ba-kit collab status [--slug <slug>] [--date <YYMMDD-HHmm>] [--module <module_slug>]
+  ba-kit dashboard
   ba-kit qc-export --slug <slug> --date <YYMMDD-HHmm> --module <module_slug> [--external-output <dir>] [--usecase-list]
 
 Commands:
@@ -63,6 +64,7 @@ Commands:
   chunk-write     Append incoming STDIN safely to <target_file> for large artifact mitigation.
   status          Inspect BA-kit modular artifacts and delegated worker trackers from the registered source repo.
   collab status   Inspect BA collaboration dashboard, module homes, and review packets.
+  dashboard       Open localhost token usage dashboard in browser.
 EOF
 }
 
@@ -2458,6 +2460,9 @@ main() {
       ;;
     collab)
       collab_command "$@"
+      ;;
+    dashboard)
+      exec python3 "${HOME}/.claude/ba-kit/scripts/ba-kit-dashboard.py" "$@"
       ;;
     qc-export)
       qc_export_command "$@"
