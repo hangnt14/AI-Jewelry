@@ -6,7 +6,7 @@ State 1.0,Vague Idea — User gives a broad concept. Ask 1-2 clarifying question
 State 1.1,Clear Idea → Moodboard — Generate inspirational moodboard grid (4 images).
 State 1.2,Moodboard Approved → Sketching — Output 2D technical black-and-white jewelry sketches.
 State 2.0,Sketch Selected → Rendering — Check for material specs. If vague: ask. If clear: generate photorealistic render.
-State 3.0,Render Approved → 3D Model — Trigger 3D pipeline. Output .ifc format.
+State 3.0,Render Approved → 3D Model — Trigger 3D pipeline. Output .stl format.
 State 4.0,Iteration — User requests adjustments at any stage. Generate updated image.
 ,,
 STRICT CONSTRAINTS,,

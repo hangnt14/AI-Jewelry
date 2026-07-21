@@ -15,4 +15,4 @@ Column: Note,Any observations: wrong tone / missing clarifying questions / skipp
 SCORING GUIDANCE,,
 Image quality evaluation,"For moodboard/sketch/render: evaluate (1) correct output type generated (2) matches concept direction (3) correct stage (4) professional quality",
 Text response evaluation,"For clarifying questions: evaluate (1) not rendered prematurely (2) asks for correct info (3) professional tone (4) matches scenario rule",
-3D trigger evaluation,Evaluate: (1) .ifc format command output (2) triggered only after explicit user request (3) triggered only after approved render,
+3D trigger evaluation,Evaluate: (1) .stl format command output (2) triggered only after explicit user request (3) triggered only after approved render,
