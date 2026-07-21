@@ -9,12 +9,10 @@
 
 | Message Code | Canonical Text | Surface | Applies To |
 | --- | --- | --- | --- |
-| MSG-ERR-01 | "Incorrect username or password. Please try again." | inline (below form) | SCR-01 (Login) — invalid credentials |
 | MSG-ERR-02 | "Something went wrong while generating your design. Please try again." | toast | SCR-02 (Chat) — generation failure (Bedrock/Stability AI error) |
 | MSG-ERR-03 | "File type not supported. Please upload a JPEG, PNG, or WEBP image." | inline (below upload) | SCR-02 — invalid image format upload |
 | MSG-ERR-04 | "File is too large. Maximum size is {limit}." | inline (below upload) | SCR-02 — image exceeds size limit (limit TBD per OQ-07) |
 | MSG-ERR-05 | "3D model generation failed. Please try with a different render." | toast | SCR-04 (3D Viewer) — Trellis generation failure |
-| MSG-ERR-06 | "Your session has expired. Please log in again." | banner | All screens — session timeout |
 
 ## Success Messages (MSG-SUC)
 

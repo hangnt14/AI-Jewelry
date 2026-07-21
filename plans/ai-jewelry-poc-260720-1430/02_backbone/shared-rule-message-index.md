@@ -25,8 +25,6 @@
 | CR-BEH-02 | BEH | Pipeline stage unlock after selection | Behaviour Rules (CR-BEH) | SCR-02 Chat — stage progression | @hangnt14 | active |
 | CR-BEH-03 | BEH | Upload button with thumbnail preview | Behaviour Rules (CR-BEH) | SCR-02 — image upload (F-07) | @hangnt14 | active |
 | CR-BEH-04 | BEH | Auto-persist assets to S3 after generation | Behaviour Rules (CR-BEH) | All pipeline outputs | @hangnt14 | active |
-| CR-VAL-01 | VAL | Username: not empty, min 3, alphanumeric + _ | Validation Rules (CR-VAL) | SCR-01 Login | @hangnt14 | active |
-| CR-VAL-02 | VAL | Password: not empty, min 8 chars | Validation Rules (CR-VAL) | SCR-01 Login | @hangnt14 | active |
 | CR-VAL-03 | VAL | Prompt: not empty, max length TBD | Validation Rules (CR-VAL) | SCR-02 Chat — prompt input | @hangnt14 | active |
 | CR-VAL-04 | VAL | Image upload: JPEG/PNG/WEBP only, max size TBD | Validation Rules (CR-VAL) | SCR-02 — image upload (F-07) | @hangnt14 | active |
 
@@ -34,12 +32,10 @@
 
 | code | type | summary | source_anchor | applies_to | owner | status |
 | --- | --- | --- | --- | --- | --- | --- |
-| MSG-ERR-01 | ERR | Invalid credentials on login | Error Messages (MSG-ERR) | SCR-01 Login | @hangnt14 | active |
 | MSG-ERR-02 | ERR | Generation failure (Bedrock/Stability AI) | Error Messages (MSG-ERR) | SCR-02 Chat | @hangnt14 | active |
 | MSG-ERR-03 | ERR | Unsupported image format | Error Messages (MSG-ERR) | SCR-02 — image upload | @hangnt14 | active |
 | MSG-ERR-04 | ERR | Image file too large | Error Messages (MSG-ERR) | SCR-02 — image upload | @hangnt14 | active |
 | MSG-ERR-05 | ERR | 3D model generation failure | Error Messages (MSG-ERR) | SCR-04 3D Viewer | @hangnt14 | active |
-| MSG-ERR-06 | ERR | Session expired | Error Messages (MSG-ERR) | All screens | @hangnt14 | active |
 | MSG-SUC-01 | SUC | Asset saved to S3 | Success Messages (MSG-SUC) | SCR-02 Chat | @hangnt14 | active |
 | MSG-SUC-02 | SUC | 3D model ready | Success Messages (MSG-SUC) | SCR-04 3D Viewer | @hangnt14 | active |
 | MSG-SUC-03 | SUC | .stl downloaded | Success Messages (MSG-SUC) | SCR-04 3D Viewer | @hangnt14 | active |
@@ -54,8 +50,8 @@
 
 | signal | value |
 | --- | --- |
-| rule_count | 12 |
-| message_count | 15 |
+| rule_count | 10 |
+| message_count | 13 |
 | duplicate_codes | 0 |
 | stale_refs | 0 |
 | module_local_definitions | 0 |

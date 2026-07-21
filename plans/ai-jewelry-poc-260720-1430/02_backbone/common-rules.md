@@ -27,7 +27,5 @@
 
 | Rule Code | Mô tả | Applies To | Edge Cases |
 | --- | --- | --- | --- |
-| CR-VAL-01 | Username: không được trống; min 3 ký tự; chỉ alphanumeric + underscore | SCR-01 (Login) | Case-sensitive hay case-insensitive TBD |
-| CR-VAL-02 | Password: không được trống; min 8 ký tự | SCR-01 (Login) | Password complexity rules TBD (uppercase, số, ký tự đặc biệt) |
 | CR-VAL-03 | Prompt text: không được trống trước khi submit; max length TBD | SCR-02 (Chat) — prompt input | Whitespace-only string được treat như empty |
 | CR-VAL-04 | Image upload: chỉ accept JPEG/PNG/WEBP; max size TBD (OQ-07) | F-07 — image upload trong SCR-02 | File extension check phía client; MIME type check phía server |

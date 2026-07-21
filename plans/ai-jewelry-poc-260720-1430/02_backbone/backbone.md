@@ -5,6 +5,7 @@ created: 2026-07-20
 updated: 2026-07-20
 owner: "@hangnt14"
 changelog:
+  - 2026-07-21 | /ba-start backbone | remove auth + admin portal: no-auth PoC, no user management
   - 2026-07-20 | /ba-start backbone | initial backbone từ proposal v1.0 + OQ resolution
 ---
 
@@ -22,12 +23,13 @@ changelog:
 
 - **Vấn đề kinh doanh:** Designer jewelry tại Hong Kong phụ thuộc freelancer cho ideation và visualization; cycle dài và tốn chi phí.
 - **Kết quả mong muốn:** PoC AI chatbot giúp designer tự tạo design concepts (moodboard → 2D sketch → render → 3D mesh) qua natural language và image upload; deployed trên AWS account của client.
-- **Ngoài phạm vi:** Production-ready infra; CAD file generation; manufacturing-ready designs; integration với hệ thống có sẵn của client.
+- **Ngoài phạm vi:** Production-ready infra; CAD file generation; manufacturing-ready designs; integration với hệ thống có sẵn của client; authentication / user management; admin portal.
 - **Quyết định đã chốt:**
   - Deployment: standalone AWS (EC2 + Bedrock + CloudFront + S3)
   - AI stack: Claude (orchestration) + Stability AI (image gen) + Trellis (3D mesh)
   - 3D export: `.stl` standard; `.step` optional add-on (không mặc định vào scope)
-  - Authentication: username/password đơn giản (multi-user support)
+  - Authentication: **không có** — PoC mục đích chứng minh năng lực, không cần auth
+  - Admin portal / user management: **không có** — out of scope PoC
   - UI language: English (PoC)
   - UI framework: **TBD** — cần confirm (Streamlit vs React)
 
@@ -50,9 +52,8 @@ changelog:
 
 | Actor ID | Vai trò | Mục tiêu chính | Ghi chú |
 | --- | --- | --- | --- |
-| ACT-01 | Jewelry Designer (HK) | Tạo design concepts qua AI chatbot, chọn outputs, export 3D | End user chính; 1–N người (OQ-01: multi-user support đã chốt) |
+| ACT-01 | Jewelry Designer (HK) | Tạo design concepts qua AI chatbot, chọn outputs, export 3D | End user chính; truy cập trực tiếp không cần login |
 | ACT-02 | System (AI Orchestrator) | Interpret prompt → dispatch tới image/3D services → trả output | Claude Bedrock; không phải human actor |
-| ACT-03 | Admin / Operator | Quản lý user accounts, monitor instance, access S3 | Có thể là client IT hoặc SotaTek handover; cần xác nhận scope |
 
 ---
 
@@ -60,10 +61,7 @@ changelog:
 
 | Portal ID | Portal Name | Target Actor | Owned Screen Families | Default Entry |
 | --- | --- | --- | --- | --- |
-| PORTAL-CHAT | Chatbot Portal | ACT-01 (Jewelry Designer) | Login, Chat/Pipeline, Asset Library | Login → Chat |
-| PORTAL-ADMIN | Admin Portal | ACT-03 (Admin/Operator) | User Management, System Monitor | Login → Dashboard |
-
-> **Note:** PORTAL-ADMIN scope còn TBD — cần xác nhận với client xem PoC có cần admin UI không hay chỉ cần AWS Console access.
+| PORTAL-CHAT | Chatbot Portal | ACT-01 (Jewelry Designer) | Chat/Pipeline, Asset Library | Direct access → Chat |
 
 ---
 
@@ -71,7 +69,6 @@ changelog:
 
 | Feature ID | Tính năng / Capability | Mô tả | Ưu tiên | In Scope | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| F-01 | Authentication | Username/password login; session management; multi-user support | Must | Yes | Đã chốt: multi-user, simple auth |
 | F-02 | Ideation Pipeline | Nhập prompt → generate moodboard, concept images, trend references | Must | Yes | Bedrock: Claude + Stability AI |
 | F-03 | Sketching Pipeline | Chọn concept direction → generate 2D sketch variations | Must | Yes | Bedrock: Stability AI |
 | F-04 | Rendering Pipeline | Chọn sketch → generate photorealistic renders (multi-metal, multi-angle) | Must | Yes | Bedrock: Stability AI higher-fidelity |
@@ -80,7 +77,6 @@ changelog:
 | F-07 | Image Upload (Reference) | User upload reference images vào chatbot | Must | Yes | Format/size limit: OQ-07 |
 | F-08 | Asset Management / S3 Storage | Generated assets persist S3; user có thể access/download | Must | Yes | Retention policy: OQ-06 |
 | F-09 | Optional .step Export | Mesh-to-STEP export cho CAD software compatibility | Could | TBD | Facet-based wrapper; cần client confirm trước khi đưa vào sprint |
-| F-10 | Admin User Management | Tạo/xóa/reset user accounts | Should | TBD | Phụ thuộc PORTAL-ADMIN scope decision |
 
 ---
 
@@ -88,7 +84,6 @@ changelog:
 
 | Module ID | Tên module | Mô tả | Feature | Module BA | Portal | Trạng thái |
 | --- | --- | --- | --- | --- | --- | --- |
-| MOD-01 | auth | Authentication & session management | F-01 | @hangnt14 | PORTAL-CHAT, PORTAL-ADMIN | recommended |
 | MOD-02 | ideation | Ideation pipeline — moodboard & concept generation | F-02, F-07 | @hangnt14 | PORTAL-CHAT | recommended |
 | MOD-03 | sketching | 2D sketch variation pipeline | F-03 | @hangnt14 | PORTAL-CHAT | recommended |
 | MOD-04 | rendering | Photorealistic render pipeline | F-04 | @hangnt14 | PORTAL-CHAT | recommended |
@@ -101,7 +96,6 @@ changelog:
 
 | FR ID | Yêu cầu | Giá trị kinh doanh | Nguồn | AC tóm tắt |
 | --- | --- | --- | --- | --- |
-| FR-01 | User login bằng username/password | Chỉ user authorized mới truy cập chatbot | OQ-05 resolved | Login thành công → vào Chat; sai credentials → error message |
 | FR-02 | User nhập natural language prompt để bắt đầu ideation | Giảm barrier sáng tạo | Proposal §Overview | Prompt submitted → system generate ≥1 moodboard/concept image trong session |
 | FR-03 | User upload reference image để guide generation | Tăng độ chính xác output | Proposal §Scope | Image uploaded → visible trong chat; dùng được làm input cho pipeline |
 | FR-04 | System generate moodboard / concept images từ prompt | Stage 1 của pipeline | Proposal §Scope | Output hiển thị ≥1 concept image; user có thể chọn direction |
@@ -120,10 +114,8 @@ changelog:
 | --- | --- | --- | --- |
 | NFR-01 | Performance | Image generation (moodboard/sketch/render) có response time chấp nhận được từ HK | Cần confirm target latency với client — Bedrock region dependency (OQ-03) |
 | NFR-02 | Performance | 3D mesh generation (Trellis) hoàn thành trong khoảng thời gian reasonable cho PoC | EC2 GPU instance size cần được confirm (proposal: G5 family) |
-| NFR-03 | Security | Chỉ authenticated user mới access chatbot và assets | Authentication gate (FR-01); S3 bucket policy |
 | NFR-04 | Security | Generated design assets (IP của client) được bảo vệ trên S3 | Access control + encryption; chi tiết phụ thuộc OQ-06 |
 | NFR-05 | Availability | PoC deployment không yêu cầu production SLA | Phù hợp PoC scope; EC2 không cần multi-AZ |
-| NFR-06 | Scalability | Hỗ trợ multi-user đồng thời (số lượng cụ thể TBD) | Session isolation cần được thiết kế từ đầu |
 | NFR-07 | Deployability | Toàn bộ infra deploy trên AWS account của client | Không dùng SotaTek-managed infra |
 | NFR-08 | Usability | UI bằng tiếng Anh; accessible từ Hong Kong qua CloudFront | OQ-04 resolved: English for PoC |
 
@@ -133,7 +125,6 @@ changelog:
 
 | Epic | Capability | Story / Outcome | Ưu tiên | Ghi chú |
 | --- | --- | --- | --- | --- |
-| Authentication | Login | Designer logs in với username/password để access chatbot | Must | MOD-01 |
 | Ideation | Prompt input | Designer enters a text prompt describing a jewelry concept to start ideation | Must | MOD-02 |
 | Ideation | Image reference | Designer uploads a reference image to guide concept generation | Must | MOD-02 |
 | Ideation | Concept selection | Designer reviews generated moodboard/concepts and selects a direction | Must | MOD-02 |
@@ -145,6 +136,8 @@ changelog:
 | 3D Modeling | 3D preview | Designer inspects and rotates the 3D model in-app | Must | MOD-05 |
 | 3D Modeling | .stl export | Designer downloads the .stl file | Must | MOD-05 |
 | Asset Management | Asset access | Designer can access previously generated assets from past sessions | Should | MOD-06 |
+| 3D Modeling | .stl export | Designer downloads the .stl file | Must | MOD-05 |
+| Asset Management | Asset access | Designer can access previously generated assets from past sessions | Should | MOD-06 |
 
 ---
 
@@ -152,12 +145,10 @@ changelog:
 
 | Screen ID | Portal ID | Màn hình / Luồng | Mức độ phức tạp | Cần wireframe | Ghi chú |
 | --- | --- | --- | --- | --- | --- |
-| SCR-01 | PORTAL-CHAT | Login Screen | Low | No | Simple form |
 | SCR-02 | PORTAL-CHAT | Chat / Main Pipeline Screen | High | Critical | Core screen — prompt input, output display, stage progression |
 | SCR-03 | PORTAL-CHAT | Concept/Sketch/Render Gallery (inline) | Medium | Yes | Selection UX trong chat flow |
 | SCR-04 | PORTAL-CHAT | 3D Viewer Screen / Panel | High | Yes | In-app mesh viewer; rotate/zoom |
 | SCR-05 | PORTAL-CHAT | Asset Library / History | Medium | No | Xem lại past outputs; scope TBD |
-| SCR-06 | PORTAL-ADMIN | Admin: User Management | Medium | No | Scope TBD — phụ thuộc PORTAL-ADMIN decision |
 
 ---
 
@@ -169,8 +160,7 @@ changelog:
   - UI framework và component library
   - Visual tone: minimal/professional vs creative/editorial
   - Color scheme: neutral (gold/white/dark) hay tùy client brand
-  - Navigation schema cho PORTAL-CHAT: single-page chat vs multi-step wizard
-  - Active menu / breadcrumb behavior
+  - Navigation schema cho PORTAL-CHAT: single-page chat (không cần menu nav vì không có multi-portal)
   - Image gallery UX pattern (carousel vs grid vs inline)
   - 3D viewer tech (three.js / model-viewer / Babylon.js)
 
@@ -178,9 +168,9 @@ changelog:
 
 ## Điều kiện tiến hành từng tài liệu
 
-- **FRD:** Required — 4 pipeline modules (ideation, sketching, rendering, modeling-3d) cần FRD riêng để engineer build; auth và asset-management có thể gộp hoặc lite.
+- **FRD:** Required — 4 pipeline modules (ideation, sketching, rendering, modeling-3d) cần FRD; asset-management có thể lite.
 - **User stories:** Required — engineer cần stories để plan sprint; UAT team cần stories để test.
-- **SRS:** Required cho MOD-02 đến MOD-05 (pipeline modules); lite cho MOD-01 (auth).
+- **SRS:** Required cho MOD-02 đến MOD-05 (pipeline modules); lite cho MOD-06 (asset-management).
 - **Wireframes (ASCII screen spec):** Required cho SCR-02 (Chat/Pipeline) và SCR-04 (3D Viewer); optional cho rest.
 - **Package HTML:** Optional cho PoC — chỉ nếu client/SoftwareOne yêu cầu formal handoff document.
 
@@ -197,7 +187,7 @@ changelog:
 - User flows chi tiết sẽ được finalize trong requirements workshop Sprint 1.
 - Project management do SoftwareOne cung cấp; SotaTek lo SA + BA + engineering.
 - AWS infra và model token costs do client tự chi trả qua AWS credits.
-- Authentication là simple username/password (không phải OAuth/SSO) — đủ cho PoC.
+- Chatbot không có authentication — truy cập trực tiếp qua URL (PoC only).
 - UI language là English cho PoC.
 
 ### Risks
@@ -211,12 +201,12 @@ changelog:
 
 ### Open Questions
 
-- [ ] OQ-01: **End user scope** — Số lượng concurrent users cụ thể? Ảnh hưởng đến session isolation design. *(Hướng chốt: multi-user support; auth simple username/password)*
-- [ ] OQ-02: **PoC success criteria** — KPI cụ thể để client sign-off? (latency target, quality benchmark, design cycle time) — *cần resolve trong Sprint 1 workshop*
+- [x] OQ-01: **End user scope** — *(Đã chốt: không có auth, truy cập trực tiếp)*
+- [ ] OQ-02: **PoC success criteria** — KPI cụ thể để client sign-off? — *cần resolve trong Sprint 1 workshop*
 - [ ] OQ-03: **AWS region** — Target region cụ thể? (Bedrock availability + latency từ HK)
-- [ ] OQ-04: **UI language** — *(Đã chốt: English cho PoC)*
-- [ ] OQ-05: **Authentication** — *(Đã chốt: username/password đơn giản, multi-user)*
+- [x] OQ-04: **UI language** — *(Đã chốt: English cho PoC)*
+- [x] OQ-05: **Authentication** — *(Đã chốt: không có authentication cho PoC)*
 - [ ] OQ-06: **Asset retention & IP protection** — S3 retention period và confidentiality policy?
 - [ ] OQ-07: **Image upload formats** — Accepted formats và size limit khi user upload reference images?
-- [ ] OQ-08: **Admin Portal scope** — Client có cần admin UI để manage users không, hay dùng AWS Console trực tiếp?
-- [ ] OQ-09: **UI framework** — Streamlit hay React? Cần confirm với engineer trước SRS. *(Chốt TBD)*
+- [x] OQ-08: **Admin Portal scope** — *(Đã chốt: không có admin portal, out of scope)*
+- [ ] OQ-09: **UI framework** — Streamlit hay React? Cần confirm với engineer trước SRS.

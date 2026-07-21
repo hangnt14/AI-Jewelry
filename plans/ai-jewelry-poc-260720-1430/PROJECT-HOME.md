@@ -24,12 +24,13 @@ updated: 2026-07-20
 
 | Module | Trạng thái |
 | --- | --- |
-| MOD-01 auth | recommended |
 | MOD-02 ideation | recommended |
 | MOD-03 sketching | recommended |
 | MOD-04 rendering | recommended |
 | MOD-05 modeling-3d | recommended |
 | MOD-06 asset-management | recommended |
+
+> MOD-01 auth — removed (no authentication for PoC)
 
 ## Open Questions cần resolve
 
@@ -37,7 +38,6 @@ updated: 2026-07-20
 - OQ-03: AWS region
 - OQ-06: Asset retention & IP policy
 - OQ-07: Image upload formats/limits
-- OQ-08: Admin Portal scope
 - OQ-09: UI framework (Streamlit vs React)
 
 ## Lệnh tiếp theo
