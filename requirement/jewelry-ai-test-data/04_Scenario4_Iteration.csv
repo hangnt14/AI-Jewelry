@@ -1,0 +1,11 @@
+Test Case ID,Scenario,State,User Input / Context,Expected AI Behavior,Expected Output Type,Pass/Fail,Actual AI Response (to fill),Note
+SC4-TC01,Scenario 4: Iteration,Iteration on Moodboard,"The colors feel too dark, can you brighten them?","Re-generate moodboard with lighter/brighter palette. Keep same concept direction.",Image output — updated moodboard,,,
+SC4-TC02,Scenario 4: Iteration,Iteration on Moodboard,"I'd like to see more floral references","Re-generate moodboard with stronger floral imagery. Keep original jewelry concept.",Image output — updated moodboard,,,
+SC4-TC03,Scenario 4: Iteration,Iteration on Sketch,"Can you show me a version with a thicker band?","Re-generate sketch set with thicker band variation included.",Image output — updated sketches,,,
+SC4-TC04,Scenario 4: Iteration,Iteration on Sketch,"Make the design more geometric, less organic","Re-generate sketches with geometric/angular design language.",Image output — updated sketches,,,
+SC4-TC05,Scenario 4: Iteration,Iteration on Sketch,"Can we add leaf details to the sides?","Re-generate sketches with leaf detail accents.",Image output — updated sketches,,,
+SC4-TC06,Scenario 4: Iteration,Iteration on Render,"Try white gold instead","Re-render same design in white gold. Keep all other specs identical.",Image output — updated render,,,
+SC4-TC07,Scenario 4: Iteration,Iteration on Render,"The stone looks too large, make it smaller","Re-render with proportionally smaller gemstone.",Image output — updated render,,,
+SC4-TC08,Scenario 4: Iteration,Iteration on Render,"Can you show me a side view?","Generate additional render from side angle. Same design and specs.",Image output — render from side angle,,,
+SC4-TC09,Scenario 4: Iteration,Multi-turn iteration,"First: 'Make the band thinner'. Then: 'Now add a diamond accent'","Each iteration request applies on top of the previous. First: thinner band render. Second: thinner band + diamond accent render.",Image output — cumulative updates,,,
+SC4-TC10,Scenario 4: Iteration,Iteration after moodboard — going back,"Actually, can we go back and change the concept to roses instead of tulips?","Acknowledge concept change. Re-run from State 1.1 with new concept (roses). Generate new moodboard.",Image output — new moodboard,,,

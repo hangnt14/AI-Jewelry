@@ -1,0 +1,18 @@
+Sheet,Description,Tab Color (suggestion)
+00_System_Prompt,System prompt + pipeline state definitions,Gray
+01_Scenario1_Ideation,Test cases: vague idea → moodboard → sketches (State 1.0–1.2),Blue
+02_Scenario2_Rendering,Test cases: sketch selection → render + iteration (State 2.0),Orange
+03_Scenario3_3DModel,Test cases: render approved → 3D trigger (State 3.0),Purple
+04_Scenario4_Iteration,Test cases: adjustment requests at any stage (Scenario 4),Yellow
+05_EdgeCases,Edge cases: skip attempts / off-topic / ambiguous inputs,Red
+06_EndToEnd_Scenarios,Full multi-turn conversation flows (3 complete pipelines),Green
+,,
+HOW TO USE,,
+Column: Pass/Fail,Leave blank during QC run. Fill: PASS / FAIL / PARTIAL after testing.,
+Column: Actual AI Response,"Copy the actual AI chatbot response during testing. For image outputs, note: 'Image generated' or 'No image / wrong image'",
+Column: Note,Any observations: wrong tone / missing clarifying questions / skipped pipeline stage / etc.,
+,,
+SCORING GUIDANCE,,
+Image quality evaluation,"For moodboard/sketch/render: evaluate (1) correct output type generated (2) matches concept direction (3) correct stage (4) professional quality",
+Text response evaluation,"For clarifying questions: evaluate (1) not rendered prematurely (2) asks for correct info (3) professional tone (4) matches scenario rule",
+3D trigger evaluation,Evaluate: (1) .ifc format command output (2) triggered only after explicit user request (3) triggered only after approved render,
